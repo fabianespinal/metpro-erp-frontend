@@ -1,6 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import StatusPill from '@/components/ui/StatusPill'
+import PrimaryActionButton from '@/components/quote/PrimaryActionButton'
+import OverflowMenu from '@/components/quote/OverflowMenu'
+import PDFPreviewModal from '@/components/quote/PDFPreviewModal'
+import SurchargeControls from '@/components/quote/SurchargeControls'
 
 export default function QuotesPage() {
   const [clients, setClients] = useState([])
@@ -9,16 +14,22 @@ export default function QuotesPage() {
   const [projectName, setProjectName] = useState('')
   const [notes, setNotes] = useState('')
   const [charges, setCharges] = useState({
-    supervision: true,
-    admin: true,
-    insurance: true,
-    transport: true,
-    contingency: true
-  })
+  supervision: true,
+  supervision_percentage: 10,
+  admin: true,
+  admin_percentage: 4,
+  insurance: true,
+  insurance_percentage: 1,
+  transport: true,
+  transport_percentage: 3,
+  contingency: true,
+  contingency_percentage: 3
+})
   const [totals, setTotals] = useState(null)
   const [loading, setLoading] = useState(false)
   const [quotes, setQuotes] = useState([])
   const [statusFilter, setStatusFilter] = useState('all')
+  const [previewPDF, setPreviewPDF] = useState({ isOpen: false, quoteId: null, pdfUrl: null })
 
   // 🔑 HELPER: Get auth headers with token
   const getAuthHeaders = () => {
@@ -83,11 +94,21 @@ export default function QuotesPage() {
     
     const items_after_discount = items_total - total_discounts
     
-    const supervision = charges.supervision ? items_after_discount * 0.10 : 0
-    const admin = charges.admin ? items_after_discount * 0.04 : 0
-    const insurance = charges.insurance ? items_after_discount * 0.01 : 0
-    const transport = charges.transport ? items_after_discount * 0.03 : 0
-    const contingency = charges.contingency ? items_after_discount * 0.03 : 0
+    const supervision = charges.supervision 
+      ? items_after_discount * (charges.supervision_percentage / 100) 
+      : 0
+    const admin = charges.admin 
+      ? items_after_discount * (charges.admin_percentage / 100) 
+      : 0
+    const insurance = charges.insurance 
+      ? items_after_discount * (charges.insurance_percentage / 100) 
+      : 0
+    const transport = charges.transport 
+      ? items_after_discount * (charges.transport_percentage / 100) 
+      : 0
+    const contingency = charges.contingency 
+      ? items_after_discount * (charges.contingency_percentage / 100) 
+      : 0
     
     const subtotal_general = items_after_discount + supervision + admin + insurance + transport + contingency
     const itbis = subtotal_general * 0.18
@@ -128,27 +149,76 @@ export default function QuotesPage() {
     setQuoteItems(newItems)
   }
 
-  // 🔑 UPDATED: Download PDF WITH token
-  const handleDownloadPDF = async (quoteId) => {
-    try {
-      const response = await fetch(`https://metpro-erp-api.onrender.com/quotes/${quoteId}/pdf`, {
-        headers: getAuthHeaders()
-      })
-      if (!response.ok) throw new Error('Failed to generate PDF')
-      
-      const blob = await response.blob()
-      const url = window.URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `${quoteId}_cotizacion.pdf`
-      document.body.appendChild(a)
-      a.click()
-      window.URL.revokeObjectURL(url)
-      document.body.removeChild(a)
-    } catch (error) {
-      alert('Error downloading PDF: ' + error.message)
+  // 🔑 UPDATED: Download PDF from Supabase Storage
+const handleDownloadPDF = async (quoteId) => {
+  try {
+    const token = localStorage.getItem('auth_token')
+    console.log('PDF Download - Token:', token ? 'Present' : 'MISSING')
+    
+    if (!token) {
+      alert('You must be logged in to download PDFs')
+      window.location.href = '/login'
+      return
     }
+    
+    // Try to download from storage first
+    let response = await fetch(`https://metpro-erp-api.onrender.com/quotes/${quoteId}/download`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    })
+    
+    console.log('Storage download response:', response.status, response.statusText)
+    
+    // If not found in storage, generate it
+    if (response.status === 404) {
+      console.log('PDF not in storage, generating...')
+      response = await fetch(`https://metpro-erp-api.onrender.com/quotes/${quoteId}/pdf`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      })
+      console.log('PDF generation response:', response.status, response.statusText)
+    }
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }))
+      console.error('PDF download failed:', errorData)
+      throw new Error(errorData.detail || `HTTP ${response.status}`)
+    }
+    
+    const blob = await response.blob()
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${quoteId}_cotizacion.pdf`
+    document.body.appendChild(a)
+    a.click()
+    window.URL.revokeObjectURL(url)
+    document.body.removeChild(a)
+    
+    console.log('PDF downloaded successfully')
+  } catch (error) {
+    console.error('PDF Download Error:', error)
+    alert('Error downloading PDF: ' + error.message)
   }
+}}
+    
+    const blob = await response.blob()
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${quoteId}_cotizacion.pdf`
+    document.body.appendChild(a)
+    a.click()
+    window.URL.revokeObjectURL(url)
+    document.body.removeChild(a)
+  } catch (error) {
+    alert('Error downloading PDF: ' + error.message)
+  }
+}
 
   // 🔑 UPDATED: Duplicate quote WITH token
   const handleDuplicateQuote = async (quoteId) => {
@@ -251,17 +321,57 @@ export default function QuotesPage() {
       setNotes('')
       setCharges({
         supervision: true,
+        supervision_percentage: 10,
         admin: true,
+        admin_percentage: 4,
         insurance: true,
+        insurance_percentage: 1,
         transport: true,
-        contingency: true
-      })
+        transport_percentage: 3,
+        contingency: true,
+        contingency_percentage: 3
+  })
     } catch (error) {
       alert('Error creating quote: ' + error.message)
     } finally {
       setLoading(false)
     }
   }
+
+  // 🔑 Handler for PDF preview modal
+  const handlePreviewPDF = async (quoteId) => {
+  try {
+    const token = localStorage.getItem('auth_token')
+    if (!token) {
+      alert('You must be logged in to preview PDFs')
+      window.location.href = '/login'
+      return
+    }
+    
+    // Test if PDF endpoint is accessible first
+    const testResponse = await fetch(`https://metpro-erp-api.onrender.com/quotes/${quoteId}/pdf`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    })
+    
+    if (!testResponse.ok) {
+      const errorData = await testResponse.json().catch(() => ({ detail: 'Unknown error' }))
+      throw new Error(errorData.detail || `HTTP ${testResponse.status}`)
+    }
+    
+    // Open preview modal with token in URL
+    setPreviewPDF({
+      isOpen: true,
+      quoteId,
+      pdfUrl: `https://metpro-erp-api.onrender.com/quotes/${quoteId}/pdf?token=${encodeURIComponent(token)}`
+    })
+  } catch (error) {
+    console.error('PDF Preview Error:', error)
+    alert('Error previewing PDF: ' + error.message)
+  }
+}
 
   // 🔑 SAFETY: Ensure quotes is always an array before filtering
   const safeQuotes = Array.isArray(quotes) ? quotes : []
@@ -373,55 +483,11 @@ export default function QuotesPage() {
             </div>
             
             <div className='mb-4'>
-              <label className='block text-sm font-medium mb-2'>Included Charges</label>
-              <div className='grid grid-cols-2 md:grid-cols-5 gap-2'>
-                <label className='flex items-center gap-2'>
-                  <input
-                    type='checkbox'
-                    checked={charges.supervision}
-                    onChange={(e) => setCharges({...charges, supervision: e.target.checked})}
-                    className='w-4 h-4'
-                  />
-                  <span>10% Supervision</span>
-                </label>
-                <label className='flex items-center gap-2'>
-                  <input
-                    type='checkbox'
-                    checked={charges.admin}
-                    onChange={(e) => setCharges({...charges, admin: e.target.checked})}
-                    className='w-4 h-4'
-                  />
-                  <span>4% Admin</span>
-                </label>
-                <label className='flex items-center gap-2'>
-                  <input
-                    type='checkbox'
-                    checked={charges.insurance}
-                    onChange={(e) => setCharges({...charges, insurance: e.target.checked})}
-                    className='w-4 h-4'
-                  />
-                  <span>1% Insurance</span>
-                </label>
-                <label className='flex items-center gap-2'>
-                  <input
-                    type='checkbox'
-                    checked={charges.transport}
-                    onChange={(e) => setCharges({...charges, transport: e.target.checked})}
-                    className='w-4 h-4'
-                  />
-                  <span>3% Transport</span>
-                </label>
-                <label className='flex items-center gap-2'>
-                  <input
-                    type='checkbox'
-                    checked={charges.contingency}
-                    onChange={(e) => setCharges({...charges, contingency: e.target.checked})}
-                    className='w-4 h-4'
-                  />
-                  <span>3% Contingency</span>
-                </label>
-              </div>
-            </div>
+            <SurchargeControls
+              charges={charges}
+              onChargesChange={setCharges}
+            />
+          </div>
             
             <div className='mb-4'>
               <label className='block text-sm font-medium mb-2'>Notes</label>
@@ -545,6 +611,7 @@ export default function QuotesPage() {
                 <th className='p-3 text-left'>Date</th>
                 <th className='p-3 text-right'>Amount</th>
                 <th className='p-3 text-left'>Status</th>
+                <th className='p-3 text-right'>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -556,39 +623,34 @@ export default function QuotesPage() {
                   <td className='p-3'>{quote.date}</td>
                   <td className='p-3 text-right font-bold'>${quote.total_amount.toFixed(2)}</td>
                   <td className='p-3'>
-                    <div className='flex items-center gap-2'>
-                      <select
-                        value={quote.status}
-                        onChange={(e) => handleUpdateStatus(quote.quote_id, e.target.value)}
-                        className='px-2 py-1 rounded text-xs border text-gray-700'
-                      >
-                        <option value='Draft'>Draft</option>
-                        <option value='Approved'>Approved</option>
-                        <option value='Invoiced'>Invoiced</option>
-                        <option value='Cancelled'>Cancelled</option>
-                      </select>
-                      <button
-                        onClick={() => handleDownloadPDF(quote.quote_id)}
-                        className='bg-blue-500 text-white px-3 py-1 rounded text-xs hover:bg-blue-600 transition-colors'
-                      >
-                        📄 PDF
-                      </button>
-                      <button
-                        onClick={() => handleDuplicateQuote(quote.quote_id)}
-                        className='bg-green-500 text-white px-3 py-1 rounded text-xs hover:bg-green-600 transition-colors'
-                      >
-                        📋 Duplicate
-                      </button>
-                      {quote.status === 'Draft' && (
-                        <button
-                          onClick={() => handleConvertToInvoice(quote.quote_id)}
-                          className='bg-purple-500 text-white px-3 py-1 rounded text-xs hover:bg-purple-600 transition-colors'
-                        >
-                          💰 Invoice
-                        </button>
-                      )}
-                    </div>
-                  </td>
+                    <StatusPill status={quote.status} />
+                  </td> 
+                  <td className='p-3 text-right'>
+                  <div className='flex items-center gap-2 justify-end'>
+                    <PrimaryActionButton
+                      quote={quote}
+                      onApprove={() => handleUpdateStatus(quote.quote_id, 'Approved')}
+                      onConvert={() => handleConvertToInvoice(quote.quote_id)}
+                      onViewInvoice={() => alert(`View invoice for ${quote.quote_id}`)}
+                    />
+                    <OverflowMenu
+                      quote={quote}
+                       onPreviewPDF={() => handlePreviewPDF(quote.quote_id)}
+                      onDownloadPDF={() => handleDownloadPDF(quote.quote_id)}
+                      onDuplicate={() => handleDuplicateQuote(quote.quote_id)}
+                      onEdit={() => alert(`Edit quote ${quote.quote_id}`)}
+                    />
+                    {/* PDF Preview Modal */}
+                    {previewPDF.isOpen && (
+                      <PDFPreviewModal
+                        isOpen={previewPDF.isOpen}
+                        onClose={() => setPreviewPDF({ isOpen: false, quoteId: null })}
+                        quoteId={previewPDF.quoteId}
+                        pdfUrl={previewPDF.pdfUrl}
+                      />
+                 )}
+                  </div>
+                </td>
                 </tr>
               ))}
             </tbody>
