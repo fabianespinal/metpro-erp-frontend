@@ -6,11 +6,13 @@ import PrimaryActionButton from '@/components/quote/PrimaryActionButton'
 import OverflowMenu from '@/components/quote/OverflowMenu'
 import PDFPreviewModal from '@/components/quote/PDFPreviewModal'
 import SurchargeControls from '@/components/quote/SurchargeControls'
+import DeleteQuoteModal from '@/components/quote/DeleteQuoteModal'
 
 export default function QuotesPage() {
   const [clients, setClients] = useState([])
   const [selectedClient, setSelectedClient] = useState(null)
   const [quoteItems, setQuoteItems] = useState([{ product_name: '', quantity: 1, unit_price: 0, discount_type: 'none', discount_value: 0 }])
+  const [deleteModal, setDeleteModal] = useState({ isOpen: false, quoteId: null, quoteStatus: null })
   const [projectName, setProjectName] = useState('')
   const [notes, setNotes] = useState('')
   const [charges, setCharges] = useState({
@@ -339,6 +341,55 @@ const handleDownloadPDF = async (quoteId) => {
   }
 }
 
+    const handleDeleteQuote = async (quoteId) => {
+  if (!confirm(`Are you sure you want to delete quote ${quoteId}? This cannot be undone.`)) {
+    return
+  }
+
+    const handleConfirmDelete = () => {
+  if (deleteModal.quoteId) {
+    handleDeleteQuote(deleteModal.quoteId)
+  }
+  setDeleteModal({ isOpen: false, quoteId: null, quoteStatus: null })
+}
+
+  try {
+    const token = localStorage.getItem('auth_token')
+    if (!token) {
+      alert('You must be logged in to delete quotes')
+      window.location.href = '/login'
+      return
+    }
+
+    const response = await fetch(`https://metpro-erp-api.onrender.com/quotes/${quoteId}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }))
+      throw new Error(errorData.detail || `HTTP ${response.status}`)
+    }
+
+    // Update UI immediately - remove deleted quote from state
+    setQuotes(prevQuotes => prevQuotes.filter(q => q.quote_id !== quoteId))
+    
+    // Show success toast
+    if (window.toast) {
+      window.toast('Quote deleted!', {
+        title: '✅ Success',
+        description: `Quote ${quoteId} has been permanently deleted.`
+      })
+    }
+  } catch (error) {
+    console.error('Delete Quote Error:', error)
+    alert(`Error deleting quote: ${error.message}`)
+  }
+}
+
   // 🔑 SAFETY: Ensure quotes is always an array before filtering
   const safeQuotes = Array.isArray(quotes) ? quotes : []
   const filteredQuotes = statusFilter === 'all' 
@@ -601,10 +652,15 @@ const handleDownloadPDF = async (quoteId) => {
                     />
                     <OverflowMenu
                       quote={quote}
-                       onPreviewPDF={() => handlePreviewPDF(quote.quote_id)}
+                      onPreviewPDF={() => handlePreviewPDF(quote.quote_id)}
                       onDownloadPDF={() => handleDownloadPDF(quote.quote_id)}
                       onDuplicate={() => handleDuplicateQuote(quote.quote_id)}
                       onEdit={() => alert(`Edit quote ${quote.quote_id}`)}
+                      onDelete={() => setDeleteModal({ 
+                        isOpen: true, 
+                        quoteId: quote.quote_id,
+                        quoteStatus: quote.status
+                      })}
                     />
                     {/* PDF Preview Modal */}
                     {previewPDF.isOpen && (
@@ -614,7 +670,29 @@ const handleDownloadPDF = async (quoteId) => {
                         quoteId={previewPDF.quoteId}
                         pdfUrl={previewPDF.pdfUrl}
                       />
-                 )}
+                            {/* Quotes List */}
+                    <div className='bg-white rounded-lg shadow overflow-hidden'>
+                      {/* ... table content ... */}
+                    </div>
+
+                    {/* PDF Preview Modal */}
+                    {previewPDF.isOpen && (
+                      <PDFPreviewModal
+                        isOpen={previewPDF.isOpen}
+                        onClose={() => setPreviewPDF({ isOpen: false, quoteId: null, pdfUrl: null })}
+                        quoteId={previewPDF.quoteId}
+                        pdfUrl={previewPDF.pdfUrl}
+                      />
+                    )}
+
+                    {/* Delete Confirmation Modal */}
+                    <DeleteQuoteModal
+                      isOpen={deleteModal.isOpen}
+                      onClose={() => setDeleteModal({ isOpen: false, quoteId: null, quoteStatus: null })}
+                      onConfirm={handleConfirmDelete}
+                      quoteId={deleteModal.quoteId}
+                      quoteStatus={deleteModal.quoteStatus}
+                      />
                   </div>
                 </td>
                 </tr>
