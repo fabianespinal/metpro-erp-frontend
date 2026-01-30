@@ -153,42 +153,24 @@ export default function QuotesPage() {
 const handleDownloadPDF = async (quoteId) => {
   try {
     const token = localStorage.getItem('auth_token')
-    console.log('PDF Download - Token:', token ? 'Present' : 'MISSING')
-    
     if (!token) {
       alert('You must be logged in to download PDFs')
       window.location.href = '/login'
       return
     }
-    
-    // Try to download from storage first
-    let response = await fetch(`https://metpro-erp-api.onrender.com/quotes/${quoteId}/download`, {
+
+    const response = await fetch(`https://metpro-erp-api.onrender.com/quotes/${quoteId}/pdf`, {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
       }
     })
-    
-    console.log('Storage download response:', response.status, response.statusText)
-    
-    // If not found in storage, generate it
-    if (response.status === 404) {
-      console.log('PDF not in storage, generating...')
-      response = await fetch(`https://metpro-erp-api.onrender.com/quotes/${quoteId}/pdf`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      })
-      console.log('PDF generation response:', response.status, response.statusText)
-    }
-    
+
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }))
-      console.error('PDF download failed:', errorData)
-      throw new Error(errorData.detail || `HTTP ${response.status}`)
+      const errorText = await response.text()
+      throw new Error(`PDF download failed: ${response.status} ${response.statusText}`)
     }
-    
+
     const blob = await response.blob()
     const url = window.URL.createObjectURL(blob)
     const a = document.createElement('a')
@@ -198,24 +180,8 @@ const handleDownloadPDF = async (quoteId) => {
     a.click()
     window.URL.revokeObjectURL(url)
     document.body.removeChild(a)
-    
-    console.log('PDF downloaded successfully')
   } catch (error) {
     console.error('PDF Download Error:', error)
-    alert('Error downloading PDF: ' + error.message)
-  }
-}}
-    
-    const blob = await response.blob()
-    const url = window.URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `${quoteId}_cotizacion.pdf`
-    document.body.appendChild(a)
-    a.click()
-    window.URL.revokeObjectURL(url)
-    document.body.removeChild(a)
-  } catch (error) {
     alert('Error downloading PDF: ' + error.message)
   }
 }
