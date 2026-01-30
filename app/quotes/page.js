@@ -7,26 +7,28 @@ import OverflowMenu from '@/components/quote/OverflowMenu'
 import PDFPreviewModal from '@/components/quote/PDFPreviewModal'
 import SurchargeControls from '@/components/quote/SurchargeControls'
 import DeleteQuoteModal from '@/components/quote/DeleteQuoteModal'
+import EditQuoteModal from '@/components/quote/EditQuoteModal'
 
 export default function QuotesPage() {
   const [clients, setClients] = useState([])
   const [selectedClient, setSelectedClient] = useState(null)
   const [quoteItems, setQuoteItems] = useState([{ product_name: '', quantity: 1, unit_price: 0, discount_type: 'none', discount_value: 0 }])
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, quoteId: null, quoteStatus: null })
+  const [editModal, setEditModal] = useState({ isOpen: false, quote: null })
   const [projectName, setProjectName] = useState('')
   const [notes, setNotes] = useState('')
   const [charges, setCharges] = useState({
-  supervision: true,
-  supervision_percentage: 10,
-  admin: true,
-  admin_percentage: 4,
-  insurance: true,
-  insurance_percentage: 1,
-  transport: true,
-  transport_percentage: 3,
-  contingency: true,
-  contingency_percentage: 3
-})
+    supervision: true,
+    supervision_percentage: 10,
+    admin: true,
+    admin_percentage: 4,
+    insurance: true,
+    insurance_percentage: 1,
+    transport: true,
+    transport_percentage: 3,
+    contingency: true,
+    contingency_percentage: 3
+  })
   const [totals, setTotals] = useState(null)
   const [loading, setLoading] = useState(false)
   const [quotes, setQuotes] = useState([])
@@ -51,7 +53,7 @@ export default function QuotesPage() {
     calculateTotals()
   }, [quoteItems, charges])
 
-  // 🔑 UPDATED: Fetch clients WITH token
+  // 🔑 Fetch clients WITH token
   const fetchClients = async () => {
     try {
       const response = await fetch('https://metpro-erp-api.onrender.com/clients/', {
@@ -66,7 +68,7 @@ export default function QuotesPage() {
     }
   }
 
-  // 🔑 UPDATED: Fetch quotes WITH token
+  // 🔑 Fetch quotes WITH token
   const fetchQuotes = async () => {
     try {
       const response = await fetch('https://metpro-erp-api.onrender.com/quotes/', {
@@ -143,72 +145,102 @@ export default function QuotesPage() {
 
   const handleItemChange = (index, field, value) => {
     const newItems = [...quoteItems]
-    // Auto-fill price when product is selected from dropdown
-    if (field === 'product_name') {
-      // Note: Product auto-suggest would go here (future enhancement)
-    }
     newItems[index][field] = value
     setQuoteItems(newItems)
   }
 
-  // 🔑 UPDATED: Download PDF from Supabase Storage
-const handleDownloadPDF = async (quoteId) => {
-  try {
-    const token = localStorage.getItem('auth_token')
-    if (!token) {
-      alert('You must be logged in to download PDFs')
-      window.location.href = '/login'
-      return
-    }
-
-    const response = await fetch(`https://metpro-erp-api.onrender.com/quotes/${quoteId}/pdf`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
+  // ✅ FIXED: Download PDF handler
+  const handleDownloadPDF = async (quoteId) => {
+    try {
+      const token = localStorage.getItem('auth_token')
+      if (!token) {
+        alert('You must be logged in to download PDFs')
+        window.location.href = '/login'
+        return
       }
-    })
 
-    if (!response.ok) {
-      const errorText = await response.text()
-      throw new Error(`PDF download failed: ${response.status} ${response.statusText}`)
+      const response = await fetch(`https://metpro-erp-api.onrender.com/quotes/${quoteId}/pdf`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      })
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(`PDF download failed: ${response.status} ${response.statusText}`)
+      }
+
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `${quoteId}_cotizacion.pdf`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+    } catch (error) {
+      console.error('PDF Download Error:', error)
+      alert('Error downloading PDF: ' + error.message)
     }
-
-    const blob = await response.blob()
-    const url = window.URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `${quoteId}_cotizacion.pdf`
-    document.body.appendChild(a)
-    a.click()
-    window.URL.revokeObjectURL(url)
-    document.body.removeChild(a)
-  } catch (error) {
-    console.error('PDF Download Error:', error)
-    alert('Error downloading PDF: ' + error.message)
   }
-}
 
-  // 🔑 UPDATED: Duplicate quote WITH token
+  // ✅ FIXED: Preview PDF handler (BLOB URL METHOD)
+  const handlePreviewPDF = async (quoteId) => {
+    try {
+      const token = localStorage.getItem('auth_token')
+      if (!token) {
+        alert('You must be logged in to preview PDFs')
+        window.location.href = '/login'
+        return
+      }
+
+      const response = await fetch(`https://metpro-erp-api.onrender.com/quotes/${quoteId}/pdf`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      })
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(`Preview failed: ${response.status} ${response.statusText}`)
+      }
+
+      const blob = await response.blob()
+      const blobUrl = window.URL.createObjectURL(blob)
+
+      setPreviewPDF({
+        isOpen: true,
+        quoteId,
+        pdfUrl: blobUrl
+      })
+    } catch (error) {
+      console.error('PDF Preview Error:', error)
+      alert('Error previewing PDF: ' + error.message)
+    }
+  }
+
+  // ✅ FIXED: Duplicate quote handler
   const handleDuplicateQuote = async (quoteId) => {
     if (!confirm('Duplicate this quote?')) return
-    
     try {
+      const token = localStorage.getItem('auth_token')
       const response = await fetch(`https://metpro-erp-api.onrender.com/quotes/${quoteId}/duplicate`, {
         method: 'POST',
-        headers: getAuthHeaders()
+        headers: { 'Authorization': `Bearer ${token}` }
       })
-      
-      if (!response.ok) throw new Error('Failed to duplicate quote')
-      
+      if (!response.ok) throw new Error('Failed to duplicate')
       const data = await response.json()
-      alert(`Quote duplicated! New ID: ${data.quote_id}`)
+      alert(`✅ Quote duplicated! New ID: ${data.quote_id}`)
       fetchQuotes()
     } catch (error) {
       alert('Error duplicating quote: ' + error.message)
     }
   }
 
-  // 🔑 UPDATED: Convert to invoice WITH token
+  // ✅ FIXED: Convert to invoice handler
   const handleConvertToInvoice = async (quoteId) => {
     if (!confirm(`Convert quote ${quoteId} to invoice? This cannot be undone.`)) return
     
@@ -231,7 +263,7 @@ const handleDownloadPDF = async (quoteId) => {
     }
   }
 
-  // 🔑 UPDATED: Update status WITH token
+  // ✅ FIXED: Update status handler
   const handleUpdateStatus = async (quoteId, newStatus) => {
     try {
       const response = await fetch(`https://metpro-erp-api.onrender.com/quotes/${quoteId}/status`, {
@@ -248,7 +280,88 @@ const handleDownloadPDF = async (quoteId) => {
     }
   }
 
-  // 🔑 UPDATED: Create quote WITH token
+  // ✅ FIXED: Delete quote handler
+  const handleDeleteQuote = async (quoteId) => {
+    try {
+      const token = localStorage.getItem('auth_token')
+      if (!token) {
+        alert('You must be logged in to delete quotes')
+        window.location.href = '/login'
+        return
+      }
+
+      const response = await fetch(`https://metpro-erp-api.onrender.com/quotes/${quoteId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }))
+        throw new Error(errorData.detail || `HTTP ${response.status}`)
+      }
+
+      // Update UI immediately
+      setQuotes(prevQuotes => prevQuotes.filter(q => q.quote_id !== quoteId))
+      
+      // Show success toast
+      if (window.toast) {
+        window.toast('Quote deleted!', {
+          title: '✅ Success',
+          description: `Quote ${quoteId} has been permanently deleted.`
+        })
+      }
+    } catch (error) {
+      console.error('Delete Quote Error:', error)
+      alert(`Error deleting quote: ${error.message}`)
+    }
+  }
+
+  // ✅ FIXED: Confirm delete handler (SEPARATE FUNCTION)
+  const handleConfirmDelete = () => {
+    if (deleteModal.quoteId) {
+      handleDeleteQuote(deleteModal.quoteId)
+    }
+    setDeleteModal({ isOpen: false, quoteId: null, quoteStatus: null })
+  }
+
+  // ✅ NEW: Save edited quote handler
+  const handleSaveEdit = async (quoteId, updatedData) => {
+    try {
+      const token = localStorage.getItem('auth_token')
+      const response = await fetch(`https://metpro-erp-api.onrender.com/quotes/${quoteId}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(updatedData)
+      })
+      
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.detail || 'Update failed')
+      }
+      
+      // Refresh quotes list
+      fetchQuotes()
+      
+      // Show success
+      if (window.toast) {
+        window.toast('Quote updated!', {
+          title: '✅ Success',
+          description: `Quote ${quoteId} has been updated.`
+        })
+      }
+    } catch (error) {
+      alert('Error updating quote: ' + error.message)
+      throw error // Re-throw to prevent modal closing on error
+    }
+  }
+
+  // 🔑 Create quote handler
   const handleCreateQuote = async (e) => {
     e.preventDefault()
     if (!selectedClient) {
@@ -283,6 +396,7 @@ const handleDownloadPDF = async (quoteId) => {
       alert(`Quote created successfully! ID: ${data.quote_id}`)
       fetchQuotes()
       
+      // Reset form
       setSelectedClient(null)
       setQuoteItems([{ product_name: '', quantity: 1, unit_price: 0, discount_type: 'none', discount_value: 0 }])
       setProjectName('')
@@ -298,97 +412,13 @@ const handleDownloadPDF = async (quoteId) => {
         transport_percentage: 3,
         contingency: true,
         contingency_percentage: 3
-  })
+      })
     } catch (error) {
       alert('Error creating quote: ' + error.message)
     } finally {
       setLoading(false)
     }
   }
-
-  // 🔑 Handler for PDF preview modal
-  const handlePreviewPDF = async (quoteId) => {
-  try {
-    const token = localStorage.getItem('auth_token')
-    if (!token) {
-      alert('You must be logged in to preview PDFs')
-      window.location.href = '/login'
-      return
-    }
-    
-    // Test if PDF endpoint is accessible first
-    const testResponse = await fetch(`https://metpro-erp-api.onrender.com/quotes/${quoteId}/pdf`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      }
-    })
-    
-    if (!testResponse.ok) {
-      const errorData = await testResponse.json().catch(() => ({ detail: 'Unknown error' }))
-      throw new Error(errorData.detail || `HTTP ${testResponse.status}`)
-    }
-    
-    // Open preview modal with token in URL
-    setPreviewPDF({
-      isOpen: true,
-      quoteId,
-      pdfUrl: `https://metpro-erp-api.onrender.com/quotes/${quoteId}/pdf?token=${encodeURIComponent(token)}`
-    })
-  } catch (error) {
-    console.error('PDF Preview Error:', error)
-    alert('Error previewing PDF: ' + error.message)
-  }
-}
-
-    const handleDeleteQuote = async (quoteId) => {
-  if (!confirm(`Are you sure you want to delete quote ${quoteId}? This cannot be undone.`)) {
-    return
-  }
-
-    const handleConfirmDelete = () => {
-  if (deleteModal.quoteId) {
-    handleDeleteQuote(deleteModal.quoteId)
-  }
-  setDeleteModal({ isOpen: false, quoteId: null, quoteStatus: null })
-}
-
-  try {
-    const token = localStorage.getItem('auth_token')
-    if (!token) {
-      alert('You must be logged in to delete quotes')
-      window.location.href = '/login'
-      return
-    }
-
-    const response = await fetch(`https://metpro-erp-api.onrender.com/quotes/${quoteId}`, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      }
-    })
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }))
-      throw new Error(errorData.detail || `HTTP ${response.status}`)
-    }
-
-    // Update UI immediately - remove deleted quote from state
-    setQuotes(prevQuotes => prevQuotes.filter(q => q.quote_id !== quoteId))
-    
-    // Show success toast
-    if (window.toast) {
-      window.toast('Quote deleted!', {
-        title: '✅ Success',
-        description: `Quote ${quoteId} has been permanently deleted.`
-      })
-    }
-  } catch (error) {
-    console.error('Delete Quote Error:', error)
-    alert(`Error deleting quote: ${error.message}`)
-  }
-}
 
   // 🔑 SAFETY: Ensure quotes is always an array before filtering
   const safeQuotes = Array.isArray(quotes) ? quotes : []
@@ -500,11 +530,11 @@ const handleDownloadPDF = async (quoteId) => {
             </div>
             
             <div className='mb-4'>
-            <SurchargeControls
-              charges={charges}
-              onChargesChange={setCharges}
-            />
-          </div>
+              <SurchargeControls
+                charges={charges}
+                onChargesChange={setCharges}
+              />
+            </div>
             
             <div className='mb-4'>
               <label className='block text-sm font-medium mb-2'>Notes</label>
@@ -540,31 +570,31 @@ const handleDownloadPDF = async (quoteId) => {
                   <div>
                     {charges.supervision && (
                       <div className='flex justify-between text-sm'>
-                        <span>Supervision (10%):</span>
+                        <span>Supervision ({charges.supervision_percentage}%):</span>
                         <span>${totals.supervision}</span>
                       </div>
                     )}
                     {charges.admin && (
                       <div className='flex justify-between text-sm'>
-                        <span>Admin (4%):</span>
+                        <span>Admin ({charges.admin_percentage}%):</span>
                         <span>${totals.admin}</span>
                       </div>
                     )}
                     {charges.insurance && (
                       <div className='flex justify-between text-sm'>
-                        <span>Insurance (1%):</span>
+                        <span>Insurance ({charges.insurance_percentage}%):</span>
                         <span>${totals.insurance}</span>
                       </div>
                     )}
                     {charges.transport && (
                       <div className='flex justify-between text-sm'>
-                        <span>Transport (3%):</span>
+                        <span>Transport ({charges.transport_percentage}%):</span>
                         <span>${totals.transport}</span>
                       </div>
                     )}
                     {charges.contingency && (
                       <div className='flex justify-between text-sm'>
-                        <span>Contingency (3%):</span>
+                        <span>Contingency ({charges.contingency_percentage}%):</span>
                         <span>${totals.contingency}</span>
                       </div>
                     )}
@@ -643,64 +673,74 @@ const handleDownloadPDF = async (quoteId) => {
                     <StatusPill status={quote.status} />
                   </td> 
                   <td className='p-3 text-right'>
-                  <div className='flex items-center gap-2 justify-end'>
-                    <PrimaryActionButton
-                      quote={quote}
-                      onApprove={() => handleUpdateStatus(quote.quote_id, 'Approved')}
-                      onConvert={() => handleConvertToInvoice(quote.quote_id)}
-                      onViewInvoice={() => alert(`View invoice for ${quote.quote_id}`)}
-                    />
-                    <OverflowMenu
-                      quote={quote}
-                      onPreviewPDF={() => handlePreviewPDF(quote.quote_id)}
-                      onDownloadPDF={() => handleDownloadPDF(quote.quote_id)}
-                      onDuplicate={() => handleDuplicateQuote(quote.quote_id)}
-                      onEdit={() => alert(`Edit quote ${quote.quote_id}`)}
-                      onDelete={() => setDeleteModal({ 
-                        isOpen: true, 
-                        quoteId: quote.quote_id,
-                        quoteStatus: quote.status
-                      })}
-                    />
-                    {/* PDF Preview Modal */}
-                    {previewPDF.isOpen && (
-                      <PDFPreviewModal
-                        isOpen={previewPDF.isOpen}
-                        onClose={() => setPreviewPDF({ isOpen: false, quoteId: null })}
-                        quoteId={previewPDF.quoteId}
-                        pdfUrl={previewPDF.pdfUrl}
+                    <div className='flex items-center gap-2 justify-end'>
+                      <PrimaryActionButton
+                        quote={quote}
+                        onApprove={() => handleUpdateStatus(quote.quote_id, 'Approved')}
+                        onConvert={() => handleConvertToInvoice(quote.quote_id)}
+                        onViewInvoice={() => alert(`View invoice for ${quote.quote_id}`)}
                       />
-                            {/* Quotes List */}
-                    <div className='bg-white rounded-lg shadow overflow-hidden'>
-                      {/* ... table content ... */}
+                      <OverflowMenu
+                        quote={quote}
+                        onPreviewPDF={() => handlePreviewPDF(quote.quote_id)}
+                        onDownloadPDF={() => handleDownloadPDF(quote.quote_id)}
+                        onDuplicate={() => handleDuplicateQuote(quote.quote_id)}
+                        onEdit={() => {
+                          // Open edit modal with current quote data
+                          // Note: For full edit functionality, you may need to fetch complete quote details
+                          setEditModal({ isOpen: true, quote })
+                        }}
+                        onDelete={() => setDeleteModal({ 
+                          isOpen: true, 
+                          quoteId: quote.quote_id,
+                          quoteStatus: quote.status
+                        })}
+                      />
                     </div>
-
-                    {/* PDF Preview Modal */}
-                    {previewPDF.isOpen && (
-                      <PDFPreviewModal
-                        isOpen={previewPDF.isOpen}
-                        onClose={() => setPreviewPDF({ isOpen: false, quoteId: null, pdfUrl: null })}
-                        quoteId={previewPDF.quoteId}
-                        pdfUrl={previewPDF.pdfUrl}
-                      />
-                    )}
-
-                    {/* Delete Confirmation Modal */}
-                    <DeleteQuoteModal
-                      isOpen={deleteModal.isOpen}
-                      onClose={() => setDeleteModal({ isOpen: false, quoteId: null, quoteStatus: null })}
-                      onConfirm={handleConfirmDelete}
-                      quoteId={deleteModal.quoteId}
-                      quoteStatus={deleteModal.quoteStatus}
-                      />
-                  </div>
-                </td>
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         )}
       </div>
+
+      {/* ==================== MODALS SECTION (CORRECT PLACEMENT) ==================== */}
+      
+      {/* PDF Preview Modal - PLACED ONCE AT END OF COMPONENT */}
+      {previewPDF.isOpen && (
+        <PDFPreviewModal
+          isOpen={previewPDF.isOpen}
+          onClose={() => {
+            // Clean up blob URL
+            if (previewPDF.pdfUrl && previewPDF.pdfUrl.startsWith('blob:')) {
+              window.URL.revokeObjectURL(previewPDF.pdfUrl)
+            }
+            setPreviewPDF({ isOpen: false, quoteId: null, pdfUrl: null })
+          }}
+          quoteId={previewPDF.quoteId}
+          pdfUrl={previewPDF.pdfUrl}
+        />
+      )}
+      
+      {/* Delete Confirmation Modal - PLACED ONCE AT END OF COMPONENT */}
+      <DeleteQuoteModal
+        isOpen={deleteModal.isOpen}
+        onClose={() => setDeleteModal({ isOpen: false, quoteId: null, quoteStatus: null })}
+        onConfirm={handleConfirmDelete}
+        quoteId={deleteModal.quoteId}
+        quoteStatus={deleteModal.quoteStatus}
+      />
+      
+      {/* Edit Quote Modal - PLACED ONCE AT END OF COMPONENT */}
+      <EditQuoteModal
+        isOpen={editModal.isOpen}
+        onClose={() => setEditModal({ isOpen: false, quote: null })}
+        quote={editModal.quote}
+        onSave={handleSaveEdit}
+        clients={clients}
+      />
     </div>
   )
 }
+{/* Edit Quote Modal - PLACED ONCE AT END OF COMPONENT */}
