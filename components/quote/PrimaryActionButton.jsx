@@ -1,9 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { Button } from "@/components/ui/button"
 
-export default function PrimaryActionButton({ quote, onApprove, onConvert, onViewInvoice }) {
+export default function PrimaryActionButton({ quote, onApprove, onConvert }) {
   const [showConfirm, setShowConfirm] = useState(false)
 
   const getPrimaryAction = () => {
@@ -22,13 +21,7 @@ export default function PrimaryActionButton({ quote, onApprove, onConvert, onVie
           onClick: () => setShowConfirm(true),
           icon: '💰'
         }
-      case 'Invoiced':
-        return {
-          label: 'View Invoice',
-          color: 'bg-green-600 hover:bg-green-700',
-          onClick: onViewInvoice,
-          icon: '📄'
-        }
+      // ✅ REMOVED: Invoiced status no longer shows any button
       default:
         return null
     }

@@ -242,27 +242,38 @@ export default function QuotesPage() {
 
   // ✅ FIXED: Convert to invoice handler
   const handleConvertToInvoice = async (quoteId) => {
-    if (!confirm(`Convert quote ${quoteId} to invoice? This cannot be undone.`)) return
+  if (!confirm(`Convert quote ${quoteId} to invoice?\nThis will change the ID from COT- to INV- prefix and cannot be undone.`)) return
+  
+  try {
+    const response = await fetch(`https://metpro-erp-api.onrender.com/quotes/${quoteId}/convert-to-invoice`, {
+      method: 'POST',
+      headers: getAuthHeaders()
+    })
     
-    try {
-      const response = await fetch(`https://metpro-erp-api.onrender.com/quotes/${quoteId}/convert-to-invoice`, {
-        method: 'POST',
-        headers: getAuthHeaders()
-      })
-      
-      const data = await response.json()
-      
-      if (!response.ok) {
-        throw new Error(data.detail || 'Failed to convert to invoice')
-      }
-      
-      alert(`✅ Converted to invoice!\nID: ${data.invoice_id}\nStatus: ${data.status}`)
-      fetchQuotes()
-    } catch (error) {
-      alert(`❌ Error converting to invoice:\n${error.message}`)
+    const data = await response.json()
+    
+    if (!response.ok) {
+      throw new Error(data.detail || 'Failed to convert to invoice')
     }
+    
+    // ✅ SUCCESS: Show new invoice ID and refresh list
+    alert(`✅ SUCCESS!\nQuote converted to invoice:\nOLD ID: ${data.old_quote_id}\nNEW ID: ${data.invoice_id}\nStatus: ${data.status}`)
+    
+    // ✅ CRITICAL: Refresh quotes list to show updated IDs and statuses
+    fetchQuotes()
+    
+    // Show success toast
+    if (window.toast) {
+      window.toast('Converted to Invoice!', {
+        title: '✅ Success',
+        description: `Quote ${quoteId} is now invoice ${data.invoice_id}`
+      })
+    }
+  } catch (error) {
+    console.error('Conversion Error:', error)
+    alert(`❌ Conversion failed:\n${error.message}`)
   }
-
+}
   // ✅ FIXED: Update status handler
   const handleUpdateStatus = async (quoteId, newStatus) => {
   try {
@@ -329,46 +340,42 @@ export default function QuotesPage() {
   }
 
   // ✅ FIXED: Confirm delete handler (SEPARATE FUNCTION)
-  const handleConfirmDelete = () => {
-    if (deleteModal.quoteId) {
-      handleDeleteQuote(deleteModal.quoteId)
-    }
-    setDeleteModal({ isOpen: false, quoteId: null, quoteStatus: null })
-  }
-
-  // ✅ NEW: Save edited quote handler
   const handleSaveEdit = async (quoteId, updatedData) => {
-    try {
-      const token = localStorage.getItem('auth_token')
-      const response = await fetch(`https://metpro-erp-api.onrender.com/quotes/${quoteId}`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(updatedData)
-      })
-      
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.detail || 'Update failed')
-      }
-      
-      // Refresh quotes list
-      fetchQuotes()
-      
-      // Show success
-      if (window.toast) {
-        window.toast('Quote updated!', {
-          title: '✅ Success',
-          description: `Quote ${quoteId} has been updated.`
-        })
-      }
-    } catch (error) {
-      alert('Error updating quote: ' + error.message)
-      throw error // Re-throw to prevent modal closing on error
+  try {
+    const token = localStorage.getItem('auth_token')
+    // ✅ CRITICAL: DO NOT send client_id (backend keeps original client)
+    const { client_id, ...updatePayload } = updatedData // Remove client_id
+    
+    const response = await fetch(`https://metpro-erp-api.onrender.com/quotes/${quoteId}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(updatePayload) // Send without client_id
+    })
+    
+    if (!response.ok) {
+      const error = await response.json()
+      throw new Error(error.detail || 'Update failed')
     }
+    
+    // Refresh quotes list
+    fetchQuotes()
+    
+    // Show success
+    if (window.toast) {
+      window.toast('Quote updated!', {
+        title: '✅ Success',
+        description: `Quote ${quoteId} has been updated.`
+      })
+    }
+  } catch (error) {
+    console.error('Edit Quote Error:', error)
+    alert('Error updating quote: ' + error.message)
+    throw error
   }
+}
 
   // 🔑 Create quote handler
   const handleCreateQuote = async (e) => {
