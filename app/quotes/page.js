@@ -265,20 +265,29 @@ export default function QuotesPage() {
 
   // ✅ FIXED: Update status handler
   const handleUpdateStatus = async (quoteId, newStatus) => {
-    try {
-      const response = await fetch(`https://metpro-erp-api.onrender.com/quotes/${quoteId}/status`, {
-        method: 'PUT',
-        headers: getAuthHeaders(),
-        body: JSON.stringify({ status: newStatus })
-      })
+  try {
+    const response = await fetch(`https://metpro-erp-api.onrender.com/quotes/${quoteId}/status`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ status: newStatus })
+    })
 
-      if (!response.ok) throw new Error('Failed to update status')
-      
-      fetchQuotes()
-    } catch (error) {
-      alert('Error updating status: ' + error.message)
+    if (!response.ok) throw new Error('Failed to update status')
+    
+    // ✅ CRITICAL: Refresh quotes list to update UI immediately
+    fetchQuotes()
+    
+    // Show success toast
+    if (window.toast) {
+      window.toast('Status updated!', {
+        title: '✅ Success',
+        description: `Quote ${quoteId} status changed to ${newStatus}`
+      })
     }
+  } catch (error) {
+    alert('Error updating status: ' + error.message)
   }
+}
 
   // ✅ FIXED: Delete quote handler
   const handleDeleteQuote = async (quoteId) => {
