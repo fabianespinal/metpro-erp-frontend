@@ -4,72 +4,28 @@ import { useState } from 'react'
 
 export default function PrimaryActionButton({ quote, onApprove, onConvert }) {
   const [showConfirm, setShowConfirm] = useState(false)
-
-  const getPrimaryAction = () => {
-    switch (quote.status) {
-      case 'Draft':
-        return {
-          label: 'Approve Quote',
-          color: 'bg-blue-600 hover:bg-blue-700',
-          onClick: onApprove,
-          icon: '✅'
-        }
-      case 'Approved':
-        return {
-          label: 'Convert to Invoice',
-          color: 'bg-purple-600 hover:bg-purple-700',
-          onClick: () => setShowConfirm(true),
-          icon: '💰'
-        }
-      // ✅ REMOVED: Invoiced status no longer shows any button
-      default:
-        return null
-    }
-  }
-
-  const action = getPrimaryAction()
-
-  if (!action) return null
+  if (quote.status === 'Invoiced') return null  // ✅ REMOVED VIEW INVOICE BUTTON
 
   return (
     <>
       <button
-        onClick={action.onClick}
-        disabled={showConfirm}
-        className={`px-4 py-2 ${action.color} text-white font-semibold rounded-lg transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50`}
+        onClick={quote.status === 'Draft' ? onApprove : () => setShowConfirm(true)}
+        className={`px-4 py-2 ${
+          quote.status === 'Draft' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-purple-600 hover:bg-purple-700'
+        } text-white font-semibold rounded-lg`}
       >
-        <span className="flex items-center justify-center gap-2">
-          <span className="text-lg">{action.icon}</span>
-          <span>{action.label}</span>
-        </span>
+        {quote.status === 'Draft' ? '✅ Approve Quote' : '💰 Convert to Invoice'}
       </button>
 
       {showConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
-            <div className="p-6">
-              <h3 className="text-xl font-bold text-gray-900 mb-2">⚠️ Confirm Conversion</h3>
-              <p className="text-gray-600">
-                Are you sure you want to convert quote <strong>{quote.quote_id}</strong> to an invoice? 
-                This action cannot be undone.
-              </p>
-            </div>
-            
-            <div className="px-6 pb-6 flex justify-end space-x-3 border-t border-gray-200 pt-4">
-              <button
-                onClick={() => setShowConfirm(false)}
-                className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => {
-                  onConvert()
-                  setShowConfirm(false)
-                }}
-                className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
-              >
-                Convert to Invoice
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-lg max-w-md mx-4">
+            <h3 className="text-lg font-bold mb-3">⚠️ Confirm Conversion</h3>
+            <p className="mb-4">Convert {quote.quote_id} to invoice? This cannot be undone.</p>
+            <div className="flex justify-end gap-3">
+              <button onClick={() => setShowConfirm(false)} className="px-4 py-2 border rounded">Cancel</button>
+              <button onClick={() => { onConvert(); setShowConfirm(false) }} className="px-4 py-2 bg-purple-600 text-white rounded">
+                Convert
               </button>
             </div>
           </div>
