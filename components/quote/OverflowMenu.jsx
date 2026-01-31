@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 
-export default function OverflowMenu({ quote, onPreviewPDF, onDownloadPDF, onDuplicate, onEdit, onDelete }) {
+export default function OverflowMenu({ quote, onPreviewPDF, onDownloadPDF, onGenerateConduce, onDuplicate, onEdit, onDelete }) {
   const [isOpen, setIsOpen] = useState(false)
   const menuRef = useRef(null)
 
@@ -19,25 +19,32 @@ export default function OverflowMenu({ quote, onPreviewPDF, onDownloadPDF, onDup
 
   // ALWAYS show these actions (no filtering)
   const menuItems = [
-    { label: 'Preview PDF', onClick: onPreviewPDF, icon: '👁️' },
-    { label: 'Download PDF', onClick: onDownloadPDF, icon: '⬇️' },
-    { label: 'Duplicate Quote', onClick: onDuplicate, icon: '📋' },
-    { 
-      label: 'Edit Quote', 
-      onClick: onEdit, 
-      icon: '✏️',
-      disabled: quote.status !== 'Draft',
-      title: quote.status !== 'Draft' ? 'Only Draft quotes can be edited' : ''
-    },
-    { 
-      label: 'Delete Quote', 
-      onClick: onDelete, 
-      icon: '🗑️',
-      danger: true,
-      disabled: quote.status === 'Invoiced',
-      title: quote.status === 'Invoiced' ? 'Invoiced quotes cannot be deleted' : ''
-    }
-  ]
+  { label: 'Preview PDF', onClick: onPreviewPDF, icon: '👁️', show: true },
+  { label: 'Download PDF', onClick: onDownloadPDF, icon: '⬇️', show: true },
+  { 
+    label: 'Generate Conduce', 
+    onClick: onGenerateConduce, 
+    icon: '🚚', 
+    show: quote.status === 'Invoiced',
+    title: 'Generate delivery note (no prices)'
+  },
+  { label: 'Duplicate Quote', onClick: onDuplicate, icon: '📋', show: quote.status !== 'Invoiced' },
+  { 
+    label: 'Edit Quote', 
+    onClick: onEdit, 
+    icon: '✏️',
+    show: quote.status === 'Draft',
+    title: 'Only Draft quotes can be edited'
+  },
+  { 
+    label: 'Delete Quote', 
+    onClick: onDelete, 
+    icon: '🗑️',
+    show: quote.status !== 'Invoiced',
+    danger: true,
+    title: 'Invoiced quotes cannot be deleted'
+  }
+].filter(item => item.show !== false)
 
   return (
     <div className="relative" ref={menuRef}>

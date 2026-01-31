@@ -186,6 +186,51 @@ export default function QuotesPage() {
     }
   }
 
+  // ✅ NEW: Generate Conduce (Delivery Note) for invoices
+const handleGenerateConduce = async (invoiceId) => {
+  try {
+    const token = localStorage.getItem('auth_token')
+    if (!token) {
+      alert('You must be logged in to generate conduce')
+      window.location.href = '/login'
+      return
+    }
+
+    const response = await fetch(`https://metpro-erp-api.onrender.com/invoices/${invoiceId}/conduce/pdf`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    })
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      throw new Error(`Conduce generation failed: ${response.status} ${response.statusText}`)
+    }
+
+    const blob = await response.blob()
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `CD-${invoiceId}_conduce.pdf`
+    document.body.appendChild(a)
+    a.click()
+    window.URL.revokeObjectURL(url)
+    document.body.removeChild(a)
+    
+    // Show success
+    if (window.toast) {
+      window.toast('Conduce Generated!', {
+        title: '✅ Success',
+        description: `Delivery note for ${invoiceId} downloaded`
+      })
+    }
+  } catch (error) {
+    console.error('Conduce Error:', error)
+    alert('Error generating conduce: ' + error.message)
+  }
+}
+
   // ✅ FIXED: Preview PDF handler (BLOB URL METHOD)
   const handlePreviewPDF = async (quoteId) => {
     try {
@@ -697,20 +742,20 @@ export default function QuotesPage() {
                         onViewInvoice={() => alert(`View invoice for ${quote.quote_id}`)}
                       />
                       <OverflowMenu
-                        quote={quote}
-                        onPreviewPDF={() => handlePreviewPDF(quote.quote_id)}
-                        onDownloadPDF={() => handleDownloadPDF(quote.quote_id)}
-                        onDuplicate={() => handleDuplicateQuote(quote.quote_id)}
-                        onEdit={() => {
-                          // Open edit modal with current quote data
-                          // Note: For full edit functionality, you may need to fetch complete quote details
-                          setEditModal({ isOpen: true, quote })
-                        }}
-                        onDelete={() => setDeleteModal({ 
-                          isOpen: true, 
-                          quoteId: quote.quote_id,
-                          quoteStatus: quote.status
-                        })}
+                      quote={quote}
+                      onPreviewPDF={() => handlePreviewPDF(quote.quote_id)}
+                      onDownloadPDF={() => handleDownloadPDF(quote.quote_id)}
+                      onGenerateConduce={() => handleGenerateConduce(quote.quote_id)} // ← ADD THIS
+                      onDuplicate={() => handleDuplicateQuote(quote.quote_id)}
+                      onEdit={() => {
+                        const fullQuote = quotes.find(q => q.quote_id === quote.quote_id)
+                        setEditModal({ isOpen: true, quote: fullQuote })
+                      }}
+                      onDelete={() => setDeleteModal({ 
+                        isOpen: true, 
+                        quoteId: quote.quote_id,
+                        quoteStatus: quote.status
+                      })}
                       />
                     </div>
                   </td>
