@@ -186,50 +186,50 @@ export default function QuotesPage() {
     }
   }
 
-  // ✅ NEW: Generate Conduce (Delivery Note) for invoices
-const handleGenerateConduce = async (invoiceId) => {
-  try {
-    const token = localStorage.getItem('auth_token')
-    if (!token) {
-      alert('You must be logged in to generate conduce')
-      window.location.href = '/login'
-      return
-    }
-
-    const response = await fetch(`https://metpro-erp-api.onrender.com/invoices/${invoiceId}/conduce/pdf`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
+  // ✅ FIXED: Generate Conduce (single declaration, no duplicate)
+  const handleGenerateConduce = async (invoiceId) => {
+    try {
+      const token = localStorage.getItem('auth_token')
+      if (!token) {
+        alert('You must be logged in to generate conduce')
+        window.location.href = '/login'
+        return
       }
-    })
 
-    if (!response.ok) {
-      const errorText = await response.text()
-      throw new Error(`Conduce generation failed: ${response.status} ${response.statusText}`)
-    }
-
-    const blob = await response.blob()
-    const url = window.URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `CD-${invoiceId}_conduce.pdf`
-    document.body.appendChild(a)
-    a.click()
-    window.URL.revokeObjectURL(url)
-    document.body.removeChild(a)
-    
-    // Show success
-    if (window.toast) {
-      window.toast('Conduce Generated!', {
-        title: '✅ Success',
-        description: `Delivery note for ${invoiceId} downloaded`
+      const response = await fetch(`https://metpro-erp-api.onrender.com/invoices/${invoiceId}/conduce/pdf`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
       })
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(`Conduce generation failed: ${response.status} ${response.statusText}`)
+      }
+
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `CD-${invoiceId}_conduce.pdf`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+      
+      // Show success
+      if (window.toast) {
+        window.toast('Conduce Generated!', {
+          title: '✅ Success',
+          description: `Delivery note for ${invoiceId} downloaded`
+        })
+      }
+    } catch (error) {
+      console.error('Conduce Error:', error)
+      alert('Error generating conduce: ' + error.message)
     }
-  } catch (error) {
-    console.error('Conduce Error:', error)
-    alert('Error generating conduce: ' + error.message)
   }
-}
 
   // ✅ FIXED: Preview PDF handler (BLOB URL METHOD)
   const handlePreviewPDF = async (quoteId) => {
@@ -287,63 +287,64 @@ const handleGenerateConduce = async (invoiceId) => {
 
   // ✅ FIXED: Convert to invoice handler
   const handleConvertToInvoice = async (quoteId) => {
-  if (!confirm(`Convert quote ${quoteId} to invoice?\nThis will change the ID from COT- to INV- prefix and cannot be undone.`)) return
-  
-  try {
-    const response = await fetch(`https://metpro-erp-api.onrender.com/quotes/${quoteId}/convert-to-invoice`, {
-      method: 'POST',
-      headers: getAuthHeaders()
-    })
+    if (!confirm(`Convert quote ${quoteId} to invoice?\nThis will change the ID from COT- to INV- prefix and cannot be undone.`)) return
     
-    const data = await response.json()
-    
-    if (!response.ok) {
-      throw new Error(data.detail || 'Failed to convert to invoice')
-    }
-    
-    // ✅ SUCCESS: Show new invoice ID and refresh list
-    alert(`✅ SUCCESS!\nQuote converted to invoice:\nOLD ID: ${data.old_quote_id}\nNEW ID: ${data.invoice_id}\nStatus: ${data.status}`)
-    
-    // ✅ CRITICAL: Refresh quotes list to show updated IDs and statuses
-    fetchQuotes()
-    
-    // Show success toast
-    if (window.toast) {
-      window.toast('Converted to Invoice!', {
-        title: '✅ Success',
-        description: `Quote ${quoteId} is now invoice ${data.invoice_id}`
+    try {
+      const response = await fetch(`https://metpro-erp-api.onrender.com/quotes/${quoteId}/convert-to-invoice`, {
+        method: 'POST',
+        headers: getAuthHeaders()
       })
+      
+      const data = await response.json()
+      
+      if (!response.ok) {
+        throw new Error(data.detail || 'Failed to convert to invoice')
+      }
+      
+      // ✅ SUCCESS: Show new invoice ID and refresh list
+      alert(`✅ SUCCESS!\nQuote converted to invoice:\nOLD ID: ${data.old_quote_id}\nNEW ID: ${data.invoice_id}\nStatus: ${data.status}`)
+      
+      // ✅ CRITICAL: Refresh quotes list to show updated IDs and statuses
+      fetchQuotes()
+      
+      // Show success toast
+      if (window.toast) {
+        window.toast('Converted to Invoice!', {
+          title: '✅ Success',
+          description: `Quote ${quoteId} is now invoice ${data.invoice_id}`
+        })
+      }
+    } catch (error) {
+      console.error('Conversion Error:', error)
+      alert(`❌ Conversion failed:\n${error.message}`)
     }
-  } catch (error) {
-    console.error('Conversion Error:', error)
-    alert(`❌ Conversion failed:\n${error.message}`)
   }
-}
+
   // ✅ FIXED: Update status handler
   const handleUpdateStatus = async (quoteId, newStatus) => {
-  try {
-    const response = await fetch(`https://metpro-erp-api.onrender.com/quotes/${quoteId}/status`, {
-      method: 'PUT',
-      headers: getAuthHeaders(),
-      body: JSON.stringify({ status: newStatus })
-    })
-
-    if (!response.ok) throw new Error('Failed to update status')
-    
-    // ✅ CRITICAL: Refresh quotes list to update UI immediately
-    fetchQuotes()
-    
-    // Show success toast
-    if (window.toast) {
-      window.toast('Status updated!', {
-        title: '✅ Success',
-        description: `Quote ${quoteId} status changed to ${newStatus}`
+    try {
+      const response = await fetch(`https://metpro-erp-api.onrender.com/quotes/${quoteId}/status`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ status: newStatus })
       })
+
+      if (!response.ok) throw new Error('Failed to update status')
+      
+      // ✅ CRITICAL: Refresh quotes list to update UI immediately
+      fetchQuotes()
+      
+      // Show success toast
+      if (window.toast) {
+        window.toast('Status updated!', {
+          title: '✅ Success',
+          description: `Quote ${quoteId} status changed to ${newStatus}`
+        })
+      }
+    } catch (error) {
+      alert('Error updating status: ' + error.message)
     }
-  } catch (error) {
-    alert('Error updating status: ' + error.message)
   }
-}
 
   // ✅ FIXED: Delete quote handler
   const handleDeleteQuote = async (quoteId) => {
@@ -384,43 +385,49 @@ const handleGenerateConduce = async (invoiceId) => {
     }
   }
 
-  // ✅ FIXED: Confirm delete handler (SEPARATE FUNCTION)
-  const handleSaveEdit = async (quoteId, updatedData) => {
-  try {
-    const token = localStorage.getItem('auth_token')
-    // ✅ CRITICAL: DO NOT send client_id (backend keeps original client)
-    const { client_id, ...updatePayload } = updatedData // Remove client_id
-    
-    const response = await fetch(`https://metpro-erp-api.onrender.com/quotes/${quoteId}`, {
-      method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(updatePayload) // Send without client_id
-    })
-    
-    if (!response.ok) {
-      const error = await response.json()
-      throw new Error(error.detail || 'Update failed')
-    }
-    
-    // Refresh quotes list
-    fetchQuotes()
-    
-    // Show success
-    if (window.toast) {
-      window.toast('Quote updated!', {
-        title: '✅ Success',
-        description: `Quote ${quoteId} has been updated.`
-      })
-    }
-  } catch (error) {
-    console.error('Edit Quote Error:', error)
-    alert('Error updating quote: ' + error.message)
-    throw error
+  // ✅ FIXED: Confirm delete handler (calls handleDeleteQuote)
+  const handleConfirmDelete = async (quoteId) => {
+    await handleDeleteQuote(quoteId)
+    setDeleteModal({ isOpen: false, quoteId: null, quoteStatus: null })
   }
-}
+
+  // ✅ FIXED: Save edit handler
+  const handleSaveEdit = async (quoteId, updatedData) => {
+    try {
+      const token = localStorage.getItem('auth_token')
+      // ✅ CRITICAL: DO NOT send client_id (backend keeps original client)
+      const { client_id, ...updatePayload } = updatedData // Remove client_id
+      
+      const response = await fetch(`https://metpro-erp-api.onrender.com/quotes/${quoteId}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(updatePayload) // Send without client_id
+      })
+      
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.detail || 'Update failed')
+      }
+      
+      // Refresh quotes list
+      fetchQuotes()
+      
+      // Show success
+      if (window.toast) {
+        window.toast('Quote updated!', {
+          title: '✅ Success',
+          description: `Quote ${quoteId} has been updated.`
+        })
+      }
+    } catch (error) {
+      console.error('Edit Quote Error:', error)
+      alert('Error updating quote: ' + error.message)
+      throw error
+    }
+  }
 
   // 🔑 Create quote handler
   const handleCreateQuote = async (e) => {
@@ -742,20 +749,20 @@ const handleGenerateConduce = async (invoiceId) => {
                         onViewInvoice={() => alert(`View invoice for ${quote.quote_id}`)}
                       />
                       <OverflowMenu
-                      quote={quote}
-                      onPreviewPDF={() => handlePreviewPDF(quote.quote_id)}
-                      onDownloadPDF={() => handleDownloadPDF(quote.quote_id)}
-                      onGenerateConduce={() => handleGenerateConduce(quote.quote_id)} // ← ADD THIS
-                      onDuplicate={() => handleDuplicateQuote(quote.quote_id)}
-                      onEdit={() => {
-                        const fullQuote = quotes.find(q => q.quote_id === quote.quote_id)
-                        setEditModal({ isOpen: true, quote: fullQuote })
-                      }}
-                      onDelete={() => setDeleteModal({ 
-                        isOpen: true, 
-                        quoteId: quote.quote_id,
-                        quoteStatus: quote.status
-                      })}
+                        quote={quote}
+                        onPreviewPDF={() => handlePreviewPDF(quote.quote_id)}
+                        onDownloadPDF={() => handleDownloadPDF(quote.quote_id)}
+                        onGenerateConduce={() => handleGenerateConduce(quote.quote_id)}
+                        onDuplicate={() => handleDuplicateQuote(quote.quote_id)}
+                        onEdit={() => {
+                          const fullQuote = quotes.find(q => q.quote_id === quote.quote_id)
+                          setEditModal({ isOpen: true, quote: fullQuote })
+                        }}
+                        onDelete={() => setDeleteModal({ 
+                          isOpen: true, 
+                          quoteId: quote.quote_id,
+                          quoteStatus: quote.status
+                        })}
                       />
                     </div>
                   </td>
@@ -766,9 +773,9 @@ const handleGenerateConduce = async (invoiceId) => {
         )}
       </div>
 
-      {/* ==================== MODALS SECTION (CORRECT PLACEMENT) ==================== */}
+      {/* ==================== MODALS SECTION ==================== */}
       
-      {/* PDF Preview Modal - PLACED ONCE AT END OF COMPONENT */}
+      {/* PDF Preview Modal */}
       {previewPDF.isOpen && (
         <PDFPreviewModal
           isOpen={previewPDF.isOpen}
@@ -784,7 +791,7 @@ const handleGenerateConduce = async (invoiceId) => {
         />
       )}
       
-      {/* Delete Confirmation Modal - PLACED ONCE AT END OF COMPONENT */}
+      {/* Delete Confirmation Modal */}
       <DeleteQuoteModal
         isOpen={deleteModal.isOpen}
         onClose={() => setDeleteModal({ isOpen: false, quoteId: null, quoteStatus: null })}
@@ -793,7 +800,7 @@ const handleGenerateConduce = async (invoiceId) => {
         quoteStatus={deleteModal.quoteStatus}
       />
       
-      {/* Edit Quote Modal - PLACED ONCE AT END OF COMPONENT */}
+      {/* Edit Quote Modal */}
       <EditQuoteModal
         isOpen={editModal.isOpen}
         onClose={() => setEditModal({ isOpen: false, quote: null })}
@@ -804,4 +811,4 @@ const handleGenerateConduce = async (invoiceId) => {
     </div>
   )
 }
-{/* Edit Quote Modal - PLACED ONCE AT END OF COMPONENT */}
+

@@ -17,34 +17,45 @@ export default function OverflowMenu({ quote, onPreviewPDF, onDownloadPDF, onGen
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  // ALWAYS show these actions (no filtering)
-  const menuItems = [
+  // DEBUG: Log status value for troubleshooting
+console.log('🔍 OverflowMenu - Quote:', quote.quote_id, 'Status:', quote.status, 'Type:', typeof quote.status)
+
+const menuItems = [
   { label: 'Preview PDF', onClick: onPreviewPDF, icon: '👁️', show: true },
   { label: 'Download PDF', onClick: onDownloadPDF, icon: '⬇️', show: true },
   { 
     label: 'Generate Conduce', 
     onClick: onGenerateConduce, 
     icon: '🚚', 
-    show: quote.status === 'Invoiced',
+    // CASE-INSENSITIVE CHECK - fixes 90% of issues
+    show: quote.status?.toString().toLowerCase() === 'invoiced',
     title: 'Generate delivery note (no prices)'
   },
-  { label: 'Duplicate Quote', onClick: onDuplicate, icon: '📋', show: quote.status !== 'Invoiced' },
+  { 
+    label: 'Duplicate Quote', 
+    onClick: onDuplicate, 
+    icon: '📋', 
+    show: quote.status?.toString().toLowerCase() !== 'invoiced'
+  },
   { 
     label: 'Edit Quote', 
     onClick: onEdit, 
     icon: '✏️',
-    show: quote.status === 'Draft',
+    show: quote.status?.toString().toLowerCase() === 'draft',
     title: 'Only Draft quotes can be edited'
   },
   { 
     label: 'Delete Quote', 
     onClick: onDelete, 
     icon: '🗑️',
-    show: quote.status !== 'Invoiced',
+    show: quote.status?.toString().toLowerCase() !== 'invoiced',
     danger: true,
     title: 'Invoiced quotes cannot be deleted'
   }
 ].filter(item => item.show !== false)
+
+// DEBUG: Log which items will show
+console.log('✅ Menu items to display:', menuItems.filter(i => i.show).map(i => i.label))
 
   return (
     <div className="relative" ref={menuRef}>
