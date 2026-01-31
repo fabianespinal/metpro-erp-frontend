@@ -69,7 +69,8 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete }) {
       formData.append('file', file)
       formData.append('skip_duplicates', skipDuplicates.toString())
       
-      const response = await fetch('https://metpro-erp-api.onrender.com/clients/import-csv', {
+      // ✅ CHANGE THIS LINE (was '/clients/import-csv')
+      const response = await fetch('https://metpro-erp-api.onrender.com/clients/bulk-import', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
