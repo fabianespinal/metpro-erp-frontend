@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import CSVImportModal from '@/components/client/CSVImportModal'
 
 export default function ClientsPage() {
   const [clients, setClients] = useState([])
@@ -15,6 +16,7 @@ export default function ClientsPage() {
   })
   const [editingClient, setEditingClient] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [importModalOpen, setImportModalOpen] = useState(false)
 
   // 🔑 HELPER: Get auth headers with token
   const getAuthHeaders = () => {
@@ -29,7 +31,7 @@ export default function ClientsPage() {
     fetchClients()
   }, [])
 
-  // 🔑 UPDATED: Fetch clients WITH token
+  // 🔑 UPDATED: Fetch clients WITH token (FIXED URL)
   const fetchClients = async () => {
     try {
       const response = await fetch('https://metpro-erp-api.onrender.com/clients/', {
@@ -45,7 +47,7 @@ export default function ClientsPage() {
     }
   }
 
-  // 🔑 UPDATED: Create client WITH token
+  // 🔑 UPDATED: Create client WITH token (FIXED URL)
   const handleCreateClient = async (e) => {
     e.preventDefault()
     setLoading(true)
@@ -80,7 +82,7 @@ export default function ClientsPage() {
     }
   }
 
-  // 🔑 UPDATED: Update client WITH token
+  // 🔑 UPDATED: Update client WITH token (FIXED URL)
   const handleUpdateClient = async (e) => {
     e.preventDefault()
     setLoading(true)
@@ -104,7 +106,7 @@ export default function ClientsPage() {
     }
   }
 
-  // 🔑 UPDATED: Delete client WITH token
+  // 🔑 UPDATED: Delete client WITH token (FIXED URL)
   const handleDeleteClient = async (clientId) => {
     if (!confirm('Delete this client? This cannot be undone.')) return
     
@@ -123,9 +125,29 @@ export default function ClientsPage() {
     }
   }
 
+  // ✅ FIXED: Properly closed function
+  const handleImportComplete = () => {
+    // Refresh client list after import
+    fetchClients()
+    if (window.toast) {
+      window.toast('Clients Imported!', {
+        title: '✅ Success',
+        description: 'Client list updated with new imports'
+      })
+    }
+  }
+
   return (
     <div className='p-8 max-w-6xl mx-auto'>
-      <h1 className='text-3xl font-bold mb-8 text-center'>👥 METPRO ERP - Clients</h1>
+      <div className='flex justify-between items-center mb-8'>
+        <h1 className='text-3xl font-bold text-center flex-1'>👥 METPRO ERP - Clients</h1>
+        <button
+          onClick={() => setImportModalOpen(true)}
+          className='bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 shadow-md hover:shadow-lg transition-shadow'
+        >
+          📤 Import CSV
+        </button>
+      </div>
       
       {/* Create/Edit Client Form */}
       <div className='bg-white rounded-lg shadow p-6 mb-8'>
@@ -231,7 +253,7 @@ export default function ClientsPage() {
         
         {clients.length === 0 ? (
           <div className='p-8 text-center text-gray-500'>
-            No clients yet. Add one above!
+            No clients yet. Add one above or import via CSV!
           </div>
         ) : (
           <table className='w-full'>
@@ -257,13 +279,13 @@ export default function ClientsPage() {
                     <div className='flex justify-end gap-2'>
                       <button
                         onClick={() => setEditingClient(client)}
-                        className='text-blue-600 hover:text-blue-800'
+                        className='text-blue-600 hover:text-blue-800 px-2 py-1 rounded hover:bg-blue-50 transition'
                       >
                         ✏️ Edit
                       </button>
                       <button
                         onClick={() => handleDeleteClient(client.id)}
-                        className='text-red-600 hover:text-red-800'
+                        className='text-red-600 hover:text-red-800 px-2 py-1 rounded hover:bg-red-50 transition'
                       >
                         ❌ Delete
                       </button>
@@ -275,6 +297,13 @@ export default function ClientsPage() {
           </table>
         )}
       </div>
+
+      {/* ✅ CSV IMPORT MODAL - PLACED AT END OF COMPONENT */}
+      <CSVImportModal
+        isOpen={importModalOpen}
+        onClose={() => setImportModalOpen(false)}
+        onImportComplete={handleImportComplete}
+      />
     </div>
   )
 }
