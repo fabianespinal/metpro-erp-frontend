@@ -140,19 +140,19 @@ export default function ClientsPage() {
   return (
     <div className='p-8 max-w-6xl mx-auto'>
       <div className='flex justify-between items-center mb-8'>
-        <h1 className='text-3xl font-bold text-center flex-1'>👥 METPRO ERP - Clients</h1>
+        <h1 className='text-3xl font-bold text-center flex-1'>METPRO ERP - Clients</h1>
         <button
           onClick={() => setImportModalOpen(true)}
           className='bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 shadow-md hover:shadow-lg transition-shadow'
         >
-          📤 Import CSV
+          Import CSV
         </button>
       </div>
       
       {/* Create/Edit Client Form */}
       <div className='bg-white rounded-lg shadow p-6 mb-8'>
         <h2 className='text-xl font-semibold mb-4'>
-          {editingClient ? '✏️ Edit Client' : '➕ Add New Client'}
+          {editingClient ? 'Edit Client' : 'New Client'}
         </h2>
         <form onSubmit={editingClient ? handleUpdateClient : handleCreateClient} className='grid grid-cols-1 md:grid-cols-2 gap-4'>
           <input
@@ -232,7 +232,7 @@ export default function ClientsPage() {
               disabled={loading}
               className='bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 disabled:opacity-50'
             >
-              {loading ? 'Saving...' : (editingClient ? '💾 Update Client' : '➕ Add Client')}
+              {loading ? 'Saving...' : (editingClient ? 'Update Client' : 'Add Client')}
             </button>
             {editingClient && (
               <button
@@ -281,13 +281,13 @@ export default function ClientsPage() {
                         onClick={() => setEditingClient(client)}
                         className='text-blue-600 hover:text-blue-800 px-2 py-1 rounded hover:bg-blue-50 transition'
                       >
-                        ✏️ Edit
+                        Edit
                       </button>
                       <button
                         onClick={() => handleDeleteClient(client.id)}
                         className='text-red-600 hover:text-red-800 px-2 py-1 rounded hover:bg-red-50 transition'
                       >
-                        ❌ Delete
+                        Delete
                       </button>
                     </div>
                   </td>

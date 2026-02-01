@@ -496,7 +496,7 @@ export default function QuotesPage() {
 
   return (
     <div className='p-8 max-w-6xl mx-auto'>
-      <h1 className='text-3xl font-bold mb-8 text-center'>📝 METPRO ERP - Quotes</h1>
+      <h1 className='text-3xl font-bold mb-8 text-center'>METPRO ERP - Quotes</h1>
       
       {/* Create Quote Form */}
       <div className='bg-white rounded-lg shadow p-6 mb-8'>
@@ -685,7 +685,7 @@ export default function QuotesPage() {
               disabled={loading}
               className='w-full bg-blue-600 text-white py-3 px-4 rounded hover:bg-blue-700 disabled:opacity-50 font-bold text-lg'
             >
-              {loading ? 'Creating Quote...' : '📄 CREATE QUOTE'}
+              {loading ? 'Creating Quote...' : 'CREATE QUOTE'}
             </button>
           </>
         )}
