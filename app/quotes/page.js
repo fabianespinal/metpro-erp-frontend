@@ -34,6 +34,11 @@ export default function QuotesPage() {
   const [quotes, setQuotes] = useState([])
   const [statusFilter, setStatusFilter] = useState('all')
   const [previewPDF, setPreviewPDF] = useState({ isOpen: false, quoteId: null, pdfUrl: null })
+  
+  // ✅ PRODUCT DATABASE INTEGRATION (NEW)
+  const [products, setProducts] = useState([])
+  const [productModal, setProductModal] = useState({ isOpen: false, itemIndex: null })
+  const [searchTerm, setSearchTerm] = useState('')
 
   // 🔑 HELPER: Get auth headers with token
   const getAuthHeaders = () => {
@@ -47,13 +52,14 @@ export default function QuotesPage() {
   useEffect(() => {
     fetchClients()
     fetchQuotes()
+    fetchProducts() // ✅ FETCH PRODUCTS ON LOAD
   }, [])
 
   useEffect(() => {
     calculateTotals()
   }, [quoteItems, charges])
 
-  // 🔑 Fetch clients WITH token
+  // 🔑 Fetch clients WITH token (FIXED URL - NO TRAILING SPACES)
   const fetchClients = async () => {
     try {
       const response = await fetch('https://metpro-erp-api.onrender.com/clients/', {
@@ -68,7 +74,7 @@ export default function QuotesPage() {
     }
   }
 
-  // 🔑 Fetch quotes WITH token
+  // 🔑 Fetch quotes WITH token (FIXED URL)
   const fetchQuotes = async () => {
     try {
       const response = await fetch('https://metpro-erp-api.onrender.com/quotes/', {
@@ -80,6 +86,21 @@ export default function QuotesPage() {
     } catch (error) {
       console.error('Failed to fetch quotes:', error)
       setQuotes([])
+    }
+  }
+
+  // ✅ FETCH PRODUCTS (FIXED URL)
+  const fetchProducts = async () => {
+    try {
+      const response = await fetch('https://metpro-erp-api.onrender.com/products/', {
+        headers: getAuthHeaders()
+      })
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      const data = await response.json()
+      setProducts(Array.isArray(data) ? data : [])
+    } catch (error) {
+      console.error('Failed to fetch products:', error)
+      setProducts([])
     }
   }
 
@@ -149,7 +170,24 @@ export default function QuotesPage() {
     setQuoteItems(newItems)
   }
 
-  // ✅ FIXED: Download PDF handler
+  // ✅ OPEN PRODUCT SELECTION MODAL
+  const openProductModal = (index) => {
+    setProductModal({ isOpen: true, itemIndex: index })
+    setSearchTerm('')
+  }
+
+  // ✅ SELECT PRODUCT FROM DATABASE
+  const selectProduct = (product) => {
+    if (productModal.itemIndex !== null) {
+      const newItems = [...quoteItems]
+      newItems[productModal.itemIndex].product_name = product.name
+      newItems[productModal.itemIndex].unit_price = parseFloat(product.unit_price) || 0
+      setQuoteItems(newItems)
+    }
+    setProductModal({ isOpen: false, itemIndex: null })
+  }
+
+  // ✅ FIXED: Download PDF handler (FIXED URL)
   const handleDownloadPDF = async (quoteId) => {
     try {
       const token = localStorage.getItem('auth_token')
@@ -186,7 +224,7 @@ export default function QuotesPage() {
     }
   }
 
-  // ✅ FIXED: Generate Conduce (single declaration, no duplicate)
+  // ✅ FIXED: Generate Conduce handler (FIXED URL)
   const handleGenerateConduce = async (invoiceId) => {
     try {
       const token = localStorage.getItem('auth_token')
@@ -218,7 +256,6 @@ export default function QuotesPage() {
       window.URL.revokeObjectURL(url)
       document.body.removeChild(a)
       
-      // Show success
       if (window.toast) {
         window.toast('Conduce Generated!', {
           title: '✅ Success',
@@ -231,7 +268,7 @@ export default function QuotesPage() {
     }
   }
 
-  // ✅ FIXED: Preview PDF handler (BLOB URL METHOD)
+  // ✅ FIXED: Preview PDF handler (FIXED URL)
   const handlePreviewPDF = async (quoteId) => {
     try {
       const token = localStorage.getItem('auth_token')
@@ -267,7 +304,7 @@ export default function QuotesPage() {
     }
   }
 
-  // ✅ FIXED: Duplicate quote handler
+  // ✅ FIXED: Duplicate quote handler (FIXED URL)
   const handleDuplicateQuote = async (quoteId) => {
     if (!confirm('Duplicate this quote?')) return
     try {
@@ -285,7 +322,7 @@ export default function QuotesPage() {
     }
   }
 
-  // ✅ FIXED: Convert to invoice handler
+  // ✅ FIXED: Convert to invoice handler (FIXED URL)
   const handleConvertToInvoice = async (quoteId) => {
     if (!confirm(`Convert quote ${quoteId} to invoice?\nThis will change the ID from COT- to INV- prefix and cannot be undone.`)) return
     
@@ -301,13 +338,9 @@ export default function QuotesPage() {
         throw new Error(data.detail || 'Failed to convert to invoice')
       }
       
-      // ✅ SUCCESS: Show new invoice ID and refresh list
       alert(`✅ SUCCESS!\nQuote converted to invoice:\nOLD ID: ${data.old_quote_id}\nNEW ID: ${data.invoice_id}\nStatus: ${data.status}`)
-      
-      // ✅ CRITICAL: Refresh quotes list to show updated IDs and statuses
       fetchQuotes()
       
-      // Show success toast
       if (window.toast) {
         window.toast('Converted to Invoice!', {
           title: '✅ Success',
@@ -320,7 +353,7 @@ export default function QuotesPage() {
     }
   }
 
-  // ✅ FIXED: Update status handler
+  // ✅ FIXED: Update status handler (FIXED URL)
   const handleUpdateStatus = async (quoteId, newStatus) => {
     try {
       const response = await fetch(`https://metpro-erp-api.onrender.com/quotes/${quoteId}/status`, {
@@ -331,10 +364,8 @@ export default function QuotesPage() {
 
       if (!response.ok) throw new Error('Failed to update status')
       
-      // ✅ CRITICAL: Refresh quotes list to update UI immediately
       fetchQuotes()
       
-      // Show success toast
       if (window.toast) {
         window.toast('Status updated!', {
           title: '✅ Success',
@@ -346,7 +377,7 @@ export default function QuotesPage() {
     }
   }
 
-  // ✅ FIXED: Delete quote handler
+  // ✅ FIXED: Delete quote handler (FIXED URL)
   const handleDeleteQuote = async (quoteId) => {
     try {
       const token = localStorage.getItem('auth_token')
@@ -369,10 +400,8 @@ export default function QuotesPage() {
         throw new Error(errorData.detail || `HTTP ${response.status}`)
       }
 
-      // Update UI immediately
       setQuotes(prevQuotes => prevQuotes.filter(q => q.quote_id !== quoteId))
       
-      // Show success toast
       if (window.toast) {
         window.toast('Quote deleted!', {
           title: '✅ Success',
@@ -385,18 +414,19 @@ export default function QuotesPage() {
     }
   }
 
-  // ✅ FIXED: Confirm delete handler (calls handleDeleteQuote)
-  const handleConfirmDelete = async (quoteId) => {
-    await handleDeleteQuote(quoteId)
+  // ✅ CRITICAL FIX: handleConfirmDelete NO LONGER TAKES ARGUMENT (uses modal state)
+  const handleConfirmDelete = async () => {
+    if (deleteModal.quoteId) {
+      await handleDeleteQuote(deleteModal.quoteId)
+    }
     setDeleteModal({ isOpen: false, quoteId: null, quoteStatus: null })
   }
 
-  // ✅ FIXED: Save edit handler
+  // ✅ FIXED: Save edit handler (FIXED URL)
   const handleSaveEdit = async (quoteId, updatedData) => {
     try {
       const token = localStorage.getItem('auth_token')
-      // ✅ CRITICAL: DO NOT send client_id (backend keeps original client)
-      const { client_id, ...updatePayload } = updatedData // Remove client_id
+      const { client_id, ...updatePayload } = updatedData
       
       const response = await fetch(`https://metpro-erp-api.onrender.com/quotes/${quoteId}`, {
         method: 'PUT',
@@ -404,7 +434,7 @@ export default function QuotesPage() {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(updatePayload) // Send without client_id
+        body: JSON.stringify(updatePayload)
       })
       
       if (!response.ok) {
@@ -412,10 +442,8 @@ export default function QuotesPage() {
         throw new Error(error.detail || 'Update failed')
       }
       
-      // Refresh quotes list
       fetchQuotes()
       
-      // Show success
       if (window.toast) {
         window.toast('Quote updated!', {
           title: '✅ Success',
@@ -429,7 +457,7 @@ export default function QuotesPage() {
     }
   }
 
-  // 🔑 Create quote handler
+  // 🔑 Create quote handler (FIXED URL)
   const handleCreateQuote = async (e) => {
     e.preventDefault()
     if (!selectedClient) {
@@ -496,7 +524,7 @@ export default function QuotesPage() {
 
   return (
     <div className='p-8 max-w-6xl mx-auto'>
-      <h1 className='text-3xl font-bold mb-8 text-center'>METPRO ERP - Quotes</h1>
+      <h1 className='text-3xl font-bold mb-8 text-center'>📝 METPRO ERP - Quotes</h1>
       
       {/* Create Quote Form */}
       <div className='bg-white rounded-lg shadow p-6 mb-8'>
@@ -534,13 +562,25 @@ export default function QuotesPage() {
               <label className='block text-sm font-medium mb-2'>Products/Items</label>
               {quoteItems.map((item, index) => (
                 <div key={index} className='flex gap-2 mb-2'>
-                  <input
-                    type='text'
-                    placeholder='Product name'
-                    value={item.product_name}
-                    onChange={(e) => handleItemChange(index, 'product_name', e.target.value)}
-                    className='flex-1 border p-2 rounded'
-                  />
+                  {/* ✅ ENHANCED PRODUCT FIELD WITH DB BUTTON */}
+                  <div className='flex gap-1 flex-1'>
+                    <input
+                      type='text'
+                      placeholder='Product name (or click DB to select)'
+                      value={item.product_name}
+                      onChange={(e) => handleItemChange(index, 'product_name', e.target.value)}
+                      className='flex-1 border p-2 rounded focus:ring-2 focus:ring-blue-500'
+                    />
+                    <button
+                      type='button'
+                      onClick={() => openProductModal(index)}
+                      className='bg-blue-600 text-white px-3 rounded hover:bg-blue-700 text-sm font-medium flex items-center gap-1 transition shadow-md hover:shadow-lg'
+                      title='Select from product database'
+                    >
+                      <span>🗄️</span> DB
+                    </button>
+                  </div>
+                  
                   <input
                     type='number'
                     placeholder='Qty'
@@ -685,7 +725,7 @@ export default function QuotesPage() {
               disabled={loading}
               className='w-full bg-blue-600 text-white py-3 px-4 rounded hover:bg-blue-700 disabled:opacity-50 font-bold text-lg'
             >
-              {loading ? 'Creating Quote...' : 'CREATE QUOTE'}
+              {loading ? 'Creating Quote...' : '📄 CREATE QUOTE'}
             </button>
           </>
         )}
@@ -780,7 +820,6 @@ export default function QuotesPage() {
         <PDFPreviewModal
           isOpen={previewPDF.isOpen}
           onClose={() => {
-            // Clean up blob URL
             if (previewPDF.pdfUrl && previewPDF.pdfUrl.startsWith('blob:')) {
               window.URL.revokeObjectURL(previewPDF.pdfUrl)
             }
@@ -795,7 +834,7 @@ export default function QuotesPage() {
       <DeleteQuoteModal
         isOpen={deleteModal.isOpen}
         onClose={() => setDeleteModal({ isOpen: false, quoteId: null, quoteStatus: null })}
-        onConfirm={handleConfirmDelete}
+        onConfirm={handleConfirmDelete} {/* ✅ FIXED: No argument needed */}
         quoteId={deleteModal.quoteId}
         quoteStatus={deleteModal.quoteStatus}
       />
@@ -808,7 +847,90 @@ export default function QuotesPage() {
         onSave={handleSaveEdit}
         clients={clients}
       />
+      
+      {/* ✅ PRODUCT SELECTION MODAL (NEW) */}
+      {productModal.isOpen && (
+        <div className='fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 overflow-y-auto'>
+          <div className='bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] flex flex-col'>
+            <div className='flex items-center justify-between p-5 border-b'>
+              <h3 className='text-xl font-bold text-gray-900'>🗄️ Select Product from Database</h3>
+              <button 
+                onClick={() => setProductModal({ isOpen: false, itemIndex: null })} 
+                className='text-gray-400 hover:text-gray-600 text-2xl'
+              >
+                &times;
+              </button>
+            </div>
+            
+            <div className='p-4 border-b'>
+              <div className='relative'>
+                <input
+                  type='text'
+                  placeholder='🔍 Search products by name...'
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className='w-full border border-gray-300 rounded-lg py-2 px-4 pl-10 focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+                  autoFocus
+                />
+                <div className='absolute left-3 top-2.5 text-gray-400'>
+                  <span>🔍</span>
+                </div>
+              </div>
+            </div>
+            
+            <div className='flex-1 overflow-y-auto p-4'>
+              {products.length === 0 ? (
+                <div className='text-center text-gray-500 py-8'>
+                  <div className='text-4xl mb-2'>📦</div>
+                  <p className='font-medium'>No products in database yet</p>
+                  <p className='text-sm mt-1'>Go to Products page to add products first</p>
+                </div>
+              ) : (
+                <div className='space-y-2'>
+                  {products
+                    .filter(product => 
+                      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                      (product.description && product.description.toLowerCase().includes(searchTerm.toLowerCase()))
+                    )
+                    .map(product => (
+                      <div 
+                        key={product.id} 
+                        onClick={() => selectProduct(product)}
+                        className='border rounded-lg p-3 hover:bg-blue-50 cursor-pointer transition flex justify-between items-center'
+                      >
+                        <div>
+                          <div className='font-medium text-gray-900'>{product.name}</div>
+                          {product.description && (
+                            <div className='text-sm text-gray-600 mt-1'>{product.description}</div>
+                          )}
+                        </div>
+                        <div className='font-bold text-blue-600 bg-blue-100 px-3 py-1 rounded whitespace-nowrap'>
+                          ${parseFloat(product.unit_price).toFixed(2)}
+                        </div>
+                      </div>
+                    ))}
+                  {products.filter(p => 
+                    p.name.toLowerCase().includes(searchTerm.toLowerCase())
+                  ).length === 0 && searchTerm && (
+                    <div className='text-center text-gray-500 py-4'>
+                      No products match "{searchTerm}"
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+            
+            <div className='p-4 border-t bg-gray-50 flex justify-end'>
+              <button
+                onClick={() => setProductModal({ isOpen: false, itemIndex: null })}
+                className='px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100'
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
-
