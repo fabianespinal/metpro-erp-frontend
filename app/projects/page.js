@@ -18,7 +18,7 @@ export default function ProjectsPage() {
   })
   const [editingProject, setEditingProject] = useState(null)
   const [loading, setLoading] = useState(false)
-  const [filters, setFilters] = useState({ client_id: '', status: '' })
+  const [filters, setFilters] = useState({ status: '' })
 
   const getAuthHeaders = () => ({
     'Content-Type': 'application/json',
@@ -28,12 +28,12 @@ export default function ProjectsPage() {
   useEffect(() => {
     fetchProjects()
     fetchClients()
-  }, [filters])
+  }, [filters.status])
 
   const fetchProjects = async () => {
     try {
-      const params = new URLSearchParams(filters).toString()
-      const res = await fetch(`https://metpro-erp-api.onrender.com/projects?${params}`, {
+      const params = filters.status ? `?status=${filters.status}` : ''
+      const res = await fetch(`https://metpro-erp-api.onrender.com/projects${params}`, {
         headers: getAuthHeaders()
       })
       if (!res.ok) throw new Error('Failed to fetch projects')
@@ -148,11 +148,11 @@ export default function ProjectsPage() {
   return (
     <div className='p-8 max-w-7xl mx-auto'>
       <div className='flex justify-between items-center mb-8'>
-        <h1 className='text-3xl font-bold'>🏗️ Projects</h1>
+        <h1 className='text-3xl font-bold text-gray-900'>🏗️ Projects</h1>
         <select
           value={filters.status}
           onChange={(e) => setFilters({...filters, status: e.target.value})}
-          className='border p-2 rounded text-sm'
+          className='border border-gray-300 p-2 rounded text-sm bg-white'
         >
           <option value=''>All Statuses</option>
           <option value='planning'>Planning</option>
@@ -162,15 +162,15 @@ export default function ProjectsPage() {
       </div>
 
       {/* Create/Edit Form */}
-      <div className='bg-white rounded-lg shadow p-6 mb-8'>
-        <h2 className='text-xl font-semibold mb-4'>
-          {editingProject ? 'Edit Project' : 'New Project'}
+      <div className='bg-white rounded-lg shadow p-6 mb-8 border border-gray-200'>
+        <h2 className='text-xl font-semibold mb-4 text-gray-800'>
+          {editingProject ? '✏️ Edit Project' : '➕ Add New Project'}
         </h2>
         <form onSubmit={handleSubmit} className='grid grid-cols-1 md:grid-cols-2 gap-4'>
           <select
             value={newProject.client_id}
             onChange={(e) => setNewProject({...newProject, client_id: e.target.value})}
-            className='border p-2 rounded'
+            className='border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
             required
           >
             <option value=''>Select Client *</option>
@@ -186,7 +186,7 @@ export default function ProjectsPage() {
             placeholder='Project Name *'
             value={newProject.name}
             onChange={(e) => setNewProject({...newProject, name: e.target.value})}
-            className='border p-2 rounded'
+            className='border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
             required
           />
           
@@ -194,7 +194,7 @@ export default function ProjectsPage() {
             type='date'
             value={newProject.start_date}
             onChange={(e) => setNewProject({...newProject, start_date: e.target.value})}
-            className='border p-2 rounded'
+            className='border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
             required
           />
           
@@ -202,13 +202,13 @@ export default function ProjectsPage() {
             type='date'
             value={newProject.end_date}
             onChange={(e) => setNewProject({...newProject, end_date: e.target.value})}
-            className='border p-2 rounded'
+            className='border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
           />
           
           <select
             value={newProject.status}
             onChange={(e) => setNewProject({...newProject, status: e.target.value})}
-            className='border p-2 rounded'
+            className='border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
           >
             <option value='planning'>Planning</option>
             <option value='active'>Active</option>
@@ -220,7 +220,7 @@ export default function ProjectsPage() {
             placeholder='Estimated Budget'
             value={newProject.estimated_budget}
             onChange={(e) => setNewProject({...newProject, estimated_budget: e.target.value})}
-            className='border p-2 rounded'
+            className='border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
             step='0.01'
           />
           
@@ -228,7 +228,7 @@ export default function ProjectsPage() {
             placeholder='Description'
             value={newProject.description}
             onChange={(e) => setNewProject({...newProject, description: e.target.value})}
-            className='border p-2 rounded md:col-span-2'
+            className='border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 md:col-span-2'
             rows='2'
           />
           
@@ -236,7 +236,7 @@ export default function ProjectsPage() {
             placeholder='Notes'
             value={newProject.notes}
             onChange={(e) => setNewProject({...newProject, notes: e.target.value})}
-            className='border p-2 rounded md:col-span-2'
+            className='border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 md:col-span-2'
             rows='2'
           />
           
@@ -244,15 +244,15 @@ export default function ProjectsPage() {
             <button
               type='submit'
               disabled={loading}
-              className='bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 disabled:opacity-50'
+              className='bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 disabled:opacity-50 font-medium transition shadow-md hover:shadow-lg'
             >
-              {loading ? 'Saving...' : (editingProject ? 'Update Project' : 'Create Project')}
+              {loading ? 'Saving...' : (editingProject ? '💾 Update Project' : '➕ Create Project')}
             </button>
             {editingProject && (
               <button
                 type='button'
                 onClick={resetForm}
-                className='bg-gray-300 px-6 py-2 rounded hover:bg-gray-400'
+                className='bg-gray-300 text-gray-700 px-6 py-2 rounded hover:bg-gray-400 font-medium transition'
               >
                 Cancel
               </button>
@@ -262,8 +262,8 @@ export default function ProjectsPage() {
       </div>
 
       {/* Projects Table */}
-      <div className='bg-white rounded-lg shadow overflow-hidden'>
-        <div className='p-4 border-b font-bold'>
+      <div className='bg-white rounded-lg shadow overflow-hidden border border-gray-200'>
+        <div className='p-4 border-b border-gray-200 font-bold text-gray-800'>
           Project List ({projects.length})
         </div>
         
@@ -276,39 +276,39 @@ export default function ProjectsPage() {
             <table className='w-full'>
               <thead className='bg-gray-50'>
                 <tr>
-                  <th className='p-3 text-left'>Project</th>
-                  <th className='p-3 text-left'>Client</th>
-                  <th className='p-3 text-left'>Status</th>
-                  <th className='p-3 text-left'>Start Date</th>
-                  <th className='p-3 text-left'>Budget</th>
-                  <th className='p-3 text-right'>Actions</th>
+                  <th className='p-3 text-left text-sm font-medium text-gray-700'>Project</th>
+                  <th className='p-3 text-left text-sm font-medium text-gray-700'>Client</th>
+                  <th className='p-3 text-left text-sm font-medium text-gray-700'>Status</th>
+                  <th className='p-3 text-left text-sm font-medium text-gray-700'>Start Date</th>
+                  <th className='p-3 text-left text-sm font-medium text-gray-700'>Budget</th>
+                  <th className='p-3 text-right text-sm font-medium text-gray-700'>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {projects.map(project => (
-                  <tr key={project.id} className='border-t hover:bg-gray-50'>
-                    <td className='p-3 font-medium'>{project.name}</td>
-                    <td className='p-3'>{project.client_name || 'Unknown'}</td>
+                  <tr key={project.id} className='border-t border-gray-200 hover:bg-gray-50'>
+                    <td className='p-3 font-medium text-gray-900'>{project.name}</td>
+                    <td className='p-3 text-gray-700'>{project.client_name || 'Unknown'}</td>
                     <td className='p-3'>
                       <StatusPill status={project.status} />
                     </td>
-                    <td className='p-3'>{project.start_date}</td>
-                    <td className='p-3'>
+                    <td className='p-3 text-gray-700'>{project.start_date}</td>
+                    <td className='p-3 text-gray-700'>
                       {project.estimated_budget ? `$${parseFloat(project.estimated_budget).toLocaleString()}` : '-'}
                     </td>
                     <td className='p-3 text-right'>
                       <div className='flex justify-end gap-2'>
                         <button
                           onClick={() => startEdit(project)}
-                          className='text-blue-600 hover:text-blue-800 px-2 py-1 rounded hover:bg-blue-50'
+                          className='text-blue-600 hover:text-blue-800 px-2 py-1 rounded hover:bg-blue-50 transition text-sm'
                         >
-                          Edit
+                          ✏️ Edit
                         </button>
                         <button
                           onClick={() => handleDelete(project.id)}
-                          className='text-red-600 hover:text-red-800 px-2 py-1 rounded hover:bg-red-50'
+                          className='text-red-600 hover:text-red-800 px-2 py-1 rounded hover:bg-red-50 transition text-sm'
                         >
-                          Delete
+                          ❌ Delete
                         </button>
                       </div>
                     </td>

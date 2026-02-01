@@ -109,10 +109,10 @@ export default function ReportsPage() {
 
   return (
     <div className='p-8 max-w-7xl mx-auto'>
-      <h1 className='text-3xl font-bold mb-8'>📊 Reports</h1>
+      <h1 className='text-3xl font-bold mb-8 text-gray-900'>📊 Reports</h1>
       
       {/* Report Type Selector */}
-      <div className='bg-white rounded-lg shadow p-6 mb-6'>
+      <div className='bg-white rounded-lg shadow p-6 mb-6 border border-gray-200'>
         <div className='flex flex-col md:flex-row gap-4'>
           <select
             value={reportType}
@@ -120,7 +120,7 @@ export default function ReportsPage() {
               setReportType(e.target.value)
               setReportData(null)
             }}
-            className='border p-2 rounded flex-1'
+            className='border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 flex-1'
           >
             <option value='quotes-summary'>Quotes Summary</option>
             <option value='revenue'>Revenue Report</option>
@@ -131,7 +131,7 @@ export default function ReportsPage() {
             type='date'
             value={filters.start_date}
             onChange={(e) => setFilters({...filters, start_date: e.target.value})}
-            className='border p-2 rounded'
+            className='border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
             placeholder='Start Date'
           />
           
@@ -139,14 +139,14 @@ export default function ReportsPage() {
             type='date'
             value={filters.end_date}
             onChange={(e) => setFilters({...filters, end_date: e.target.value})}
-            className='border p-2 rounded'
+            className='border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
             placeholder='End Date'
           />
           
           <select
             value={filters.client_id}
             onChange={(e) => setFilters({...filters, client_id: e.target.value})}
-            className='border p-2 rounded'
+            className='border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
           >
             <option value=''>All Clients</option>
             {clients.map(client => (
@@ -159,7 +159,7 @@ export default function ReportsPage() {
           <button
             onClick={runReport}
             disabled={loading}
-            className='bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 disabled:opacity-50 flex items-center justify-center'
+            className='bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 disabled:opacity-50 flex items-center justify-center font-medium transition shadow-md hover:shadow-lg'
           >
             {loading ? (
               <span className='flex items-center'>
@@ -176,24 +176,24 @@ export default function ReportsPage() {
 
       {/* Report Results */}
       {reportData && (
-        <div className='bg-white rounded-lg shadow p-6'>
+        <div className='bg-white rounded-lg shadow p-6 border border-gray-200'>
           <div className='flex justify-between items-center mb-4'>
-            <h2 className='text-2xl font-bold'>
+            <h2 className='text-2xl font-bold text-gray-900'>
               {reportType === 'quotes-summary' && 'Quotes Summary Report'}
               {reportType === 'revenue' && 'Revenue Report'}
               {reportType === 'client-activity' && 'Client Activity Report'}
             </h2>
             <button
               onClick={exportCSV}
-              className='bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 flex items-center gap-2'
+              className='bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 flex items-center gap-2 font-medium transition shadow-md hover:shadow-lg'
             >
               📥 Export CSV
             </button>
           </div>
           
-          <div className='mb-6 p-4 bg-blue-50 rounded'>
-            <p className='font-medium'>Filters Applied:</p>
-            <p className='text-sm'>
+          <div className='mb-6 p-4 bg-blue-50 rounded border border-blue-200'>
+            <p className='font-medium text-blue-900'>Filters Applied:</p>
+            <p className='text-sm text-blue-800'>
               Date Range: {filters.start_date} to {filters.end_date}
               {filters.client_id && ` | Client: ${clients.find(c => c.id == filters.client_id)?.company_name}`}
             </p>
@@ -202,34 +202,34 @@ export default function ReportsPage() {
           {reportType === 'quotes-summary' && (
             <div>
               <div className='grid grid-cols-2 md:grid-cols-4 gap-4 mb-6'>
-                <div className='bg-white border p-4 rounded text-center'>
+                <div className='bg-white border border-gray-200 p-4 rounded text-center shadow-sm'>
                   <div className='text-3xl font-bold text-blue-600'>{reportData.summary.total_quotes}</div>
-                  <div className='text-gray-600'>Total Quotes</div>
+                  <div className='text-gray-600 mt-1'>Total Quotes</div>
                 </div>
                 {reportData.status_breakdown.map(status => (
-                  <div key={status.status} className='bg-white border p-4 rounded text-center'>
-                    <div className='text-xl font-bold'>{status.count}</div>
-                    <div className='text-sm'>{status.status}</div>
+                  <div key={status.status} className='bg-white border border-gray-200 p-4 rounded text-center shadow-sm'>
+                    <div className='text-xl font-bold text-gray-900'>{status.count}</div>
+                    <div className='text-sm text-gray-700 mt-1'>{status.status}</div>
                     <div className='text-xs text-gray-500'>{status.percentage}%</div>
                   </div>
                 ))}
               </div>
               
-              <h3 className='font-bold mb-2'>Status Breakdown</h3>
-              <table className='w-full border'>
+              <h3 className='font-bold mb-2 text-gray-800'>Status Breakdown</h3>
+              <table className='w-full border border-gray-200'>
                 <thead className='bg-gray-100'>
                   <tr>
-                    <th className='p-2 border'>Status</th>
-                    <th className='p-2 border'>Count</th>
-                    <th className='p-2 border'>Percentage</th>
+                    <th className='p-2 border border-gray-200'>Status</th>
+                    <th className='p-2 border border-gray-200'>Count</th>
+                    <th className='p-2 border border-gray-200'>Percentage</th>
                   </tr>
                 </thead>
                 <tbody>
                   {reportData.status_breakdown.map((row, i) => (
                     <tr key={i} className={i % 2 === 0 ? 'bg-gray-50' : ''}>
-                      <td className='p-2 border'>{row.status}</td>
-                      <td className='p-2 border text-right'>{row.count}</td>
-                      <td className='p-2 border text-right'>{row.percentage}%</td>
+                      <td className='p-2 border border-gray-200 text-gray-700'>{row.status}</td>
+                      <td className='p-2 border border-gray-200 text-right text-gray-900 font-medium'>{row.count}</td>
+                      <td className='p-2 border border-gray-200 text-right text-gray-700'>{row.percentage}%</td>
                     </tr>
                   ))}
                 </tbody>
@@ -240,43 +240,43 @@ export default function ReportsPage() {
           {reportType === 'revenue' && (
             <div>
               <div className='grid grid-cols-1 md:grid-cols-3 gap-4 mb-6'>
-                <div className='bg-white border p-4 rounded text-center'>
+                <div className='bg-white border border-gray-200 p-4 rounded text-center shadow-sm'>
                   <div className='text-2xl font-bold text-green-600'>
                     ${reportData.revenue_breakdown.find(r => r.status === 'Approved')?.total_revenue.toFixed(2) || '0.00'}
                   </div>
-                  <div className='text-gray-600'>Approved Revenue</div>
+                  <div className='text-gray-600 mt-1'>Approved Revenue</div>
                 </div>
-                <div className='bg-white border p-4 rounded text-center'>
+                <div className='bg-white border border-gray-200 p-4 rounded text-center shadow-sm'>
                   <div className='text-2xl font-bold text-yellow-600'>
                     ${reportData.revenue_breakdown.find(r => r.status === 'Pending (Draft)')?.total_revenue.toFixed(2) || '0.00'}
                   </div>
-                  <div className='text-gray-600'>Pending Revenue</div>
+                  <div className='text-gray-600 mt-1'>Pending Revenue</div>
                 </div>
-                <div className='bg-white border p-4 rounded text-center'>
+                <div className='bg-white border border-gray-200 p-4 rounded text-center shadow-sm'>
                   <div className='text-3xl font-bold text-blue-600'>
                     ${reportData.grand_total.toFixed(2)}
                   </div>
-                  <div className='text-gray-600'>Grand Total</div>
+                  <div className='text-gray-600 mt-1'>Grand Total</div>
                 </div>
               </div>
               
-              <h3 className='font-bold mb-2'>Revenue Breakdown</h3>
-              <table className='w-full border'>
+              <h3 className='font-bold mb-2 text-gray-800'>Revenue Breakdown</h3>
+              <table className='w-full border border-gray-200'>
                 <thead className='bg-gray-100'>
                   <tr>
-                    <th className='p-2 border'>Status</th>
-                    <th className='p-2 border'>Revenue</th>
-                    <th className='p-2 border'>Quote Count</th>
+                    <th className='p-2 border border-gray-200'>Status</th>
+                    <th className='p-2 border border-gray-200'>Revenue</th>
+                    <th className='p-2 border border-gray-200'>Quote Count</th>
                   </tr>
                 </thead>
                 <tbody>
                   {reportData.revenue_breakdown.map((row, i) => (
                     <tr key={i} className={i % 2 === 0 ? 'bg-gray-50' : ''}>
-                      <td className='p-2 border'>{row.status}</td>
-                      <td className='p-2 border text-right font-medium'>
+                      <td className='p-2 border border-gray-200 text-gray-700'>{row.status}</td>
+                      <td className='p-2 border border-gray-200 text-right font-medium text-gray-900'>
                         ${row.total_revenue.toFixed(2)}
                       </td>
-                      <td className='p-2 border text-right'>{row.quote_count}</td>
+                      <td className='p-2 border border-gray-200 text-right text-gray-700'>{row.quote_count}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -287,42 +287,42 @@ export default function ReportsPage() {
           {reportType === 'client-activity' && (
             <div>
               <div className='grid grid-cols-1 md:grid-cols-3 gap-4 mb-6'>
-                <div className='bg-white border p-4 rounded text-center'>
+                <div className='bg-white border border-gray-200 p-4 rounded text-center shadow-sm'>
                   <div className='text-3xl font-bold text-blue-600'>{reportData.summary.total_clients}</div>
-                  <div className='text-gray-600'>Active Clients</div>
+                  <div className='text-gray-600 mt-1'>Active Clients</div>
                 </div>
-                <div className='bg-white border p-4 rounded text-center'>
+                <div className='bg-white border border-gray-200 p-4 rounded text-center shadow-sm'>
                   <div className='text-3xl font-bold text-purple-600'>{reportData.summary.total_quotes}</div>
-                  <div className='text-gray-600'>Total Quotes</div>
+                  <div className='text-gray-600 mt-1'>Total Quotes</div>
                 </div>
-                <div className='bg-white border p-4 rounded text-center'>
+                <div className='bg-white border border-gray-200 p-4 rounded text-center shadow-sm'>
                   <div className='text-2xl font-bold text-green-600'>
                     ${reportData.summary.total_revenue.toFixed(2)}
                   </div>
-                  <div className='text-gray-600'>Total Revenue</div>
+                  <div className='text-gray-600 mt-1'>Total Revenue</div>
                 </div>
               </div>
               
-              <h3 className='font-bold mb-2'>Client Activity</h3>
+              <h3 className='font-bold mb-2 text-gray-800'>Client Activity</h3>
               <div className='overflow-x-auto'>
-                <table className='w-full border'>
+                <table className='w-full border border-gray-200'>
                   <thead className='bg-gray-100'>
                     <tr>
-                      <th className='p-2 border'>Client</th>
-                      <th className='p-2 border'>Quotes</th>
-                      <th className='p-2 border'>Total Quoted</th>
-                      <th className='p-2 border'>Last Quote</th>
+                      <th className='p-2 border border-gray-200'>Client</th>
+                      <th className='p-2 border border-gray-200'>Quotes</th>
+                      <th className='p-2 border border-gray-200'>Total Quoted</th>
+                      <th className='p-2 border border-gray-200'>Last Quote</th>
                     </tr>
                   </thead>
                   <tbody>
                     {reportData.clients.map((row, i) => (
                       <tr key={i} className={i % 2 === 0 ? 'bg-gray-50' : ''}>
-                        <td className='p-2 border font-medium'>{row.client_name}</td>
-                        <td className='p-2 border text-right'>{row.quote_count}</td>
-                        <td className='p-2 border text-right font-medium'>
+                        <td className='p-2 border border-gray-200 font-medium text-gray-900'>{row.client_name}</td>
+                        <td className='p-2 border border-gray-200 text-right text-gray-700'>{row.quote_count}</td>
+                        <td className='p-2 border border-gray-200 text-right font-medium text-gray-900'>
                           ${row.total_quoted.toFixed(2)}
                         </td>
-                        <td className='p-2 border'>{row.last_quote_date || 'N/A'}</td>
+                        <td className='p-2 border border-gray-200 text-gray-700'>{row.last_quote_date || 'N/A'}</td>
                       </tr>
                     ))}
                   </tbody>
