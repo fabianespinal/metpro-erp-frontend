@@ -150,7 +150,7 @@ export default function ProductsPage() {
 
   return (
     <div className='p-8 max-w-6xl mx-auto'>
-      <h1 className='text-3xl font-bold mb-8 text-center'>📦 METPRO ERP - Products</h1>
+      <h1 className='text-3xl font-bold mb-8 text-center'>METPRO ERP - Products</h1>
       
       {/* Import CSV Section */}
       <div className='bg-white rounded-lg shadow p-6 mb-8'>
@@ -278,13 +278,13 @@ Steel,Reinforcing steel bars,200.00
                         onClick={() => setEditingProduct(product)}
                         className='text-blue-600 hover:text-blue-800'
                       >
-                        ✏️ Edit
+                        Edit
                       </button>
                       <button
                         onClick={() => handleDeleteProduct(product.id)}
                         className='text-red-600 hover:text-red-800'
                       >
-                        ❌ Delete
+                        Delete
                       </button>
                     </div>
                   </td>
