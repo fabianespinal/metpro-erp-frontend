@@ -34,22 +34,22 @@ export default function Header() {
 
             {/* LEFT SECTION - Logo + Desktop Nav */}
             <div className='flex items-center gap-2 md:gap-3'>
-              <img 
-                src='/logo.png' 
-                alt='METPRO Logo' 
+              <img
+                src='/logo.png'
+                alt='METPRO Logo'
                 className='h-8 w-auto object-contain'
                 onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.parentElement.innerHTML = `<span class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-cyan-400">🏗️ METPRO</span>`;
+                  e.target.onerror = null
+                  e.target.parentElement.innerHTML =
+                    `<span class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-cyan-400">🏗️ METPRO</span>`
                 }}
               />
               <span className='text-xl md:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-cyan-400 hidden md:block'>
                 METPRO
               </span>
-            </div>
 
               {/* Desktop Navigation */}
-              <nav className='hidden lg:flex items-center gap-1'>
+              <nav className='hidden lg:flex items-center gap-1 ml-6'>
                 <NavLink href='/clients'>Clients</NavLink>
                 <NavLink href='/quotes'>Quotes</NavLink>
                 <NavLink href='/products'>Products</NavLink>
@@ -58,8 +58,9 @@ export default function Header() {
               </nav>
             </div>
 
-            {/* RIGHT SECTION - User + Logout */}
+            {/* RIGHT SECTION */}
             <div className='flex items-center gap-3'>
+
               {/* User Badge */}
               <div className='hidden sm:flex items-center gap-2 bg-gradient-to-r from-blue-600 to-blue-500 px-4 py-2 rounded-full shadow-lg'>
                 <svg className='w-4 h-4' fill='currentColor' viewBox='0 0 20 20'>
@@ -80,16 +81,11 @@ export default function Header() {
               </button>
 
               {/* Mobile Menu Button */}
-              <button 
+              <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 className='lg:hidden p-2 rounded-lg hover:bg-gray-700 transition-colors'
               >
-                <svg 
-                  className='w-6 h-6' 
-                  fill='none' 
-                  stroke='currentColor' 
-                  viewBox='0 0 24 24'
-                >
+                <svg className='w-6 h-6' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
                   {mobileMenuOpen ? (
                     <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M6 18L18 6M6 6l12 12' />
                   ) : (
@@ -102,26 +98,16 @@ export default function Header() {
           </div>
         </div>
 
-        {/* Mobile Menu Dropdown */}
+        {/* Mobile Menu */}
         {mobileMenuOpen && (
           <div className='lg:hidden bg-gray-800 border-t border-gray-700 shadow-xl'>
             <nav className='px-4 py-3 space-y-1'>
-              <MobileNavLink href='/clients' onClick={() => setMobileMenuOpen(false)}>
-                Clients
-              </MobileNavLink>
-              <MobileNavLink href='/quotes' onClick={() => setMobileMenuOpen(false)}>
-                Quotes
-              </MobileNavLink>
-              <MobileNavLink href='/products' onClick={() => setMobileMenuOpen(false)}>
-                Products
-              </MobileNavLink>
-              <MobileNavLink href='/projects' onClick={() => setMobileMenuOpen(false)}>
-                Projects
-              </MobileNavLink>
-              <MobileNavLink href='/reports' onClick={() => setMobileMenuOpen(false)}>
-                Reports
-              </MobileNavLink>
-              
+              <MobileNavLink href='/clients' onClick={() => setMobileMenuOpen(false)}>Clients</MobileNavLink>
+              <MobileNavLink href='/quotes' onClick={() => setMobileMenuOpen(false)}>Quotes</MobileNavLink>
+              <MobileNavLink href='/products' onClick={() => setMobileMenuOpen(false)}>Products</MobileNavLink>
+              <MobileNavLink href='/projects' onClick={() => setMobileMenuOpen(false)}>Projects</MobileNavLink>
+              <MobileNavLink href='/reports' onClick={() => setMobileMenuOpen(false)}>Reports</MobileNavLink>
+
               {/* Mobile User Info */}
               <div className='sm:hidden pt-3 mt-3 border-t border-gray-700'>
                 <div className='flex items-center gap-2 text-blue-400 px-3 py-2'>
@@ -139,10 +125,9 @@ export default function Header() {
   )
 }
 
-// Desktop Navigation Link Component
 function NavLink({ href, children }) {
   return (
-    <Link 
+    <Link
       href={href}
       className='px-4 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-700/50 transition-all font-medium text-sm'
     >
@@ -151,10 +136,9 @@ function NavLink({ href, children }) {
   )
 }
 
-// Mobile Navigation Link Component
 function MobileNavLink({ href, children, onClick }) {
   return (
-    <Link 
+    <Link
       href={href}
       onClick={onClick}
       className='block px-3 py-3 rounded-lg text-gray-300 hover:text-white hover:bg-gray-700 transition-all font-medium'
@@ -163,3 +147,4 @@ function MobileNavLink({ href, children, onClick }) {
     </Link>
   )
 }
+

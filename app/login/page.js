@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 
 export const dynamic = "force-dynamic";
+
 export default function LoginPage() {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
@@ -44,27 +45,28 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black flex items-center justify-center px-4 relative">
 
-      {/* Soft Gradient Background Accents */}
+      {/* Background Accents */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-[-20%] left-[10%] w-[400px] h-[400px] bg-blue-500/20 rounded-full blur-[160px]" />
         <div className="absolute bottom-[-15%] right-[5%] w-[350px] h-[350px] bg-cyan-500/20 rounded-full blur-[160px]" />
       </div>
 
-      <div className="relative w-full max-w-md animate-fade-in">
+      {/* MAIN WRAPPER */}
+      <div className="relative w-full max-w-md space-y-8 animate-fade-in">
 
-        {/* HEADER LOGO & TITLE */}
-        <div className='flex justify-center items-center mb-6 animate-float'>
-          <img 
-            src='/logo.png' 
-            alt='METPRO Logo' 
-            className='h-20 w-auto object-contain filter drop-shadow-lg'
-            onError={(e) => {
-              e.target.onerror = null;
-              e.target.style.display = 'none';
-              console.warn('Logo not found - using fallback');
-            }}
-          />
-        </div>
+        {/* LOGO + TITLE */}
+        <div className='text-center'>
+          <div className="flex justify-center items-center mb-6 animate-float">
+            <img
+              src='/logo.png'
+              alt='METPRO Logo'
+              className='h-20 w-auto object-contain filter drop-shadow-lg'
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.style.display = 'none';
+              }}
+            />
+          </div>
 
           <h1 className="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400">
             METPRO ERP
@@ -79,7 +81,7 @@ export default function LoginPage() {
 
           <form onSubmit={handleLogin} className="space-y-6">
 
-            {/* USERNAME FIELD */}
+            {/* USERNAME */}
             <div>
               <label htmlFor="username" className="block text-gray-200 text-sm font-medium mb-2">
                 Username
@@ -99,7 +101,7 @@ export default function LoginPage() {
               </div>
             </div>
 
-            {/* PASSWORD FIELD */}
+            {/* PASSWORD */}
             <div>
               <label htmlFor="password" className="block text-gray-200 text-sm font-medium mb-2">
                 Password
@@ -116,6 +118,7 @@ export default function LoginPage() {
                   required
                 />
 
+                {/* Toggle Password Visibility */}
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
@@ -123,7 +126,6 @@ export default function LoginPage() {
                   aria-label="Toggle password visibility"
                 >
                   {showPassword ? (
-                    // Eye open icon
                     <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none"
                       viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
@@ -131,7 +133,6 @@ export default function LoginPage() {
                       <circle cx="12" cy="12" r="3" />
                     </svg>
                   ) : (
-                    // Eye closed icon
                     <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none"
                       viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
@@ -142,7 +143,7 @@ export default function LoginPage() {
               </div>
             </div>
 
-            {/* ERROR MESSAGE */}
+            {/* ERROR */}
             {error && (
               <div className="bg-red-500/10 border border-red-500/30 text-red-300 p-3 rounded-lg text-sm animate-shake">
                 {error}
@@ -168,8 +169,8 @@ export default function LoginPage() {
               © {new Date().getFullYear()} METPRO ERP — Secure Enterprise Access
             </p>
           </div>
-        </div>
 
+        </div>
       </div>
 
       {/* Animations */}
@@ -187,7 +188,7 @@ export default function LoginPage() {
         }
         .animate-shake { animation: shake .4s; }
       `}</style>
+
     </div>
   )
 }
-{/* Animations */}
