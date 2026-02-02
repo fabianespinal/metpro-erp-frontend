@@ -190,7 +190,7 @@ Steel,Reinforcing steel bars,200.00
       {/* Create/Edit Product Form */}
       <div className='bg-white rounded-lg shadow p-6 mb-8'>
         <h2 className='text-xl font-semibold mb-4'>
-          {editingProduct ? '✏️ Edit Product' : '➕ Add New Product'}
+          {editingProduct ? 'Edit Product' : '➕ Add New Product'}
         </h2>
         <form onSubmit={editingProduct ? handleUpdateProduct : handleCreateProduct} className='grid grid-cols-1 md:grid-cols-3 gap-4'>
           <input
@@ -233,7 +233,7 @@ Steel,Reinforcing steel bars,200.00
               disabled={loading}
               className='bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 disabled:opacity-50'
             >
-              {loading ? 'Saving...' : (editingProduct ? '💾 Update Product' : '➕ Add Product')}
+              {loading ? 'Saving...' : (editingProduct ? 'Update Product' : '➕ Add Product')}
             </button>
             {editingProduct && (
               <button

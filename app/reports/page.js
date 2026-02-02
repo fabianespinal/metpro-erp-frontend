@@ -169,7 +169,7 @@ export default function ReportsPage() {
                 </svg>
                 Running...
               </span>
-            ) : '▶️ Run Report'}
+            ) : 'Run Report'}
           </button>
         </div>
       </div>
