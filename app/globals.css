@@ -25,3 +25,11 @@ html {
 ::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
+/* Force product DB button visibility */
+button[title="Select from product database"] {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 60px !important;
+  z-index: 10 !important;
+}

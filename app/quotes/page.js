@@ -178,13 +178,14 @@ export default function QuotesPage() {
 
   // ✅ SELECT PRODUCT FROM DATABASE
   const selectProduct = (product) => {
-    if (productModal.itemIndex !== null) {
-      const newItems = [...quoteItems]
-      newItems[productModal.itemIndex].product_name = product.name
-      newItems[productModal.itemIndex].unit_price = parseFloat(product.unit_price) || 0
-      setQuoteItems(newItems)
-    }
-    setProductModal({ isOpen: false, itemIndex: null })
+  console.log('Selected product:', product); // DEBUG
+  if (productModal.itemIndex !== null) {
+    const newItems = [...quoteItems]
+    newItems[productModal.itemIndex].product_name = product.name
+    newItems[productModal.itemIndex].unit_price = parseFloat(product.unit_price) || 0
+    setQuoteItems(newItems)
+  }
+  setProductModal({ isOpen: false, itemIndex: null })
   }
 
   // ✅ FIXED: Download PDF handler (FIXED URL)
