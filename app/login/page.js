@@ -53,13 +53,18 @@ export default function LoginPage() {
       <div className="relative w-full max-w-md animate-fade-in">
 
         {/* HEADER LOGO & TITLE */}
-        <div className="text-center mb-10">
-          {/* Clean geometric placeholder icon */}
-          <div className="flex justify-center mb-5">
-            <div className="w-16 h-16 border-2 border-blue-400 rounded-xl flex items-center justify-center text-blue-400 text-2xl font-bold tracking-wider">
-              M
-            </div>
-          </div>
+        <div className='flex justify-center items-center mb-6 animate-float'>
+          <img 
+            src='/logo.png' 
+            alt='METPRO Logo' 
+            className='h-20 w-auto object-contain filter drop-shadow-lg'
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.style.display = 'none';
+              console.warn('Logo not found - using fallback');
+            }}
+          />
+        </div>
 
           <h1 className="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-400">
             METPRO ERP

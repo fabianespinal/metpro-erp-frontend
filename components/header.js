@@ -33,16 +33,20 @@ export default function Header() {
           <div className='flex justify-between items-center h-16'>
 
             {/* LEFT SECTION - Logo + Desktop Nav */}
-            <div className='flex items-center gap-8'>
-              {/* Logo */}
-              <Link href='/clients' className='flex items-center gap-3 group'>
-                <div className='w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center font-bold text-white text-xl transition-transform group-hover:scale-110 shadow-lg'>
-                  M
-                </div>
-                <div className='text-2xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent'>
-                  METPRO
-                </div>
-              </Link>
+            <div className='flex items-center gap-2 md:gap-3'>
+              <img 
+                src='/logo.png' 
+                alt='METPRO Logo' 
+                className='h-8 w-auto object-contain'
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.parentElement.innerHTML = `<span class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-cyan-400">🏗️ METPRO</span>`;
+                }}
+              />
+              <span className='text-xl md:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-cyan-400 hidden md:block'>
+                METPRO
+              </span>
+            </div>
 
               {/* Desktop Navigation */}
               <nav className='hidden lg:flex items-center gap-1'>
