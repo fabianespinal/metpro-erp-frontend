@@ -148,7 +148,7 @@ export default function ProjectsPage() {
   return (
     <div className='p-8 max-w-7xl mx-auto'>
       <div className='flex justify-between items-center mb-8'>
-        <h1 className='text-3xl font-bold text-gray-900'>🏗️ Projects</h1>
+        <h1 className='text-3xl font-bold text-gray-900'>Projects</h1>
         <select
           value={filters.status}
           onChange={(e) => setFilters({...filters, status: e.target.value})}
@@ -164,7 +164,7 @@ export default function ProjectsPage() {
       {/* Create/Edit Form */}
       <div className='bg-white rounded-lg shadow p-6 mb-8 border border-gray-200'>
         <h2 className='text-xl font-semibold mb-4 text-gray-800'>
-          {editingProject ? '✏️ Edit Project' : '➕ Add New Project'}
+          {editingProject ? 'Edit Project' : 'New Project'}
         </h2>
         <form onSubmit={handleSubmit} className='grid grid-cols-1 md:grid-cols-2 gap-4'>
           <select
@@ -246,7 +246,7 @@ export default function ProjectsPage() {
               disabled={loading}
               className='bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 disabled:opacity-50 font-medium transition shadow-md hover:shadow-lg'
             >
-              {loading ? 'Saving...' : (editingProject ? '💾 Update Project' : '➕ Create Project')}
+              {loading ? 'Saving...' : (editingProject ? 'Update Project' : 'Create Project')}
             </button>
             {editingProject && (
               <button
@@ -302,13 +302,13 @@ export default function ProjectsPage() {
                           onClick={() => startEdit(project)}
                           className='text-blue-600 hover:text-blue-800 px-2 py-1 rounded hover:bg-blue-50 transition text-sm'
                         >
-                          ✏️ Edit
+                          Edit
                         </button>
                         <button
                           onClick={() => handleDelete(project.id)}
                           className='text-red-600 hover:text-red-800 px-2 py-1 rounded hover:bg-red-50 transition text-sm'
                         >
-                          ❌ Delete
+                          Delete
                         </button>
                       </div>
                     </td>

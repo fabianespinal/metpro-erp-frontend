@@ -561,72 +561,86 @@ export default function QuotesPage() {
             <div className='mb-4'>
               <label className='block text-sm font-medium mb-2'>Products/Items</label>
               {quoteItems.map((item, index) => (
-                <div key={index} className='flex gap-2 mb-2'>
-                  {/* ✅ ENHANCED PRODUCT FIELD WITH DB BUTTON */}
-                  <div className='flex gap-1 flex-1'>
+                <div key={index} className='flex flex-wrap md:flex-nowrap gap-2 mb-2'>
+                  {/* PRODUCT NAME + DB BUTTON - MINIMAL WORKING VERSION */}
+                  <div className='flex gap-1 flex-1 min-w-[200px]'>
                     <input
                       type='text'
-                      placeholder='Product name (or click DB to select)'
+                      placeholder='Product name'
                       value={item.product_name}
                       onChange={(e) => handleItemChange(index, 'product_name', e.target.value)}
-                      className='flex-1 border p-2 rounded focus:ring-2 focus:ring-blue-500'
+                      className='flex-1 border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
                     />
                     <button
                       type='button'
-                      onClick={() => openProductModal(index)}
-                      className='bg-blue-600 text-white px-3 rounded hover:bg-blue-700 text-sm font-medium flex items-center gap-1 transition shadow-md hover:shadow-lg'
+                      onClick={() => {
+                        console.log('DB button clicked for row', index); // DEBUG
+                        setProductModal({ isOpen: true, itemIndex: index });
+                        setSearchTerm('');
+                      }}
+                      className='bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-3 rounded transition-colors whitespace-nowrap'
                       title='Select from product database'
                     >
-                      <span>🗄️</span> DB
+                      🗄️ DB
                     </button>
                   </div>
                   
+                  {/* Quantity */}
                   <input
                     type='number'
                     placeholder='Qty'
                     value={item.quantity}
                     onChange={(e) => handleItemChange(index, 'quantity', parseFloat(e.target.value) || 0)}
-                    className='w-24 border p-2 rounded'
+                    className='w-20 md:w-24 border p-2 rounded'
                     min='0'
                     step='0.01'
                   />
+                  
+                  {/* Unit Price */}
                   <input
                     type='number'
                     placeholder='Unit Price'
                     value={item.unit_price}
                     onChange={(e) => handleItemChange(index, 'unit_price', parseFloat(e.target.value) || 0)}
-                    className='w-32 border p-2 rounded'
+                    className='w-28 md:w-32 border p-2 rounded'
                     min='0'
                     step='0.01'
                   />
+                  
+                  {/* Discount Type */}
                   <select
                     value={item.discount_type}
                     onChange={(e) => handleItemChange(index, 'discount_type', e.target.value)}
-                    className='w-32 border p-2 rounded'
+                    className='w-28 md:w-32 border p-2 rounded'
                   >
                     <option value='none'>No Discount</option>
                     <option value='percentage'>%</option>
                     <option value='fixed'>Fixed</option>
                   </select>
+                  
+                  {/* Discount Value (conditional) */}
                   {item.discount_type !== 'none' && (
                     <input
                       type='number'
                       placeholder='Value'
                       value={item.discount_value}
                       onChange={(e) => handleItemChange(index, 'discount_value', parseFloat(e.target.value) || 0)}
-                      className='w-24 border p-2 rounded'
+                      className='w-20 md:w-24 border p-2 rounded'
                       min='0'
                       step='0.01'
                     />
                   )}
+                  
+                  {/* Remove Button */}
                   <button
                     type='button'
                     onClick={() => handleRemoveItem(index)}
-                    className='bg-red-500 text-white px-3 rounded hover:bg-red-600'
+                    className='bg-red-500 hover:bg-red-600 text-white px-3 rounded font-medium'
                   >
                     ✕
                   </button>
                 </div>
+              ))}
               ))}
               <button
                 type='button'
