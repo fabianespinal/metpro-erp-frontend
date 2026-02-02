@@ -514,7 +514,7 @@ export default function QuotesPage() {
 
   return (
     <div className='p-8 max-w-6xl mx-auto'>
-      <h1 className='text-3xl font-bold mb-8 text-center'>📝 METPRO ERP - Quotes</h1>
+      <h1 className='text-3xl font-bold mb-8 text-center'>METPRO ERP - Quotes</h1>
       
       {/* Create Quote Form */}
       <div className='bg-white rounded-lg shadow p-6 mb-8'>
@@ -571,7 +571,7 @@ export default function QuotesPage() {
                       className='bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-3 rounded transition-colors whitespace-nowrap'
                       title='Select from product database'
                     >
-                      🗄️ DB
+                      Base Datos
                     </button>
                   </div>
                   
@@ -728,7 +728,7 @@ export default function QuotesPage() {
               disabled={loading}
               className='w-full bg-blue-600 text-white py-3 px-4 rounded hover:bg-blue-700 disabled:opacity-50 font-bold text-lg'
             >
-              {loading ? 'Creating Quote...' : '📄 CREATE QUOTE'}
+              {loading ? 'Creating Quote...' : 'CREATE QUOTE'}
             </button>
           </>
         )}
@@ -854,7 +854,7 @@ export default function QuotesPage() {
         <div className='fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 overflow-y-auto'>
           <div className='bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] flex flex-col'>
             <div className='flex items-center justify-between p-5 border-b'>
-              <h3 className='text-xl font-bold text-gray-900'>🗄️ Select Product from Database</h3>
+              <h3 className='text-xl font-bold text-gray-900'>Select Product from Database</h3>
               <button 
                 onClick={() => setProductModal({ isOpen: false, itemIndex: null })} 
                 className='text-gray-400 hover:text-gray-600 text-2xl'
