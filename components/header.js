@@ -1,32 +1,34 @@
 'use client'
 
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
-// Navigation link (desktop)
+// Desktop NavLink
 const NavLink = ({ href, children }) => (
   <Link
     href={href}
-    className="px-4 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-700/50 transition-all font-medium text-sm flex items-center gap-1.5"
+    className="px-4 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-700/50 transition-all font-medium text-sm"
   >
     {children}
   </Link>
 )
 
-// Navigation link (mobile)
+// Mobile NavLink
 const MobileNavLink = ({ href, children, onClick }) => (
   <Link
     href={href}
     onClick={onClick}
-    className="block px-3 py-3 rounded-lg text-gray-300 hover:text-white hover:bg-gray-700 transition-all font-medium flex items-center justify-between"
+    className="block px-3 py-3 rounded-lg text-gray-300 hover:text-white hover:bg-gray-700 transition-all font-medium"
   >
-    <span>{children}</span>
+    {children}
   </Link>
 )
 
 export default function Header() {
   const router = useRouter()
+  const pathname = usePathname()
+
   const [mounted, setMounted] = useState(false)
   const [username, setUsername] = useState(null)
   const [showHeader, setShowHeader] = useState(false)
@@ -38,10 +40,9 @@ export default function Header() {
     const storedUser = localStorage.getItem('username')
     setUsername(storedUser || 'User')
 
-    setShowHeader(storedUser && window.location.pathname !== '/login')
-
-    return () => setMobileMenuOpen(false)
-  }, [router])
+    // Show only when logged in and NOT on login page
+    setShowHeader(storedUser && pathname !== '/login')
+  }, [pathname])
 
   const handleLogout = () => {
     localStorage.removeItem('auth_token')
@@ -58,10 +59,10 @@ export default function Header() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
 
-            {/* LEFT SECTION: Logo + Desktop Nav */}
-            <div className="flex items-center gap-2 md:gap-3">
+            {/* LEFT: Logo + Desktop Nav */}
+            <div className="flex items-center gap-3">
 
-              {/* Logo now goes to DASHBOARD */}
+              {/* Logo → Dashboard */}
               <Link href="/dashboard" className="flex items-center gap-2">
                 <div className="relative h-8 w-8 md:w-10">
                   <img
@@ -70,8 +71,7 @@ export default function Header() {
                     className="h-full w-auto object-contain"
                     onError={(e) => {
                       e.target.style.display = 'none'
-                      const fallback = e.target.nextElementSibling
-                      if (fallback) fallback.style.display = 'block'
+                      e.target.nextElementSibling.style.display = 'block'
                     }}
                   />
                   <span className="absolute inset-0 flex items-center justify-center text-white font-bold text-xs md:hidden">
@@ -95,7 +95,7 @@ export default function Header() {
               </nav>
             </div>
 
-            {/* RIGHT SECTION: Username + Logout + Mobile Menu */}
+            {/* RIGHT: Username + Logout + Mobile Menu */}
             <div className="flex items-center gap-3">
 
               {username && username !== 'undefined' && (
@@ -109,8 +109,7 @@ export default function Header() {
 
               <button
                 onClick={handleLogout}
-                className="flex items-center gap-2 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 px-3 md:px-4 py-2 rounded-full font-medium text-sm transition-all shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
-                aria-label="Logout"
+                className="flex items-center gap-2 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 px-4 py-2 rounded-full font-medium text-sm transition-all shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -121,7 +120,6 @@ export default function Header() {
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 className="lg:hidden p-2 rounded-lg hover:bg-gray-700 transition-colors"
-                aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   {mobileMenuOpen ? (
@@ -135,34 +133,16 @@ export default function Header() {
           </div>
         </div>
 
-        {/* Mobile Navigation */}
+        {/* Mobile Menu */}
         {mobileMenuOpen && (
           <div className="lg:hidden bg-gray-800 border-t border-gray-700 shadow-xl py-2">
             <nav className="px-4 space-y-1">
-
-              <MobileNavLink href="/dashboard" onClick={() => setMobileMenuOpen(false)}>
-                Dashboard
-              </MobileNavLink>
-
-              <MobileNavLink href="/clients" onClick={() => setMobileMenuOpen(false)}>
-                Clients
-              </MobileNavLink>
-
-              <MobileNavLink href="/quotes" onClick={() => setMobileMenuOpen(false)}>
-                Quotes
-              </MobileNavLink>
-
-              <MobileNavLink href="/products" onClick={() => setMobileMenuOpen(false)}>
-                Products
-              </MobileNavLink>
-
-              <MobileNavLink href="/projects" onClick={() => setMobileMenuOpen(false)}>
-                Projects
-              </MobileNavLink>
-
-              <MobileNavLink href="/reports" onClick={() => setMobileMenuOpen(false)}>
-                Reports
-              </MobileNavLink>
+              <MobileNavLink href="/dashboard" onClick={() => setMobileMenuOpen(false)}>Dashboard</MobileNavLink>
+              <MobileNavLink href="/clients" onClick={() => setMobileMenuOpen(false)}>Clients</MobileNavLink>
+              <MobileNavLink href="/quotes" onClick={() => setMobileMenuOpen(false)}>Quotes</MobileNavLink>
+              <MobileNavLink href="/products" onClick={() => setMobileMenuOpen(false)}>Products</MobileNavLink>
+              <MobileNavLink href="/projects" onClick={() => setMobileMenuOpen(false)}>Projects</MobileNavLink>
+              <MobileNavLink href="/reports" onClick={() => setMobileMenuOpen(false)}>Reports</MobileNavLink>
 
               {username && username !== 'undefined' && (
                 <div className="pt-4 mt-4 border-t border-gray-700">
@@ -179,6 +159,7 @@ export default function Header() {
         )}
       </header>
 
+      {/* Overlay when mobile menu is open */}
       {mobileMenuOpen && (
         <div
           className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm lg:hidden"
