@@ -20,7 +20,7 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
-      const response = await fetch('https://metpro-erp-api.onrender.com/auth/login', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -34,10 +34,10 @@ export default function LoginPage() {
       if (!response.ok) throw new Error(data.detail || 'Invalid username or password')
 
       localStorage.setItem('auth_token', data.access_token)
-      localStorage.setItem('username', data.username)
+      localStorage.setItem('username', username)   // FIXED
 
-      router.push('/quotes')
-      
+      router.push("/dashboard")
+
     } catch (err) {
       setError(err.message)
     } finally {

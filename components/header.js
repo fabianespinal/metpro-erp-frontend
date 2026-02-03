@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
-// ✅ FIXED: Moved NavLink components BEFORE Header component (React requirement)
+// Navigation link (desktop)
 const NavLink = ({ href, children }) => (
   <Link
     href={href}
@@ -14,6 +14,7 @@ const NavLink = ({ href, children }) => (
   </Link>
 )
 
+// Navigation link (mobile)
 const MobileNavLink = ({ href, children, onClick }) => (
   <Link
     href={href}
@@ -21,7 +22,6 @@ const MobileNavLink = ({ href, children, onClick }) => (
     className="block px-3 py-3 rounded-lg text-gray-300 hover:text-white hover:bg-gray-700 transition-all font-medium flex items-center justify-between"
   >
     <span>{children}</span>
-    <span className="text-gray-500">→</span>
   </Link>
 )
 
@@ -34,22 +34,22 @@ export default function Header() {
 
   useEffect(() => {
     setMounted(true)
+
     const storedUser = localStorage.getItem('username')
-    setUsername(storedUser || 'User') // ✅ FIXED: Fallback to 'User' if undefined
+    setUsername(storedUser || 'User')
+
     setShowHeader(storedUser && window.location.pathname !== '/login')
-    
-    // ✅ FIXED: Close mobile menu on route change
+
     return () => setMobileMenuOpen(false)
   }, [router])
 
   const handleLogout = () => {
     localStorage.removeItem('auth_token')
     localStorage.removeItem('username')
-    setMobileMenuOpen(false) // ✅ FIXED: Close menu before redirect
+    setMobileMenuOpen(false)
     router.push('/login')
   }
 
-  // ✅ FIXED: Prevent render until mounted (hydration safety)
   if (!mounted || !showHeader) return null
 
   return (
@@ -58,10 +58,11 @@ export default function Header() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
 
-            {/* LEFT SECTION = Logo + Nav */}
+            {/* LEFT SECTION: Logo + Desktop Nav */}
             <div className="flex items-center gap-2 md:gap-3">
-              {/* ✅ FIXED: Logo with proper error fallback + text always visible on mobile */}
-              <Link href="/quotes" className="flex items-center gap-2">
+
+              {/* Logo now goes to DASHBOARD */}
+              <Link href="/dashboard" className="flex items-center gap-2">
                 <div className="relative h-8 w-8 md:w-10">
                   <img
                     src="/logo.png"
@@ -69,24 +70,23 @@ export default function Header() {
                     className="h-full w-auto object-contain"
                     onError={(e) => {
                       e.target.style.display = 'none'
-                      // Show text fallback immediately
                       const fallback = e.target.nextElementSibling
                       if (fallback) fallback.style.display = 'block'
                     }}
                   />
-                  {/* Text fallback visible on mobile if logo fails */}
                   <span className="absolute inset-0 flex items-center justify-center text-white font-bold text-xs md:hidden">
                     M
                   </span>
                 </div>
-                
+
                 <span className="text-xl md:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-cyan-400">
                   METPRO
                 </span>
               </Link>
 
-              {/* Desktop Navigation - ✅ FIXED: Added proper spacing */}
+              {/* Desktop Navigation */}
               <nav className="hidden lg:flex items-center gap-1 ml-6">
+                <NavLink href="/dashboard">Dashboard</NavLink>
                 <NavLink href="/clients">Clients</NavLink>
                 <NavLink href="/quotes">Quotes</NavLink>
                 <NavLink href="/products">Products</NavLink>
@@ -95,9 +95,9 @@ export default function Header() {
               </nav>
             </div>
 
-            {/* RIGHT SECTION = Username + Logout + Mobile Menu */}
+            {/* RIGHT SECTION: Username + Logout + Mobile Menu */}
             <div className="flex items-center gap-3">
-              {/* ✅ FIXED: Conditionally render username badge ONLY if exists */}
+
               {username && username !== 'undefined' && (
                 <div className="hidden sm:flex items-center gap-2 bg-gradient-to-r from-blue-600 to-blue-500 px-4 py-2 rounded-full shadow-lg">
                   <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -107,7 +107,6 @@ export default function Header() {
                 </div>
               )}
 
-              {/* Logout Button */}
               <button
                 onClick={handleLogout}
                 className="flex items-center gap-2 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 px-3 md:px-4 py-2 rounded-full font-medium text-sm transition-all shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
@@ -119,7 +118,6 @@ export default function Header() {
                 <span className="hidden sm:inline">Logout</span>
               </button>
 
-              {/* Mobile menu toggle */}
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 className="lg:hidden p-2 rounded-lg hover:bg-gray-700 transition-colors"
@@ -137,17 +135,35 @@ export default function Header() {
           </div>
         </div>
 
-        {/* ✅ FIXED: Mobile Navigation - Properly positioned outside main header container */}
+        {/* Mobile Navigation */}
         {mobileMenuOpen && (
           <div className="lg:hidden bg-gray-800 border-t border-gray-700 shadow-xl py-2">
             <nav className="px-4 space-y-1">
-              <MobileNavLink href="/clients" onClick={() => setMobileMenuOpen(false)}>👥 Clients</MobileNavLink>
-              <MobileNavLink href="/quotes" onClick={() => setMobileMenuOpen(false)}>📄 Quotes</MobileNavLink>
-              <MobileNavLink href="/products" onClick={() => setMobileMenuOpen(false)}>📦 Products</MobileNavLink>
-              <MobileNavLink href="/projects" onClick={() => setMobileMenuOpen(false)}>🏗️ Projects</MobileNavLink>
-              <MobileNavLink href="/reports" onClick={() => setMobileMenuOpen(false)}>📊 Reports</MobileNavLink>
-              
-              {/* ✅ FIXED: Mobile user info - Only show if username exists */}
+
+              <MobileNavLink href="/dashboard" onClick={() => setMobileMenuOpen(false)}>
+                Dashboard
+              </MobileNavLink>
+
+              <MobileNavLink href="/clients" onClick={() => setMobileMenuOpen(false)}>
+                Clients
+              </MobileNavLink>
+
+              <MobileNavLink href="/quotes" onClick={() => setMobileMenuOpen(false)}>
+                Quotes
+              </MobileNavLink>
+
+              <MobileNavLink href="/products" onClick={() => setMobileMenuOpen(false)}>
+                Products
+              </MobileNavLink>
+
+              <MobileNavLink href="/projects" onClick={() => setMobileMenuOpen(false)}>
+                Projects
+              </MobileNavLink>
+
+              <MobileNavLink href="/reports" onClick={() => setMobileMenuOpen(false)}>
+                Reports
+              </MobileNavLink>
+
               {username && username !== 'undefined' && (
                 <div className="pt-4 mt-4 border-t border-gray-700">
                   <div className="flex items-center gap-2 text-blue-400 bg-gray-700/30 px-3 py-2 rounded-lg">
@@ -162,10 +178,9 @@ export default function Header() {
           </div>
         )}
       </header>
-      
-      {/* ✅ FIXED: Close mobile menu when clicking outside */}
+
       {mobileMenuOpen && (
-        <div 
+        <div
           className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm lg:hidden"
           onClick={() => setMobileMenuOpen(false)}
         />
