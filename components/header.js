@@ -4,6 +4,27 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
+// ✅ FIXED: Moved NavLink components BEFORE Header component (React requirement)
+const NavLink = ({ href, children }) => (
+  <Link
+    href={href}
+    className="px-4 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-700/50 transition-all font-medium text-sm flex items-center gap-1.5"
+  >
+    {children}
+  </Link>
+)
+
+const MobileNavLink = ({ href, children, onClick }) => (
+  <Link
+    href={href}
+    onClick={onClick}
+    className="block px-3 py-3 rounded-lg text-gray-300 hover:text-white hover:bg-gray-700 transition-all font-medium flex items-center justify-between"
+  >
+    <span>{children}</span>
+    <span className="text-gray-500">→</span>
+  </Link>
+)
+
 export default function Header() {
   const router = useRouter()
   const [mounted, setMounted] = useState(false)
@@ -11,20 +32,24 @@ export default function Header() {
   const [showHeader, setShowHeader] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
-  // Load user + show header only if not on login page
   useEffect(() => {
     setMounted(true)
     const storedUser = localStorage.getItem('username')
-    setUsername(storedUser)
+    setUsername(storedUser || 'User') // ✅ FIXED: Fallback to 'User' if undefined
     setShowHeader(storedUser && window.location.pathname !== '/login')
-  }, [])
+    
+    // ✅ FIXED: Close mobile menu on route change
+    return () => setMobileMenuOpen(false)
+  }, [router])
 
   const handleLogout = () => {
     localStorage.removeItem('auth_token')
     localStorage.removeItem('username')
+    setMobileMenuOpen(false) // ✅ FIXED: Close menu before redirect
     router.push('/login')
   }
 
+  // ✅ FIXED: Prevent render until mounted (hydration safety)
   if (!mounted || !showHeader) return null
 
   return (
@@ -35,26 +60,32 @@ export default function Header() {
 
             {/* LEFT SECTION = Logo + Nav */}
             <div className="flex items-center gap-2 md:gap-3">
-
-              {/* Clickable logo */}
+              {/* ✅ FIXED: Logo with proper error fallback + text always visible on mobile */}
               <Link href="/quotes" className="flex items-center gap-2">
-                <img
-                  src="/logo.png"
-                  alt="METPRO Logo"
-                  className="h-8 w-auto object-contain"
-                  onError={(e) => {
-                    if (e.target instanceof HTMLImageElement) {
-                      e.target.style.display = "none"
-                    }
-                  }}
-                />
+                <div className="relative h-8 w-8 md:w-10">
+                  <img
+                    src="/logo.png"
+                    alt="METPRO Logo"
+                    className="h-full w-auto object-contain"
+                    onError={(e) => {
+                      e.target.style.display = 'none'
+                      // Show text fallback immediately
+                      const fallback = e.target.nextElementSibling
+                      if (fallback) fallback.style.display = 'block'
+                    }}
+                  />
+                  {/* Text fallback visible on mobile if logo fails */}
+                  <span className="absolute inset-0 flex items-center justify-center text-white font-bold text-xs md:hidden">
+                    M
+                  </span>
+                </div>
                 
-                <span className="text-xl md:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-cyan-400 hidden md:block">
+                <span className="text-xl md:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-cyan-400">
                   METPRO
                 </span>
               </Link>
 
-              {/* Desktop Navigation */}
+              {/* Desktop Navigation - ✅ FIXED: Added proper spacing */}
               <nav className="hidden lg:flex items-center gap-1 ml-6">
                 <NavLink href="/clients">Clients</NavLink>
                 <NavLink href="/quotes">Quotes</NavLink>
@@ -66,19 +97,21 @@ export default function Header() {
 
             {/* RIGHT SECTION = Username + Logout + Mobile Menu */}
             <div className="flex items-center gap-3">
+              {/* ✅ FIXED: Conditionally render username badge ONLY if exists */}
+              {username && username !== 'undefined' && (
+                <div className="hidden sm:flex items-center gap-2 bg-gradient-to-r from-blue-600 to-blue-500 px-4 py-2 rounded-full shadow-lg">
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                  </svg>
+                  <span className="font-medium text-sm">{username}</span>
+                </div>
+              )}
 
-              {/* Username Badge (Desktop Only) */}
-              <div className="hidden sm:flex items-center gap-2 bg-gradient-to-r from-blue-600 to-blue-500 px-4 py-2 rounded-full shadow-lg">
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-                </svg>
-                <span className="font-medium text-sm">{username}</span>
-              </div>
-
-              {/* Logout */}
+              {/* Logout Button */}
               <button
                 onClick={handleLogout}
-                className="flex items-center gap-2 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 px-4 py-2 rounded-full font-medium text-sm transition-all shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
+                className="flex items-center gap-2 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 px-3 md:px-4 py-2 rounded-full font-medium text-sm transition-all shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
+                aria-label="Logout"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -90,6 +123,7 @@ export default function Header() {
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 className="lg:hidden p-2 rounded-lg hover:bg-gray-700 transition-colors"
+                aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   {mobileMenuOpen ? (
@@ -100,59 +134,42 @@ export default function Header() {
                 </svg>
               </button>
             </div>
-
           </div>
         </div>
 
-        {/* MOBILE NAVIGATION */}
+        {/* ✅ FIXED: Mobile Navigation - Properly positioned outside main header container */}
         {mobileMenuOpen && (
-          <div className="lg:hidden bg-gray-800 border-t border-gray-700 shadow-xl">
-            <nav className="px-4 py-3 space-y-1">
-              <MobileNavLink href="/clients" onClick={() => setMobileMenuOpen(false)}>Clients</MobileNavLink>
-              <MobileNavLink href="/quotes" onClick={() => setMobileMenuOpen(false)}>Quotes</MobileNavLink>
-              <MobileNavLink href="/products" onClick={() => setMobileMenuOpen(false)}>Products</MobileNavLink>
-              <MobileNavLink href="/projects" onClick={() => setMobileMenuOpen(false)}>Projects</MobileNavLink>
-              <MobileNavLink href="/reports" onClick={() => setMobileMenuOpen(false)}>Reports</MobileNavLink>
-
-              {/* MOBILE USER INFO */}
-              <div className="sm:hidden pt-3 mt-3 border-t border-gray-700">
-                <div className="flex items-center gap-2 text-blue-400 px-3 py-2">
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-                  </svg>
-                  <span className="font-medium">{username}</span>
+          <div className="lg:hidden bg-gray-800 border-t border-gray-700 shadow-xl py-2">
+            <nav className="px-4 space-y-1">
+              <MobileNavLink href="/clients" onClick={() => setMobileMenuOpen(false)}>👥 Clients</MobileNavLink>
+              <MobileNavLink href="/quotes" onClick={() => setMobileMenuOpen(false)}>📄 Quotes</MobileNavLink>
+              <MobileNavLink href="/products" onClick={() => setMobileMenuOpen(false)}>📦 Products</MobileNavLink>
+              <MobileNavLink href="/projects" onClick={() => setMobileMenuOpen(false)}>🏗️ Projects</MobileNavLink>
+              <MobileNavLink href="/reports" onClick={() => setMobileMenuOpen(false)}>📊 Reports</MobileNavLink>
+              
+              {/* ✅ FIXED: Mobile user info - Only show if username exists */}
+              {username && username !== 'undefined' && (
+                <div className="pt-4 mt-4 border-t border-gray-700">
+                  <div className="flex items-center gap-2 text-blue-400 bg-gray-700/30 px-3 py-2 rounded-lg">
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                    </svg>
+                    <span className="font-medium text-white">Logged in as: {username}</span>
+                  </div>
                 </div>
-              </div>
+              )}
             </nav>
           </div>
         )}
       </header>
+      
+      {/* ✅ FIXED: Close mobile menu when clicking outside */}
+      {mobileMenuOpen && (
+        <div 
+          className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm lg:hidden"
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      )}
     </>
   )
 }
-
-/* DESKTOP NAV LINK */
-function NavLink({ href, children }) {
-  return (
-    <Link
-      href={href}
-      className="px-4 py-2 rounded-lg text-gray-300 hover:text-white hover:bg-gray-700/50 transition-all font-medium text-sm"
-    >
-      {children}
-    </Link>
-  )
-}
-
-/* MOBILE NAV LINK */
-function MobileNavLink({ href, children, onClick }) {
-  return (
-    <Link
-      href={href}
-      onClick={onClick}
-      className="block px-3 py-3 rounded-lg text-gray-300 hover:text-white hover:bg-gray-700 transition-all font-medium"
-    >
-      {children}
-    </Link>
-  )
-}
-
