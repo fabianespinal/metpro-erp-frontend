@@ -180,6 +180,24 @@ export default function QuotesPage() {
     setProductModal({ isOpen: false, itemIndex: null })
   }
 
+  // ✅ FIX: Returns the correct endpoint based on quote status
+  const getPdfUrl = (quoteId) => {
+    const quote = (Array.isArray(quotes) ? quotes : []).find(q => q.quote_id === quoteId)
+    if (quote && quote.status === 'Invoiced') {
+      return `https://metpro-erp-api.onrender.com/invoices/${quoteId}/pdf`
+    }
+    return `https://metpro-erp-api.onrender.com/quotes/${quoteId}/pdf`
+  }
+
+  // ✅ FIX: Returns the correct filename based on quote status
+  const getPdfFilename = (quoteId) => {
+    const quote = (Array.isArray(quotes) ? quotes : []).find(q => q.quote_id === quoteId)
+    if (quote && quote.status === 'Invoiced') {
+      return `${quoteId}_factura.pdf`
+    }
+    return `${quoteId}_cotizacion.pdf`
+  }
+
   // Download PDF
   const handleDownloadPDF = async (quoteId) => {
     try {
@@ -190,7 +208,11 @@ export default function QuotesPage() {
         return
       }
 
-      const response = await fetch(`https://metpro-erp-api.onrender.com/quotes/${quoteId}/pdf`, {
+      // ✅ FIX: Uses correct URL and filename based on status
+      const url = getPdfUrl(quoteId)
+      const filename = getPdfFilename(quoteId)
+
+      const response = await fetch(url, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -202,13 +224,13 @@ export default function QuotesPage() {
       }
 
       const blob = await response.blob()
-      const url = window.URL.createObjectURL(blob)
+      const blobUrl = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
-      a.href = url
-      a.download = `${quoteId}_cotizacion.pdf`
+      a.href = blobUrl
+      a.download = filename
       document.body.appendChild(a)
       a.click()
-      window.URL.revokeObjectURL(url)
+      window.URL.revokeObjectURL(blobUrl)
       document.body.removeChild(a)
     } catch (error) {
       console.error('PDF Download Error:', error)
@@ -269,7 +291,10 @@ export default function QuotesPage() {
         return
       }
 
-      const response = await fetch(`https://metpro-erp-api.onrender.com/quotes/${quoteId}/pdf`, {
+      // ✅ FIX: Uses correct URL based on status
+      const url = getPdfUrl(quoteId)
+
+      const response = await fetch(url, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -935,4 +960,3 @@ export default function QuotesPage() {
     </div>
   )
 }
-
