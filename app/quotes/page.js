@@ -960,3 +960,5 @@ export default function QuotesPage() {
     </div>
   )
 }
+{/* fix all at once */}
+
