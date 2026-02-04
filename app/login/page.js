@@ -143,10 +143,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-4 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500
-                hover:from-blue-700 hover:to-cyan-600 text-white font-semibold tracking-wide
-                transition-all shadow-lg hover:shadow-2xl transform hover:scale-[1.01] 
-              disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-4 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white font-semibold tracking-wide transition-all shadow-lg hover:shadow-2xl transform hover:scale-[1.01] disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? "Processing..." : "Login"}
             </button>
