@@ -34,7 +34,7 @@ export default function LoginPage() {
       if (!response.ok) throw new Error(data.detail || 'Invalid username or password')
 
       localStorage.setItem('auth_token', data.access_token)
-      localStorage.setItem('username', username)   // FIXED
+      localStorage.setItem('username', username.trim())
 
       router.push("/dashboard")
 
@@ -169,6 +169,12 @@ export default function LoginPage() {
           to { opacity: 1; transform: translateY(0); }
         }
         .animate-fade-in { animation: fade-in .7s ease-out; }
+
+        @keyframes float {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-10px); }
+        }
+        .animate-float { animation: float 3s ease-in-out infinite; }
 
         @keyframes shake {
           0%,100% { transform: translateX(0); }
