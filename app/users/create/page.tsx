@@ -9,7 +9,7 @@ export default function CreateUser() {
     role: "user",
   });
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
