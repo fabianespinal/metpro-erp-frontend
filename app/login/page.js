@@ -20,30 +20,35 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
+      if (!apiUrl) {
+        throw new Error("API URL is not defined. Check NEXT_PUBLIC_API_URL in Vercel.");
+      }
+
+      const response = await fetch(`${apiUrl}/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
         body: JSON.stringify({
           username: username.trim(),
           password: password.trim()
         })
-      })
+      });
 
-      const data = await response.json()
+      const data = await response.json();
 
-      if (!response.ok) throw new Error(data.detail || 'Invalid username or password')
+      if (!response.ok) {
+        throw new Error(data.detail || "Invalid username or password");
+      }
 
-      localStorage.setItem('auth_token', data.access_token)
-      localStorage.setItem('username', username.trim())
-
-      router.push("/dashboard")
-
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
+      // Continue with login success logic...
+      
+    } catch (error) {
+      console.error("Login error:", error);
+      setError(error.message);
     }
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black flex items-center justify-center px-4 relative">

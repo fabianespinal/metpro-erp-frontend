@@ -9,22 +9,34 @@ export default function CreateUser() {
     role: "user",
   });
 
-  const handleSubmit = async (e: any) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
+    if (!apiUrl) {
+      alert("API URL is not defined. Set NEXT_PUBLIC_API_URL in Vercel.");
+      return;
+    }
 
     const token = localStorage.getItem("token");
 
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/register`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(form),
-    });
+    try {
+      const res = await fetch(`${apiUrl}/users/register`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(form),
+      });
 
-    const data = await res.json();
-    alert(data.message);
+      const data = await res.json();
+      alert(data.message || "User created");
+    } catch (err) {
+      console.error("Create user error:", err);
+      alert("Failed to create user");
+    }
   };
 
   return (

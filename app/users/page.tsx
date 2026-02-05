@@ -7,9 +7,15 @@ export default function UsersPage() {
 
   const fetchUsers = async () => {
     try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
+      if (!apiUrl) {
+        throw new Error("API URL is not defined. Check NEXT_PUBLIC_API_URL in Vercel.");
+      }
+
       const token = localStorage.getItem("token");
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users`, {
+      const res = await fetch(`${apiUrl}/users`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -18,7 +24,7 @@ export default function UsersPage() {
       const data = await res.json();
       setUsers(data);
     } catch (err) {
-      console.error("Failed to load users", err);
+      console.error("Failed to load users:", err);
     } finally {
       setLoading(false);
     }
@@ -47,7 +53,7 @@ export default function UsersPage() {
         </thead>
 
         <tbody>
-          {users.map((u: any) => (
+          {users.map((u) => (
             <tr key={u.id} className="border-t">
               <td className="p-2">{u.id}</td>
               <td className="p-2">{u.username}</td>
