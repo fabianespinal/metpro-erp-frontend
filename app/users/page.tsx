@@ -1,8 +1,16 @@
 "use client";
 import { useEffect, useState } from "react";
 
+type User = {
+  id: number;
+  username: string;
+  email: string;
+  role: string;
+  is_active: boolean;
+};
+
 export default function UsersPage() {
-  const [users, setUsers] = useState([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchUsers = async () => {
@@ -21,7 +29,7 @@ export default function UsersPage() {
         },
       });
 
-      const data = await res.json();
+      const data: User[] = await res.json();
       setUsers(data);
     } catch (err) {
       console.error("Failed to load users:", err);
