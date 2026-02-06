@@ -10,13 +10,13 @@ export default function RootLayout({ children }) {
   const pathname = usePathname()
 
   useEffect(() => {
-    const token = localStorage.getItem('auth_token')
+    const token = localStorage.getItem('token')   // ✅ FIXED
+
     if (!token && pathname !== '/login') {
       router.push('/login')
     }
   }, [router, pathname])
 
-  // Hide the full header ONLY on the dashboard page
   const hideFullHeader = pathname === '/dashboard'
 
   return (
