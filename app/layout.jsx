@@ -10,20 +10,27 @@ export default function RootLayout({ children }) {
   const pathname = usePathname()
 
   useEffect(() => {
-    const token = localStorage.getItem('token')   // ✅ FIXED
+    const token = localStorage.getItem('token')
 
+    // Not logged in → force login
     if (!token && pathname !== '/login') {
       router.push('/login')
+      return
+    }
+
+    // Logged in but trying to access login → send to dashboard
+    if (token && pathname === '/login') {
+      router.push('/dashboard')
+      return
     }
   }, [router, pathname])
-
-  const hideFullHeader = pathname === '/dashboard'
 
   return (
     <html lang='en'>
       <body className='bg-gray-50 min-h-screen flex flex-col'>
         
-        {!hideFullHeader && <Header />}
+        {/* Always show header */}
+        <Header />
 
         <main className='flex-1 pt-16 py-4'>
           {children}
