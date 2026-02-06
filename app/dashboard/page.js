@@ -3,7 +3,7 @@
 import { useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Header from '@/components/header'
-import './globals.css'
+
 
 export default function RootLayout({ children }) {
   const router = useRouter()
