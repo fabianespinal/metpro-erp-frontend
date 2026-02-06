@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
 export const dynamic = "force-dynamic";
@@ -13,6 +13,14 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
 
   const router = useRouter()
+
+  // Redirect if already logged in
+  useEffect(() => {
+    const token = localStorage.getItem('token')
+    if (token) {
+      router.push('/dashboard')
+    }
+  }, [router])
 
   const handleLogin = async (e) => {
     e.preventDefault()
@@ -100,10 +108,11 @@ export default function LoginPage() {
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/20 text-white placeholder:text-gray-500 placeholder:opacity-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition autofill:bg-white/10 autofill:text-white"
                 placeholder="Enter your username"
                 required
                 autoFocus
+                autoComplete="username"
               />
             </div>
 
@@ -116,15 +125,17 @@ export default function LoginPage() {
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                  className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/20 text-white placeholder:text-gray-500 placeholder:opacity-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition autofill:bg-white/10 autofill:text-white"
                   placeholder="Enter your password"
                   required
+                  autoComplete="current-password"
                 />
 
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? (
                     <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" 
@@ -188,6 +199,15 @@ export default function LoginPage() {
           40%,80% { transform: translateX(4px); }
         }
         .animate-shake { animation: shake .4s; }
+
+        /* Fix autofill styling */
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover,
+        input:-webkit-autofill:focus {
+          -webkit-text-fill-color: white !important;
+          -webkit-box-shadow: 0 0 0px 1000px rgba(255, 255, 255, 0.1) inset !important;
+          transition: background-color 5000s ease-in-out 0s;
+        }
       `}</style>
 
     </div>
