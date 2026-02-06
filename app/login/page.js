@@ -20,40 +20,41 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
-  if (!apiUrl) {
-    throw new Error("API URL is not defined. Check NEXT_PUBLIC_API_URL in Vercel.");
+      if (!apiUrl) {
+        throw new Error("API URL is not defined. Check NEXT_PUBLIC_API_URL in Vercel.");
+      }
+
+      const response = await fetch(`${apiUrl}/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          username: username.trim(),
+          password: password.trim()
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.detail || "Invalid username or password");
+      }
+
+      // ⭐ SUCCESS LOGIC GOES HERE
+      localStorage.setItem("token", data.access_token);
+      router.push("/dashboard");
+      return; // stop execution here
+
+    } catch (error) {
+      console.error("Login error:", error);
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
   }
-
-  const response = await fetch(`${apiUrl}/auth/login`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      username: username.trim(),
-      password: password.trim()
-    })
-  });
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(data.detail || "Invalid username or password");
-  }
-
-  // ⭐ SUCCESS LOGIC GOES HERE
-  localStorage.setItem("token", data.access_token);
-  router.push("/dashboard");
-  return; // stop execution here
-
-} catch (error) {
-  console.error("Login error:", error);
-  setError(error.message);
-} finally {
-  setLoading(false);
-}
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black flex items-center justify-center px-4 relative">
@@ -191,4 +192,4 @@ export default function LoginPage() {
 
     </div>
   )
-}}
+}
