@@ -7,6 +7,7 @@ type User = {
   username: string;
   email: string;
   role: string;
+  is_active: boolean;
 };
 
 export default function UsersPage() {
