@@ -4,6 +4,7 @@ export const getAuthHeaders = () => {
     : null
 
   return {
-    Authorization: token ? `Bearer ${token}` : '',
+    Authorization: `Bearer ${token}`,
+    'Content-Type': 'application/json'
   }
 }
