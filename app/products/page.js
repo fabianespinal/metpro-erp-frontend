@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { getAuthHeaders } from '@/utils/auth'
 
 export default function ProductsPage() {
   const [products, setProducts] = useState([])
@@ -11,9 +10,9 @@ export default function ProductsPage() {
   const [importResult, setImportResult] = useState(null)
   const [csvFile, setCsvFile] = useState(null)
 
-  // 🔑 HELPER: Get auth headers with token
+  // 🔒 FIXED: Get token from 'token' key (not 'auth_token')
   const getAuthHeaders = () => {
-    const token = localStorage.getItem('auth_token')
+    const token = localStorage.getItem('token')
     return {
       ...(token && { 'Authorization': `Bearer ${token}` })
     }
@@ -23,7 +22,7 @@ export default function ProductsPage() {
     fetchProducts()
   }, [])
 
-  // 🔑 UPDATED: Fetch products WITH token
+  // 🔒 Fetch products WITH token
   const fetchProducts = async () => {
     try {
       const response = await fetch('https://metpro-erp-api.onrender.com/products/', {
@@ -38,7 +37,7 @@ export default function ProductsPage() {
     }
   }
 
-  // 🔑 UPDATED: Create product WITH token
+  // 🔒 Create product WITH token
   const handleCreateProduct = async (e) => {
     e.preventDefault()
     setLoading(true)
@@ -68,7 +67,7 @@ export default function ProductsPage() {
     }
   }
 
-  // 🔑 UPDATED: Update product WITH token
+  // 🔒 Update product WITH token
   const handleUpdateProduct = async (e) => {
     e.preventDefault()
     setLoading(true)
@@ -95,7 +94,7 @@ export default function ProductsPage() {
     }
   }
 
-  // 🔑 UPDATED: Delete product WITH token
+  // 🔒 Delete product WITH token
   const handleDeleteProduct = async (productId) => {
     if (!confirm('Delete this product?')) return
     
@@ -114,45 +113,46 @@ export default function ProductsPage() {
     }
   }
 
-  // 🔑 FIXED: Import CSV WITH token (correct FormData handling)
-const handleCsvImport = async (e) => {
-  e.preventDefault()
+  // 🔒 FIXED: Import CSV WITH token (correct FormData handling)
+  const handleCsvImport = async (e) => {
+    e.preventDefault()
 
-  if (!csvFile) {
-    alert('Please select a CSV file')
-    return
-  }
-
-  setLoading(true)
-
-  const formData = new FormData()
-  formData.append('file', csvFile)
-
-  try {
-    const response = await fetch('https://metpro-erp-api.onrender.com/products/import-csv', {
-      method: 'POST',
-      headers: {
-        ...getAuthHeaders()   // ONLY Authorization header
-      },
-      body: formData
-    })
-
-    if (!response.ok) {
-      const errorData = await response.json()
-      throw new Error(errorData.detail || 'Failed to import CSV')
+    if (!csvFile) {
+      alert('Please select a CSV file')
+      return
     }
 
-    const data = await response.json()
-    setImportResult(data)
-    await fetchProducts()
-    alert(`Imported ${data.imported} products!`)
+    setLoading(true)
 
-  } catch (error) {
-    alert('Error importing CSV: ' + error.message)
-  } finally {
-    setLoading(false)
+    const formData = new FormData()
+    formData.append('file', csvFile)
+
+    try {
+      const response = await fetch('https://metpro-erp-api.onrender.com/products/import-csv', {
+        method: 'POST',
+        headers: {
+          ...getAuthHeaders()   // ONLY Authorization header (no Content-Type for FormData)
+        },
+        body: formData
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.detail || 'Failed to import CSV')
+      }
+
+      const data = await response.json()
+      setImportResult(data)
+      await fetchProducts()
+      setCsvFile(null)
+      alert(`Imported ${data.imported} products!`)
+
+    } catch (error) {
+      alert('Error importing CSV: ' + error.message)
+    } finally {
+      setLoading(false)
+    }
   }
-}
 
   return (
     <div className='p-8 max-w-6xl mx-auto'>
@@ -171,7 +171,7 @@ const handleCsvImport = async (e) => {
           <button
             type='submit'
             disabled={loading || !csvFile}
-            className='bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 shadow-md hover:shadow-lg transition-shadow'
+            className='bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 shadow-md hover:shadow-lg transition-shadow disabled:opacity-50'
           >
             {loading ? 'Importing...' : 'Import CSV'}
           </button>
@@ -237,7 +237,7 @@ Steel,Reinforcing steel bars,200.00
             <button
               type='submit'
               disabled={loading}
-              className='bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 shadow-md hover:shadow-lg transition-shadow'
+              className='bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 shadow-md hover:shadow-lg transition-shadow disabled:opacity-50'
             >
               {loading ? 'Saving...' : (editingProduct ? 'Update Product' : '➕ Add Product')}
             </button>
