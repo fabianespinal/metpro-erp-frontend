@@ -18,9 +18,9 @@ export default function ClientsPage() {
   const [loading, setLoading] = useState(false)
   const [importModalOpen, setImportModalOpen] = useState(false)
 
-  // 🔑 HELPER: Get auth headers with token
+  // 🔒 FIXED: Get token from 'token' key (not 'auth_token')
   const getAuthHeaders = () => {
-    const token = localStorage.getItem('auth_token')
+    const token = localStorage.getItem('token')
     return {
       'Content-Type': 'application/json',
       ...(token && { 'Authorization': `Bearer ${token}` })
@@ -31,7 +31,7 @@ export default function ClientsPage() {
     fetchClients()
   }, [])
 
-  // 🔑 UPDATED: Fetch clients WITH token (FIXED URL)
+  // 🔒 Fetch clients WITH token
   const fetchClients = async () => {
     try {
       const response = await fetch('https://metpro-erp-api.onrender.com/clients/', {
@@ -47,7 +47,7 @@ export default function ClientsPage() {
     }
   }
 
-  // 🔑 UPDATED: Create client WITH token (FIXED URL)
+  // 🔒 Create client WITH token
   const handleCreateClient = async (e) => {
     e.preventDefault()
     setLoading(true)
@@ -82,7 +82,7 @@ export default function ClientsPage() {
     }
   }
 
-  // 🔑 UPDATED: Update client WITH token (FIXED URL)
+  // 🔒 Update client WITH token
   const handleUpdateClient = async (e) => {
     e.preventDefault()
     setLoading(true)
@@ -106,7 +106,7 @@ export default function ClientsPage() {
     }
   }
 
-  // 🔑 UPDATED: Delete client WITH token (FIXED URL)
+  // 🔒 Delete client WITH token
   const handleDeleteClient = async (clientId) => {
     if (!confirm('Delete this client? This cannot be undone.')) return
     
@@ -125,7 +125,6 @@ export default function ClientsPage() {
     }
   }
 
-  // ✅ FIXED: Properly closed function
   const handleImportComplete = () => {
     // Refresh client list after import
     fetchClients()
@@ -298,7 +297,7 @@ export default function ClientsPage() {
         )}
       </div>
 
-      {/* ✅ CSV IMPORT MODAL - PLACED AT END OF COMPONENT */}
+      {/* CSV IMPORT MODAL */}
       <CSVImportModal
         isOpen={importModalOpen}
         onClose={() => setImportModalOpen(false)}
