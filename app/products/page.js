@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { getAuthHeaders } from '@/utils/auth'
 
 export default function ProductsPage() {
   const [products, setProducts] = useState([])
