@@ -80,9 +80,12 @@ export default function ClientsPage() {
     try {
       const response = await fetch('https://metpro-erp-api.onrender.com/clients/', {
         method: 'POST',
-        headers: getAuthHeaders(),
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify(newClient)
-      })
+  })
       
       if (!response.ok) {
         const errorData = await response.json()
@@ -108,28 +111,31 @@ export default function ClientsPage() {
   }
 
   // 🔒 Update client WITH token
-  const handleUpdateClient = async (e) => {
-    e.preventDefault()
-    setLoading(true)
+const handleUpdateClient = async (e) => {
+  e.preventDefault()
+  setLoading(true)
+  
+  try {
+    const response = await fetch(`https://metpro-erp-api.onrender.com/clients/${editingClient.id}`, {
+      method: 'PUT',
+      headers: {
+        ...getAuthHeaders(),
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(editingClient)
+    })
     
-    try {
-      const response = await fetch(`https://metpro-erp-api.onrender.com/clients/${editingClient.id}`, {
-        method: 'PUT',
-        headers: getAuthHeaders(),
-        body: JSON.stringify(editingClient)
-      })
-      
-      if (!response.ok) throw new Error('Failed to update client')
-      
-      await fetchClients()
-      setEditingClient(null)
-      alert('Client updated successfully!')
-    } catch (error) {
-      alert('Error: ' + error.message)
-    } finally {
-      setLoading(false)
-    }
+    if (!response.ok) throw new Error('Failed to update client')
+    
+    await fetchClients()
+    setEditingClient(null)
+    alert('Client updated successfully!')
+  } catch (error) {
+    alert('Error: ' + error.message)
+  } finally {
+    setLoading(false)
   }
+}
 
   // 🔒 Delete client WITH token
   const handleDeleteClient = async (clientId) => {
@@ -138,7 +144,9 @@ export default function ClientsPage() {
     try {
       const response = await fetch(`https://metpro-erp-api.onrender.com/clients/${clientId}`, {
         method: 'DELETE',
-        headers: getAuthHeaders()
+        headers: {
+          ...getAuthHeaders()
+        }
       })
       
       if (!response.ok) throw new Error('Failed to delete client')
@@ -147,8 +155,8 @@ export default function ClientsPage() {
       alert('Client deleted!')
     } catch (error) {
       alert('Error deleting client: ' + error.message)
-    }
   }
+}
 
   const handleImportComplete = () => {
     fetchClients()

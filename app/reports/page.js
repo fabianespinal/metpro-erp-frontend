@@ -23,18 +23,21 @@ export default function ReportsPage() {
   }, [])
 
   const fetchClients = async () => {
-    try {
-      const res = await fetch('https://metpro-erp-api.onrender.com/clients/', {
-        headers: getAuthHeaders()
-      })
-      if (res.ok) {
-        const data = await res.json()
-        setClients(Array.isArray(data) ? data : [])
+  try {
+    const res = await fetch('https://metpro-erp-api.onrender.com/clients/', {
+      method: 'GET',
+      headers: {
+        ...getAuthHeaders()
       }
-    } catch (error) {
-      console.error('Fetch clients error:', error)
+    })
+    if (res.ok) {
+      const data = await res.json()
+      setClients(Array.isArray(data) ? data : [])
     }
+  } catch (error) {
+    console.error('Fetch clients error:', error)
   }
+}
 
   const runReport = async () => {
     if (!filters.start_date || !filters.end_date) {
@@ -52,19 +55,17 @@ export default function ReportsPage() {
       
       const res = await fetch(
         `https://metpro-erp-api.onrender.com/reports/${reportType}?${params}`,
-        { headers: getAuthHeaders() }
+        {
+          method: 'GET',
+          headers: {
+            ...getAuthHeaders()
+          }
+        }
       )
-      
+
       if (!res.ok) throw new Error('Report generation failed')
-      
+
       setReportData(await res.json())
-    } catch (error) {
-      alert(`Error: ${error.message}`)
-      setReportData(null)
-    } finally {
-      setLoading(false)
-    }
-  }
 
   const exportCSV = () => {
     if (!reportData) return
@@ -335,4 +336,4 @@ export default function ReportsPage() {
     </div>
   )
 }
-{/* Report Results */}
+/* Report Results */

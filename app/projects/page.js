@@ -31,34 +31,40 @@ export default function ProjectsPage() {
   }, [filters.status])
 
   const fetchProjects = async () => {
-    try {
-      const params = filters.status ? `?status=${filters.status}` : ''
-      const res = await fetch(`https://metpro-erp-api.onrender.com/projects${params}`, {
-        headers: getAuthHeaders()
-      })
-      if (!res.ok) throw new Error('Failed to fetch projects')
-      const data = await res.json()
-      setProjects(Array.isArray(data) ? data : [])
-    } catch (error) {
-      console.error('Fetch projects error:', error)
-      setProjects([])
-      alert('Error loading projects. Please login again.')
-    }
+  try {
+    const params = filters.status ? `?status=${filters.status}` : ''
+    const res = await fetch(`https://metpro-erp-api.onrender.com/projects${params}`, {
+      method: 'GET',
+      headers: {
+        ...getAuthHeaders()
+      }
+    })
+    if (!res.ok) throw new Error('Failed to fetch projects')
+    const data = await res.json()
+    setProjects(Array.isArray(data) ? data : [])
+  } catch (error) {
+    console.error('Fetch projects error:', error)
+    setProjects([])
+    alert('Error loading projects. Please login again.')
   }
+}
 
   const fetchClients = async () => {
-    try {
-      const res = await fetch('https://metpro-erp-api.onrender.com/clients/', {
-        headers: getAuthHeaders()
-      })
-      if (!res.ok) throw new Error('Failed to fetch clients')
-      const data = await res.json()
-      setClients(Array.isArray(data) ? data : [])
-    } catch (error) {
-      console.error('Fetch clients error:', error)
-      setClients([])
-    }
+  try {
+    const res = await fetch('https://metpro-erp-api.onrender.com/clients/', {
+      method: 'GET',
+      headers: {
+        ...getAuthHeaders()
+      }
+    })
+    if (!res.ok) throw new Error('Failed to fetch clients')
+    const data = await res.json()
+    setClients(Array.isArray(data) ? data : [])
+  } catch (error) {
+    console.error('Fetch clients error:', error)
+    setClients([])
   }
+}
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -82,10 +88,13 @@ export default function ProjectsPage() {
       }
       
       const res = await fetch(url, {
-        method,
-        headers: getAuthHeaders(),
-        body: JSON.stringify(body)
-      })
+      method,
+      headers: {
+        ...getAuthHeaders(),
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(body)
+  })
       
       if (!res.ok) throw new Error('Operation failed')
       

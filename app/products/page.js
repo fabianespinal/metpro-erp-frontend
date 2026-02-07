@@ -26,7 +26,10 @@ export default function ProductsPage() {
   const fetchProducts = async () => {
     try {
       const response = await fetch('https://metpro-erp-api.onrender.com/products/', {
-        headers: getAuthHeaders()
+        method: 'GET',
+        headers: {
+          ...getAuthHeaders()
+        }
       })
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
@@ -34,8 +37,8 @@ export default function ProductsPage() {
     } catch (error) {
       console.error('Failed to fetch products:', error)
       setProducts([])
-    }
   }
+}
 
   // 🔒 Create product WITH token
   const handleCreateProduct = async (e) => {
@@ -101,7 +104,9 @@ export default function ProductsPage() {
     try {
       const response = await fetch(`https://metpro-erp-api.onrender.com/products/${productId}`, {
         method: 'DELETE',
-        headers: getAuthHeaders()
+        headers: {
+          ...getAuthHeaders()
+        }
       })
       
       if (!response.ok) throw new Error('Failed to delete product')
@@ -110,8 +115,8 @@ export default function ProductsPage() {
       alert('Product deleted!')
     } catch (error) {
       alert('Error deleting product: ' + error.message)
-    }
   }
+}
 
   // 🔒 FIXED: Import CSV WITH token (correct FormData handling)
   const handleCsvImport = async (e) => {

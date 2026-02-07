@@ -61,7 +61,10 @@ export default function QuotesPage() {
   const fetchClients = async () => {
     try {
       const response = await fetch('https://metpro-erp-api.onrender.com/clients/', {
-        headers: getAuthHeaders()
+        method: 'GET',
+        headers: {
+          ...getAuthHeaders()
+        }
       })
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
@@ -76,7 +79,10 @@ export default function QuotesPage() {
   const fetchQuotes = async () => {
     try {
       const response = await fetch('https://metpro-erp-api.onrender.com/quotes/', {
-        headers: getAuthHeaders()
+        method: 'GET',
+        headers: {
+          ...getAuthHeaders()
+        }
       })
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
@@ -91,7 +97,10 @@ export default function QuotesPage() {
   const fetchProducts = async () => {
     try {
       const response = await fetch('https://metpro-erp-api.onrender.com/products/', {
-        headers: getAuthHeaders()
+        method: 'GET',
+        headers: {
+          ...getAuthHeaders()
+        }
       })
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
@@ -342,10 +351,12 @@ export default function QuotesPage() {
     if (!confirm(`Convert quote ${quoteId} to invoice?\nThis will change the ID from COT- to INV- prefix and cannot be undone.`)) return
     
     try {
-      const response = await fetch(`https://metpro-erp-api.onrender.com/quotes/${quoteId}/convert-to-invoice`, {
-        method: 'POST',
-        headers: getAuthHeaders()
-      })
+    const response = await fetch(`https://metpro-erp-api.onrender.com/quotes/${quoteId}/convert-to-invoice`, {
+      method: 'POST',
+      headers: {
+        ...getAuthHeaders()
+      }
+    })
       
       const data = await response.json()
       
@@ -373,7 +384,10 @@ export default function QuotesPage() {
     try {
       const response = await fetch(`https://metpro-erp-api.onrender.com/quotes/${quoteId}/status`, {
         method: 'PUT',
-        headers: getAuthHeaders(),
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify({ status: newStatus })
       })
 
@@ -486,17 +500,20 @@ export default function QuotesPage() {
     
     setLoading(true)
     try {
-      const response = await fetch('https://metpro-erp-api.onrender.com/quotes/', {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: JSON.stringify({
-          client_id: selectedClient.id,
-          project_name: projectName,
-          notes: notes,
-          included_charges: charges,
-          items: quoteItems
-        })
+    const response = await fetch('https://metpro-erp-api.onrender.com/quotes/', {
+      method: 'POST',
+      headers: {
+        ...getAuthHeaders(),
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        client_id: selectedClient.id,
+        project_name: projectName,
+        notes: notes,
+        included_charges: charges,
+        items: quoteItems
       })
+    })
       
       if (!response.ok) {
         const errorData = await response.json()
