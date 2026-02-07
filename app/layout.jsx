@@ -31,16 +31,17 @@ export default function RootLayout({ children }) {
     }
   }, [router, pathname])
 
-  // Hide header on login page
   const isLoginPage = pathname === '/login'
 
   return (
-    <html lang='en'>
-      <body className='bg-gray-50 min-h-screen flex flex-col'>
-        
+    <html lang="en">
+      <body className="bg-gray-50 min-h-screen flex flex-col">
+
+        {/* Minimalist header on all pages except login */}
         {!isLoginPage && <Header />}
 
-        <main className={`flex-1 ${!isLoginPage ? 'pt-16' : ''}`}>
+        {/* Correct spacing so dashboard modules sit properly */}
+        <main className={isLoginPage ? '' : 'flex-1 px-4 sm:px-6 lg:px-8 py-8'}>
           {children}
         </main>
 
