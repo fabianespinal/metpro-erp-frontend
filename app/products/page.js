@@ -114,40 +114,45 @@ export default function ProductsPage() {
     }
   }
 
-  // 🔑 UPDATED: Import CSV WITH token
-  const handleCsvImport = async (e) => {
-    e.preventDefault()
-    if (!csvFile) {
-      alert('Please select a CSV file')
-      return
-    }
-    
-    setLoading(true)
-    const formData = new FormData()
-    formData.append('file', csvFile)
-    
-    try {
-      const response = await fetch('https://metpro-erp-api.onrender.com/products/import-csv', {
-        method: 'POST',
-        headers: getAuthHeaders(),
-        body: formData
-      })
-      
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.detail || 'Failed to import CSV')
-      }
-      
-      const data = await response.json()
-      setImportResult(data)
-      await fetchProducts()
-      alert(`Imported ${data.imported} products!`)
-    } catch (error) {
-      alert('Error importing CSV: ' + error.message)
-    } finally {
-      setLoading(false)
-    }
+  // 🔑 FIXED: Import CSV WITH token (correct FormData handling)
+const handleCsvImport = async (e) => {
+  e.preventDefault()
+
+  if (!csvFile) {
+    alert('Please select a CSV file')
+    return
   }
+
+  setLoading(true)
+
+  const formData = new FormData()
+  formData.append('file', csvFile)
+
+  try {
+    const response = await fetch('https://metpro-erp-api.onrender.com/products/import-csv', {
+      method: 'POST',
+      headers: {
+        ...getAuthHeaders()   // ONLY Authorization header
+      },
+      body: formData
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      throw new Error(errorData.detail || 'Failed to import CSV')
+    }
+
+    const data = await response.json()
+    setImportResult(data)
+    await fetchProducts()
+    alert(`Imported ${data.imported} products!`)
+
+  } catch (error) {
+    alert('Error importing CSV: ' + error.message)
+  } finally {
+    setLoading(false)
+  }
+}
 
   return (
     <div className='p-8 max-w-6xl mx-auto'>
