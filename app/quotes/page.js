@@ -201,7 +201,7 @@ export default function QuotesPage() {
   // Download PDF
   const handleDownloadPDF = async (quoteId) => {
     try {
-      const token = localStorage.getItem('token')
+      const token = localStorage.getItem('auth_token')
       if (!token) {
         alert('You must be logged in to download PDFs')
         window.location.href = '/login'
@@ -241,7 +241,7 @@ export default function QuotesPage() {
   // Generate Conduce
   const handleGenerateConduce = async (invoiceId) => {
     try {
-      const token = localStorage.getItem('token')
+      const token = localStorage.getItem('auth_token')
       if (!token) {
         alert('You must be logged in to generate conduce')
         window.location.href = '/login'
@@ -284,7 +284,7 @@ export default function QuotesPage() {
   // Preview PDF
   const handlePreviewPDF = async (quoteId) => {
     try {
-      const token = localStorage.getItem('token')
+      const token = localStorage.getItem('auth_token')
       if (!token) {
         alert('You must be logged in to preview PDFs')
         window.location.href = '/login'
@@ -323,7 +323,7 @@ export default function QuotesPage() {
   const handleDuplicateQuote = async (quoteId) => {
     if (!confirm('Duplicate this quote?')) return
     try {
-      const token = localStorage.getItem('token')
+      const token = localStorage.getItem('auth_token')
       const response = await fetch(`https://metpro-erp-api.onrender.com/quotes/${quoteId}/duplicate`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` }
@@ -395,7 +395,7 @@ export default function QuotesPage() {
   // Delete quote
   const handleDeleteQuote = async (quoteId) => {
     try {
-      const token = localStorage.getItem('token')
+      const token = localStorage.getItem('auth_token')
       if (!token) {
         alert('You must be logged in to delete quotes')
         window.location.href = '/login'
@@ -440,7 +440,7 @@ export default function QuotesPage() {
   // Save edit
   const handleSaveEdit = async (quoteId, updatedData) => {
     try {
-      const token = localStorage.getItem('token')
+      const token = localStorage.getItem('auth_token')
       const { client_id, ...updatePayload } = updatedData
       
       const response = await fetch(`https://metpro-erp-api.onrender.com/quotes/${quoteId}`, {
