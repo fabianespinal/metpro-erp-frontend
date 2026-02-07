@@ -23,24 +23,26 @@ export default function RootLayout({ children }) {
       router.push('/dashboard')
       return
     }
+
+    // Logged in and on root → send to dashboard
+    if (token && pathname === '/') {
+      router.push('/dashboard')
+      return
+    }
   }, [router, pathname])
+
+  // Hide header on login page
+  const isLoginPage = pathname === '/login'
 
   return (
     <html lang='en'>
       <body className='bg-gray-50 min-h-screen flex flex-col'>
         
-        {/* Always show header */}
-        <Header />
+        {!isLoginPage && <Header />}
 
-        <main className='flex-1 pt-16 py-4'>
+        <main className={`flex-1 ${!isLoginPage ? 'pt-16' : ''}`}>
           {children}
         </main>
-
-        <footer className='bg-gray-800 text-white text-center p-4 mt-auto'>
-          <p className='text-sm'>
-            METPRO ERP © {new Date().getFullYear()} - Sistema de Gestión Empresarial
-          </p>
-        </footer>
 
       </body>
     </html>

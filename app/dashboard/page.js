@@ -1,42 +1,25 @@
 'use client'
 
-import { useEffect } from 'react'
-import { useRouter, usePathname } from 'next/navigation'
-import Header from '@/components/header'
+import { useEffect, useState } from 'react'
 
-
-export default function RootLayout({ children }) {
-  const router = useRouter()
-  const pathname = usePathname()
+export default function DashboardPage() {
+  const [username, setUsername] = useState('')
 
   useEffect(() => {
-    const token = localStorage.getItem('token')
-    if (!token && pathname !== '/login') {
-      router.push('/login')
-    }
-  }, [router, pathname])
-
-  // Don't show header on login page
-  const showHeader = pathname !== '/login'
+    const storedUser = localStorage.getItem('username')
+    setUsername(storedUser || 'User')
+  }, [])
 
   return (
-    <html lang='en'>
-      <body className='bg-gray-50 min-h-screen flex flex-col'>
-        
-        {showHeader && <Header />}
-        
-        <main className={`flex-1 py-4 ${showHeader ? 'pt-16' : ''}`}>
-          {children}
-        </main>
-        
-        {showHeader && (
-          <footer className='bg-gray-800 text-white text-center p-4 mt-auto'>
-            <p className='text-sm'>
-              METPRO ERP © {new Date().getFullYear()} - Sistema de Gestión Empresarial
-            </p>
-          </footer>
-        )}
-      </body>
-    </html>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="bg-white rounded-lg shadow p-6">
+        <h1 className="text-2xl font-bold text-gray-800 mb-2">
+          Welcome to METPRO ERP
+        </h1>
+        <p className="text-gray-600">
+          Hello, {username}. You are successfully logged in.
+        </p>
+      </div>
+    </div>
   )
 }
