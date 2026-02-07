@@ -18,12 +18,22 @@ export default function ClientsPage() {
   const [loading, setLoading] = useState(false)
   const [importModalOpen, setImportModalOpen] = useState(false)
 
-  // 🔒 FIXED: Get token from 'token' key (not 'auth_token')
+  // 🔒 FIXED: Get token from 'token' key
   const getAuthHeaders = () => {
     const token = localStorage.getItem('token')
+    
+    // DEBUG: Log token status
+    console.log('Token exists:', !!token)
+    console.log('Token preview:', token ? token.substring(0, 20) + '...' : 'NULL')
+    
+    if (!token) {
+      console.error('❌ NO TOKEN FOUND - User needs to login')
+      return { 'Content-Type': 'application/json' }
+    }
+    
     return {
       'Content-Type': 'application/json',
-      ...(token && { 'Authorization': `Bearer ${token}` })
+      'Authorization': `Bearer ${token}`
     }
   }
 
@@ -34,11 +44,26 @@ export default function ClientsPage() {
   // 🔒 Fetch clients WITH token
   const fetchClients = async () => {
     try {
+      const headers = getAuthHeaders()
+      console.log('Fetching clients with headers:', { ...headers, Authorization: headers.Authorization ? 'Bearer ***' : 'MISSING' })
+      
       const response = await fetch('https://metpro-erp-api.onrender.com/clients/', {
-        headers: getAuthHeaders()
+        headers: headers
       })
-      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      
+      console.log('Response status:', response.status)
+      
+      if (!response.ok) {
+        if (response.status === 401) {
+          alert('Session expired. Please login again.')
+          // Optional: redirect to login
+          // window.location.href = '/login'
+        }
+        throw new Error(`HTTP ${response.status}`)
+      }
+      
       const data = await response.json()
+      console.log('Clients fetched:', data.length)
       setClients(Array.isArray(data) ? data : [])
     } catch (error) {
       console.error('Failed to fetch clients:', error)
@@ -126,7 +151,6 @@ export default function ClientsPage() {
   }
 
   const handleImportComplete = () => {
-    // Refresh client list after import
     fetchClients()
     if (window.toast) {
       window.toast('Clients Imported!', {
@@ -146,6 +170,11 @@ export default function ClientsPage() {
         >
           Import CSV
         </button>
+      </div>
+      
+      {/* Debug Info */}
+      <div className='bg-yellow-50 border border-yellow-200 rounded p-3 mb-4 text-xs'>
+        <strong>Debug Info:</strong> Token in localStorage: {localStorage.getItem('token') ? '✅ Present' : '❌ Missing'}
       </div>
       
       {/* Create/Edit Client Form */}
@@ -297,7 +326,6 @@ export default function ClientsPage() {
         )}
       </div>
 
-      {/* CSV IMPORT MODAL */}
       <CSVImportModal
         isOpen={importModalOpen}
         onClose={() => setImportModalOpen(false)}
