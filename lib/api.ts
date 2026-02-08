@@ -1,7 +1,7 @@
 export async function api(
   endpoint: string,
   options: RequestInit = {}
-): Promise<any> {
+): Promise<unknown> {
   const BASE_URL = "https://metpro-erp-backend-v2.onrender.com";
 
   let token: string | null = null;
