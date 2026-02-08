@@ -23,21 +23,21 @@ export default function ReportsPage() {
   }, [])
 
   const fetchClients = async () => {
-  try {
-    const res = await fetch('https://metpro-erp-api.onrender.com/clients/', {
-      method: 'GET',
-      headers: {
-        ...getAuthHeaders()
+    try {
+      const res = await fetch('https://metpro-erp-api.onrender.com/clients/', { // FIXED: Removed trailing spaces
+        method: 'GET',
+        headers: {
+          ...getAuthHeaders()
+        }
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setClients(Array.isArray(data) ? data : [])
       }
-    })
-    if (res.ok) {
-      const data = await res.json()
-      setClients(Array.isArray(data) ? data : [])
+    } catch (error) {
+      console.error('Fetch clients error:', error)
     }
-  } catch (error) {
-    console.error('Fetch clients error:', error)
   }
-}
 
   const runReport = async () => {
     if (!filters.start_date || !filters.end_date) {
@@ -54,7 +54,7 @@ export default function ReportsPage() {
       }).toString()
       
       const res = await fetch(
-        `https://metpro-erp-api.onrender.com/reports/${reportType}?${params}`,
+        `https://metpro-erp-api.onrender.com/reports/${reportType}?${params}`, // FIXED: Removed invalid spaces
         {
           method: 'GET',
           headers: {
@@ -63,9 +63,19 @@ export default function ReportsPage() {
         }
       )
 
-      if (!res.ok) throw new Error('Report generation failed')
+      if (!res.ok) {
+        const errText = await res.text()
+        throw new Error(`Server error: ${errText || res.status}`)
+      }
 
       setReportData(await res.json())
+    } catch (error) {
+      console.error('Report generation failed:', error)
+      alert(`Report failed: ${error.message}`)
+    } finally {
+      setLoading(false) // CRITICAL: Prevents stuck loading state
+    }
+  }
 
   const exportCSV = () => {
     if (!reportData) return
@@ -76,23 +86,24 @@ export default function ReportsPage() {
     if (reportType === 'quotes-summary') {
       filename = 'quotes_summary'
       csvContent = 'Status,Count,Percentage\n'
-      reportData.status_breakdown.forEach(row => {
+      reportData.status_breakdown?.forEach(row => { // Added optional chaining
         csvContent += `${row.status},${row.count},${row.percentage}%\n`
       })
-      csvContent += `\nTotal Quotes,${reportData.summary.total_quotes},100%`
+      csvContent += `\nTotal Quotes,${reportData.summary?.total_quotes || 0},100%` // Added null check
     } 
     else if (reportType === 'revenue') {
       filename = 'revenue_report'
       csvContent = 'Status,Revenue,Quote Count\n'
-      reportData.revenue_breakdown.forEach(row => {
+      reportData.revenue_breakdown?.forEach(row => { // Added optional chaining
         csvContent += `${row.status},$${row.total_revenue.toFixed(2)},${row.quote_count}\n`
       })
-      csvContent += `\nGrand Total,$${reportData.grand_total.toFixed(2)},`
+      // FIXED: Removed trailing comma causing CSV format issue
+      csvContent += `\nGrand Total,$${reportData.grand_total.toFixed(2)}`
     } 
     else if (reportType === 'client-activity') {
       filename = 'client_activity'
       csvContent = 'Client,Quotes,Total Quoted,Last Quote Date\n'
-      reportData.clients.forEach(row => {
+      reportData.clients?.forEach(row => { // Added optional chaining
         csvContent += `${row.client_name},${row.quote_count},$${row.total_quoted.toFixed(2)},${row.last_quote_date || 'N/A'}\n`
       })
     }
@@ -204,10 +215,10 @@ export default function ReportsPage() {
             <div>
               <div className='grid grid-cols-2 md:grid-cols-4 gap-4 mb-6'>
                 <div className='bg-white border border-gray-200 p-4 rounded text-center shadow-sm'>
-                  <div className='text-3xl font-bold text-blue-600'>{reportData.summary.total_quotes}</div>
+                  <div className='text-3xl font-bold text-blue-600'>{reportData.summary?.total_quotes || 0}</div>
                   <div className='text-gray-600 mt-1'>Total Quotes</div>
                 </div>
-                {reportData.status_breakdown.map(status => (
+                {reportData.status_breakdown?.map(status => (
                   <div key={status.status} className='bg-white border border-gray-200 p-4 rounded text-center shadow-sm'>
                     <div className='text-xl font-bold text-gray-900'>{status.count}</div>
                     <div className='text-sm text-gray-700 mt-1'>{status.status}</div>
@@ -226,7 +237,7 @@ export default function ReportsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {reportData.status_breakdown.map((row, i) => (
+                  {reportData.status_breakdown?.map((row, i) => (
                     <tr key={i} className={i % 2 === 0 ? 'bg-gray-50' : ''}>
                       <td className='p-2 border border-gray-200 text-gray-700'>{row.status}</td>
                       <td className='p-2 border border-gray-200 text-right text-gray-900 font-medium'>{row.count}</td>
@@ -243,19 +254,19 @@ export default function ReportsPage() {
               <div className='grid grid-cols-1 md:grid-cols-3 gap-4 mb-6'>
                 <div className='bg-white border border-gray-200 p-4 rounded text-center shadow-sm'>
                   <div className='text-2xl font-bold text-green-600'>
-                    ${reportData.revenue_breakdown.find(r => r.status === 'Approved')?.total_revenue.toFixed(2) || '0.00'}
+                    ${reportData.revenue_breakdown?.find(r => r.status === 'Approved')?.total_revenue.toFixed(2) || '0.00'}
                   </div>
                   <div className='text-gray-600 mt-1'>Approved Revenue</div>
                 </div>
                 <div className='bg-white border border-gray-200 p-4 rounded text-center shadow-sm'>
                   <div className='text-2xl font-bold text-yellow-600'>
-                    ${reportData.revenue_breakdown.find(r => r.status === 'Pending (Draft)')?.total_revenue.toFixed(2) || '0.00'}
+                    ${reportData.revenue_breakdown?.find(r => r.status === 'Pending (Draft)')?.total_revenue.toFixed(2) || '0.00'}
                   </div>
                   <div className='text-gray-600 mt-1'>Pending Revenue</div>
                 </div>
                 <div className='bg-white border border-gray-200 p-4 rounded text-center shadow-sm'>
                   <div className='text-3xl font-bold text-blue-600'>
-                    ${reportData.grand_total.toFixed(2)}
+                    ${reportData.grand_total?.toFixed(2) || '0.00'}
                   </div>
                   <div className='text-gray-600 mt-1'>Grand Total</div>
                 </div>
@@ -271,7 +282,7 @@ export default function ReportsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {reportData.revenue_breakdown.map((row, i) => (
+                  {reportData.revenue_breakdown?.map((row, i) => (
                     <tr key={i} className={i % 2 === 0 ? 'bg-gray-50' : ''}>
                       <td className='p-2 border border-gray-200 text-gray-700'>{row.status}</td>
                       <td className='p-2 border border-gray-200 text-right font-medium text-gray-900'>
@@ -289,16 +300,16 @@ export default function ReportsPage() {
             <div>
               <div className='grid grid-cols-1 md:grid-cols-3 gap-4 mb-6'>
                 <div className='bg-white border border-gray-200 p-4 rounded text-center shadow-sm'>
-                  <div className='text-3xl font-bold text-blue-600'>{reportData.summary.total_clients}</div>
+                  <div className='text-3xl font-bold text-blue-600'>{reportData.summary?.total_clients || 0}</div>
                   <div className='text-gray-600 mt-1'>Active Clients</div>
                 </div>
                 <div className='bg-white border border-gray-200 p-4 rounded text-center shadow-sm'>
-                  <div className='text-3xl font-bold text-purple-600'>{reportData.summary.total_quotes}</div>
+                  <div className='text-3xl font-bold text-purple-600'>{reportData.summary?.total_quotes || 0}</div>
                   <div className='text-gray-600 mt-1'>Total Quotes</div>
                 </div>
                 <div className='bg-white border border-gray-200 p-4 rounded text-center shadow-sm'>
                   <div className='text-2xl font-bold text-green-600'>
-                    ${reportData.summary.total_revenue.toFixed(2)}
+                    ${reportData.summary?.total_revenue.toFixed(2) || '0.00'}
                   </div>
                   <div className='text-gray-600 mt-1'>Total Revenue</div>
                 </div>
@@ -316,7 +327,7 @@ export default function ReportsPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {reportData.clients.map((row, i) => (
+                    {reportData.clients?.map((row, i) => (
                       <tr key={i} className={i % 2 === 0 ? 'bg-gray-50' : ''}>
                         <td className='p-2 border border-gray-200 font-medium text-gray-900'>{row.client_name}</td>
                         <td className='p-2 border border-gray-200 text-right text-gray-700'>{row.quote_count}</td>
@@ -336,4 +347,3 @@ export default function ReportsPage() {
     </div>
   )
 }
-/* Report Results */
