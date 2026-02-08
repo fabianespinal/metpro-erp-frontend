@@ -10,9 +10,11 @@ export default function ProductsPage() {
   const [importResult, setImportResult] = useState(null)
   const [csvFile, setCsvFile] = useState(null)
 
-  // 🔒 FIXED: Get token from 'token' key (not 'auth_token')
   const getAuthHeaders = () => {
-    const token = localStorage.getItem('token')
+    const token = typeof window !== "undefined"
+      ? localStorage.getItem("token")
+      : null
+
     return {
       ...(token && { 'Authorization': `Bearer ${token}` })
     }
@@ -21,6 +23,7 @@ export default function ProductsPage() {
   useEffect(() => {
     fetchProducts()
   }, [])
+}
 
   // 🔒 Fetch products WITH token
   const fetchProducts = async () => {

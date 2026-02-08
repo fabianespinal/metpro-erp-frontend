@@ -1,4 +1,5 @@
 'use client'
+export const dynamic = "force-dynamic";
 
 import { useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
@@ -10,21 +11,20 @@ export default function RootLayout({ children }) {
   const pathname = usePathname()
 
   useEffect(() => {
-    const token = localStorage.getItem('token')
+    const token = typeof window !== "undefined"
+      ? localStorage.getItem("token")
+      : null
 
-    // Not logged in → force login
     if (!token && pathname !== '/login') {
       router.push('/login')
       return
     }
 
-    // Logged in but trying to access login → send to dashboard
     if (token && pathname === '/login') {
       router.push('/dashboard')
       return
     }
 
-    // Logged in and on root → send to dashboard
     if (token && pathname === '/') {
       router.push('/dashboard')
       return
@@ -37,10 +37,8 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className="bg-gray-50 min-h-screen flex flex-col">
 
-        {/* Minimalist header on all pages except login */}
         {!isLoginPage && <Header />}
 
-        {/* Correct spacing so dashboard modules sit properly */}
         <main className={isLoginPage ? '' : 'flex-1 px-4 sm:px-6 lg:px-8 py-8'}>
           {children}
         </main>

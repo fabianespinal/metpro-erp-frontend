@@ -65,9 +65,12 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete }) {
     setImportResult(null)
     
     // 🔒 FIXED: Get token from 'token' key (not 'auth_token')
-    const token = localStorage.getItem('token')
+    const token = typeof window !== "undefined"
+      ? localStorage.getItem("token")
+      : null
+
     if (!token) {
-      setError('You must be logged in to import clients')
+      setError("You must be logged in to import clients")
       setIsUploading(false)
       return
     }

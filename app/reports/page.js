@@ -13,14 +13,21 @@ export default function ReportsPage() {
   const [reportData, setReportData] = useState(null)
   const [loading, setLoading] = useState(false)
 
-  const getAuthHeaders = () => ({
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${localStorage.getItem('token')}`
-  })
+  const getAuthHeaders = () => {
+    const token = typeof window !== "undefined"
+      ? localStorage.getItem("token")
+      : null
+
+    return {
+      'Content-Type': 'application/json',
+      ...(token && { 'Authorization': `Bearer ${token}` })
+    }
+  }
 
   useEffect(() => {
     fetchClients()
   }, [])
+}
 
   const fetchClients = async () => {
     try {

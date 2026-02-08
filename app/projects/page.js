@@ -20,15 +20,22 @@ export default function ProjectsPage() {
   const [loading, setLoading] = useState(false)
   const [filters, setFilters] = useState({ status: '' })
 
-  const getAuthHeaders = () => ({
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${localStorage.getItem('token')}`
-  })
+  const getAuthHeaders = () => {
+    const token = typeof window !== "undefined"
+      ? localStorage.getItem("token")
+      : null
+
+    return {
+      'Content-Type': 'application/json',
+      ...(token && { 'Authorization': `Bearer ${token}` })
+    }
+  }
 
   useEffect(() => {
     fetchProjects()
     fetchClients()
   }, [filters.status])
+}
 
   const fetchProjects = async () => {
   try {

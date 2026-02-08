@@ -1,5 +1,5 @@
 'use client'
-
+export const dynamic = "force-dynamic";
 import { useState, useEffect } from 'react'
 import CSVImportModal from '@/components/client/CSVImportModal'
 
@@ -20,7 +20,11 @@ export default function ClientsPage() {
 
   // 🔒 FIXED: Get token from 'token' key
   const getAuthHeaders = () => {
-    const token = localStorage.getItem('token')
+    if (typeof window === "undefined") {
+      return { 'Content-Type': 'application/json' }
+    }
+    
+    const token = localStorage.getItem("token")
     
     // DEBUG: Log token status
     console.log('Token exists:', !!token)
@@ -85,7 +89,7 @@ export default function ClientsPage() {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(newClient)
-  })
+      })
       
       if (!response.ok) {
         const errorData = await response.json()
@@ -111,31 +115,31 @@ export default function ClientsPage() {
   }
 
   // 🔒 Update client WITH token
-const handleUpdateClient = async (e) => {
-  e.preventDefault()
-  setLoading(true)
-  
-  try {
-    const response = await fetch(`https://metpro-erp-api.onrender.com/clients/${editingClient.id}`, {
-      method: 'PUT',
-      headers: {
-        ...getAuthHeaders(),
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(editingClient)
-    })
+  const handleUpdateClient = async (e) => {
+    e.preventDefault()
+    setLoading(true)
     
-    if (!response.ok) throw new Error('Failed to update client')
-    
-    await fetchClients()
-    setEditingClient(null)
-    alert('Client updated successfully!')
-  } catch (error) {
-    alert('Error: ' + error.message)
-  } finally {
-    setLoading(false)
+    try {
+      const response = await fetch(`https://metpro-erp-api.onrender.com/clients/${editingClient.id}`, {
+        method: 'PUT',
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(editingClient)
+      })
+      
+      if (!response.ok) throw new Error('Failed to update client')
+      
+      await fetchClients()
+      setEditingClient(null)
+      alert('Client updated successfully!')
+    } catch (error) {
+      alert('Error: ' + error.message)
+    } finally {
+      setLoading(false)
+    }
   }
-}
 
   // 🔒 Delete client WITH token
   const handleDeleteClient = async (clientId) => {
@@ -155,8 +159,8 @@ const handleUpdateClient = async (e) => {
       alert('Client deleted!')
     } catch (error) {
       alert('Error deleting client: ' + error.message)
+    }
   }
-}
 
   const handleImportComplete = () => {
     fetchClients()
@@ -182,7 +186,10 @@ const handleUpdateClient = async (e) => {
       
       {/* Debug Info */}
       <div className='bg-yellow-50 border border-yellow-200 rounded p-3 mb-4 text-xs'>
-        <strong>Debug Info:</strong> Token in localStorage: {localStorage.getItem('token') ? '✅ Present' : '❌ Missing'}
+        <strong>Debug Info:</strong> Token in localStorage:{' '}
+        {typeof window !== "undefined" && localStorage.getItem("token")
+          ? '✅ Present'
+          : '❌ Missing'}
       </div>
       
       {/* Create/Edit Client Form */}

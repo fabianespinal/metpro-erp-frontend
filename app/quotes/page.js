@@ -40,10 +40,13 @@ export default function QuotesPage() {
 
   // Get auth headers with token
   const getAuthHeaders = () => {
-    const token = localStorage.getItem('token')
+    const token = typeof window !== "undefined"
+      ? localStorage.getItem("token")
+      : null
+
     return {
-      'Content-Type': 'application/json',
-      ...(token && { 'Authorization': `Bearer ${token}` })
+      "Content-Type": "application/json",
+      ...(token && { Authorization: `Bearer ${token}` })
     }
   }
 
@@ -209,13 +212,16 @@ export default function QuotesPage() {
 
   // Download PDF
   const handleDownloadPDF = async (quoteId) => {
-    try {
-      const token = localStorage.getItem('token')
-      if (!token) {
-        alert('You must be logged in to download PDFs')
-        window.location.href = '/login'
-        return
-      }
+  try {
+    const token = typeof window !== "undefined"
+      ? localStorage.getItem("token")
+      : null
+
+    if (!token) {
+      alert("You must be logged in to download PDFs")
+      window.location.href = "/login"
+      return
+    }
 
       // ✅ FIX: Uses correct URL and filename based on status
       const url = getPdfUrl(quoteId)
@@ -249,13 +255,16 @@ export default function QuotesPage() {
 
   // Generate Conduce
   const handleGenerateConduce = async (invoiceId) => {
-    try {
-      const token = localStorage.getItem('token')
-      if (!token) {
-        alert('You must be logged in to generate conduce')
-        window.location.href = '/login'
-        return
-      }
+  try {
+    const token = typeof window !== "undefined"
+      ? localStorage.getItem("token")
+      : null
+
+    if (!token) {
+      alert("You must be logged in to generate conduce")
+      window.location.href = "/login"
+      return
+    }
 
       const response = await fetch(`https://metpro-erp-api.onrender.com/invoices/${invoiceId}/conduce/pdf`, {
         headers: {
@@ -292,13 +301,16 @@ export default function QuotesPage() {
 
   // Preview PDF
   const handlePreviewPDF = async (quoteId) => {
-    try {
-      const token = localStorage.getItem('token')
-      if (!token) {
-        alert('You must be logged in to preview PDFs')
-        window.location.href = '/login'
-        return
-      }
+  try {
+    const token = typeof window !== "undefined"
+      ? localStorage.getItem("token")
+      : null
+
+    if (!token) {
+      alert("You must be logged in to preview PDFs")
+      window.location.href = "/login"
+      return
+    }
 
       // ✅ FIX: Uses correct URL based on status
       const url = getPdfUrl(quoteId)
@@ -330,21 +342,33 @@ export default function QuotesPage() {
 
   // Duplicate quote
   const handleDuplicateQuote = async (quoteId) => {
-    if (!confirm('Duplicate this quote?')) return
-    try {
-      const token = localStorage.getItem('token')
-      const response = await fetch(`https://metpro-erp-api.onrender.com/quotes/${quoteId}/duplicate`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
-      if (!response.ok) throw new Error('Failed to duplicate')
-      const data = await response.json()
-      alert(`✅ Quote duplicated! New ID: ${data.quote_id}`)
-      fetchQuotes()
-    } catch (error) {
-      alert('Error duplicating quote: ' + error.message)
-    }
+  if (!confirm("Duplicate this quote?")) return
+
+  try {
+    const token = typeof window !== "undefined"
+      ? localStorage.getItem("token")
+      : null
+
+    const response = await fetch(
+      `https://metpro-erp-api.onrender.com/quotes/${quoteId}/duplicate`,
+      {
+        method: "POST",
+        headers: {
+          ...(token && { Authorization: `Bearer ${token}` })
+        }
+      }
+    )
+
+    if (!response.ok) throw new Error("Failed to duplicate")
+
+    const data = await response.json()
+    alert(`✅ Quote duplicated! New ID: ${data.quote_id}`)
+    fetchQuotes()
+
+  } catch (error) {
+    alert("Error duplicating quote: " + error.message)
   }
+}
 
   // Convert to invoice
   const handleConvertToInvoice = async (quoteId) => {
@@ -408,13 +432,16 @@ export default function QuotesPage() {
 
   // Delete quote
   const handleDeleteQuote = async (quoteId) => {
-    try {
-      const token = localStorage.getItem('token')
-      if (!token) {
-        alert('You must be logged in to delete quotes')
-        window.location.href = '/login'
-        return
-      }
+  try {
+    const token = typeof window !== "undefined"
+      ? localStorage.getItem("token")
+      : null
+
+    if (!token) {
+      alert("You must be logged in to delete quotes")
+      window.location.href = "/login"
+      return
+    }
 
       const response = await fetch(`https://metpro-erp-api.onrender.com/quotes/${quoteId}`, {
         method: 'DELETE',
@@ -453,38 +480,45 @@ export default function QuotesPage() {
 
   // Save edit
   const handleSaveEdit = async (quoteId, updatedData) => {
-    try {
-      const token = localStorage.getItem('token')
-      const { client_id, ...updatePayload } = updatedData
-      
-      const response = await fetch(`https://metpro-erp-api.onrender.com/quotes/${quoteId}`, {
-        method: 'PUT',
+  try {
+    const token = typeof window !== "undefined"
+      ? localStorage.getItem("token")
+      : null
+
+    const { client_id, ...updatePayload } = updatedData
+
+    const response = await fetch(
+      `https://metpro-erp-api.onrender.com/quotes/${quoteId}`,
+      {
+        method: "PUT",
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+          ...(token && { Authorization: `Bearer ${token}` }),
+          "Content-Type": "application/json"
         },
         body: JSON.stringify(updatePayload)
-      })
-      
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.detail || 'Update failed')
       }
-      
-      fetchQuotes()
-      
-      if (window.toast) {
-        window.toast('Quote updated!', {
-          title: '✅ Success',
-          description: `Quote ${quoteId} has been updated.`
-        })
-      }
-    } catch (error) {
-      console.error('Edit Quote Error:', error)
-      alert('Error updating quote: ' + error.message)
-      throw error
+    )
+
+    if (!response.ok) {
+      const error = await response.json()
+      throw new Error(error.detail || "Update failed")
     }
+
+    fetchQuotes()
+
+    if (window.toast) {
+      window.toast("Quote updated!", {
+        title: "✅ Success",
+        description: `Quote ${quoteId} has been updated.`
+      })
+    }
+
+  } catch (error) {
+    console.error("Edit Quote Error:", error)
+    alert("Error updating quote: " + error.message)
+    throw error
   }
+}
 
   // Create quote
   const handleCreateQuote = async (e) => {
