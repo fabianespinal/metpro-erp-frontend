@@ -1,5 +1,6 @@
 'use client'
 export const dynamic = "force-dynamic";
+
 import { useState, useEffect } from 'react'
 import CSVImportModal from '@/components/client/CSVImportModal'
 
@@ -18,23 +19,28 @@ export default function ClientsPage() {
   const [loading, setLoading] = useState(false)
   const [importModalOpen, setImportModalOpen] = useState(false)
 
-  // 🔒 FIXED: Get token from 'token' key
+  // Debug token status (SSR-safe)
+  const [tokenStatus, setTokenStatus] = useState("checking")
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("token")
+      setTokenStatus(token ? "present" : "missing")
+    }
+  }, [])
+
   const getAuthHeaders = () => {
     if (typeof window === "undefined") {
       return { 'Content-Type': 'application/json' }
     }
-    
+
     const token = localStorage.getItem("token")
-    
-    // DEBUG: Log token status
-    console.log('Token exists:', !!token)
-    console.log('Token preview:', token ? token.substring(0, 20) + '...' : 'NULL')
-    
+
     if (!token) {
-      console.error('❌ NO TOKEN FOUND - User needs to login')
+      console.error("❌ NO TOKEN FOUND")
       return { 'Content-Type': 'application/json' }
     }
-    
+
     return {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`
@@ -45,57 +51,46 @@ export default function ClientsPage() {
     fetchClients()
   }, [])
 
-  // 🔒 Fetch clients WITH token
   const fetchClients = async () => {
     try {
       const headers = getAuthHeaders()
-      console.log('Fetching clients with headers:', { ...headers, Authorization: headers.Authorization ? 'Bearer ***' : 'MISSING' })
-      
+
       const response = await fetch('https://metpro-erp-api.onrender.com/clients/', {
-        headers: headers
+        headers
       })
-      
-      console.log('Response status:', response.status)
-      
+
       if (!response.ok) {
         if (response.status === 401) {
-          alert('Session expired. Please login again.')
-          // Optional: redirect to login
-          // window.location.href = '/login'
+          alert("Session expired. Please login again.")
         }
         throw new Error(`HTTP ${response.status}`)
       }
-      
+
       const data = await response.json()
-      console.log('Clients fetched:', data.length)
       setClients(Array.isArray(data) ? data : [])
     } catch (error) {
-      console.error('Failed to fetch clients:', error)
+      console.error("Failed to fetch clients:", error)
       setClients([])
-      alert('Error loading clients. Please login again.')
+      alert("Error loading clients. Please login again.")
     }
   }
 
-  // 🔒 Create client WITH token
   const handleCreateClient = async (e) => {
     e.preventDefault()
     setLoading(true)
-    
+
     try {
       const response = await fetch('https://metpro-erp-api.onrender.com/clients/', {
         method: 'POST',
-        headers: {
-          ...getAuthHeaders(),
-          'Content-Type': 'application/json'
-        },
+        headers: getAuthHeaders(),
         body: JSON.stringify(newClient)
       })
-      
+
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.detail || 'Failed to create client')
+        throw new Error(errorData.detail || "Failed to create client")
       }
-      
+
       await fetchClients()
       setNewClient({
         company_name: '',
@@ -106,68 +101,67 @@ export default function ClientsPage() {
         tax_id: '',
         notes: ''
       })
-      alert('Client created successfully!')
+      alert("Client created successfully!")
     } catch (error) {
-      alert('Error: ' + error.message)
+      alert("Error: " + error.message)
     } finally {
       setLoading(false)
     }
   }
 
-  // 🔒 Update client WITH token
   const handleUpdateClient = async (e) => {
     e.preventDefault()
     setLoading(true)
-    
+
     try {
-      const response = await fetch(`https://metpro-erp-api.onrender.com/clients/${editingClient.id}`, {
-        method: 'PUT',
-        headers: {
-          ...getAuthHeaders(),
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(editingClient)
-      })
-      
-      if (!response.ok) throw new Error('Failed to update client')
-      
+      const response = await fetch(
+        `https://metpro-erp-api.onrender.com/clients/${editingClient.id}`,
+        {
+          method: 'PUT',
+          headers: getAuthHeaders(),
+          body: JSON.stringify(editingClient)
+        }
+      )
+
+      if (!response.ok) throw new Error("Failed to update client")
+
       await fetchClients()
       setEditingClient(null)
-      alert('Client updated successfully!')
+      alert("Client updated successfully!")
     } catch (error) {
-      alert('Error: ' + error.message)
+      alert("Error: " + error.message)
     } finally {
       setLoading(false)
     }
   }
 
-  // 🔒 Delete client WITH token
   const handleDeleteClient = async (clientId) => {
-    if (!confirm('Delete this client? This cannot be undone.')) return
-    
+    if (!confirm("Delete this client? This cannot be undone.")) return
+
     try {
-      const response = await fetch(`https://metpro-erp-api.onrender.com/clients/${clientId}`, {
-        method: 'DELETE',
-        headers: {
-          ...getAuthHeaders()
+      const response = await fetch(
+        `https://metpro-erp-api.onrender.com/clients/${clientId}`,
+        {
+          method: 'DELETE',
+          headers: getAuthHeaders()
         }
-      })
-      
-      if (!response.ok) throw new Error('Failed to delete client')
-      
+      )
+
+      if (!response.ok) throw new Error("Failed to delete client")
+
       await fetchClients()
-      alert('Client deleted!')
+      alert("Client deleted!")
     } catch (error) {
-      alert('Error deleting client: ' + error.message)
+      alert("Error deleting client: " + error.message)
     }
   }
 
   const handleImportComplete = () => {
     fetchClients()
-    if (window.toast) {
-      window.toast('Clients Imported!', {
-        title: '✅ Success',
-        description: 'Client list updated with new imports'
+    if (typeof window !== "undefined" && window.toast) {
+      window.toast("Clients Imported!", {
+        title: "✅ Success",
+        description: "Client list updated with new imports"
       })
     }
   }
@@ -183,100 +177,121 @@ export default function ClientsPage() {
           Import CSV
         </button>
       </div>
-      
-      {/* Debug Info */}
+
+      {/* Debug Info (SSR-safe) */}
       <div className='bg-yellow-50 border border-yellow-200 rounded p-3 mb-4 text-xs'>
         <strong>Debug Info:</strong> Token in localStorage:{' '}
-        {typeof window !== "undefined" && localStorage.getItem("token")
-          ? '✅ Present'
-          : '❌ Missing'}
+        {tokenStatus === "checking"
+          ? "⏳ Checking..."
+          : tokenStatus === "present"
+          ? "✅ Present"
+          : "❌ Missing"}
       </div>
-      
+
       {/* Create/Edit Client Form */}
       <div className='bg-white rounded-lg shadow p-6 mb-8'>
         <h2 className='text-xl font-semibold mb-4'>
-          {editingClient ? 'Edit Client' : 'New Client'}
+          {editingClient ? "Edit Client" : "New Client"}
         </h2>
-        <form onSubmit={editingClient ? handleUpdateClient : handleCreateClient} className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+
+        <form
+          onSubmit={editingClient ? handleUpdateClient : handleCreateClient}
+          className='grid grid-cols-1 md:grid-cols-2 gap-4'
+        >
           <input
             type='text'
             placeholder='Company Name *'
             value={editingClient ? editingClient.company_name : newClient.company_name}
-            onChange={(e) => editingClient 
-              ? setEditingClient({...editingClient, company_name: e.target.value})
-              : setNewClient({...newClient, company_name: e.target.value})
+            onChange={(e) =>
+              editingClient
+                ? setEditingClient({ ...editingClient, company_name: e.target.value })
+                : setNewClient({ ...newClient, company_name: e.target.value })
             }
             className='border p-2 rounded'
             required
           />
+
           <input
             type='text'
             placeholder='Contact Name'
             value={editingClient ? editingClient.contact_name : newClient.contact_name}
-            onChange={(e) => editingClient
-              ? setEditingClient({...editingClient, contact_name: e.target.value})
-              : setNewClient({...newClient, contact_name: e.target.value})
+            onChange={(e) =>
+              editingClient
+                ? setEditingClient({ ...editingClient, contact_name: e.target.value })
+                : setNewClient({ ...newClient, contact_name: e.target.value })
             }
             className='border p-2 rounded'
           />
+
           <input
             type='email'
             placeholder='Email'
             value={editingClient ? editingClient.email : newClient.email}
-            onChange={(e) => editingClient
-              ? setEditingClient({...editingClient, email: e.target.value})
-              : setNewClient({...newClient, email: e.target.value})
+            onChange={(e) =>
+              editingClient
+                ? setEditingClient({ ...editingClient, email: e.target.value })
+                : setNewClient({ ...newClient, email: e.target.value })
             }
             className='border p-2 rounded'
           />
+
           <input
             type='tel'
             placeholder='Phone'
             value={editingClient ? editingClient.phone : newClient.phone}
-            onChange={(e) => editingClient
-              ? setEditingClient({...editingClient, phone: e.target.value})
-              : setNewClient({...newClient, phone: e.target.value})
+            onChange={(e) =>
+              editingClient
+                ? setEditingClient({ ...editingClient, phone: e.target.value })
+                : setNewClient({ ...newClient, phone: e.target.value })
             }
             className='border p-2 rounded'
           />
+
           <input
             type='text'
             placeholder='Address'
             value={editingClient ? editingClient.address : newClient.address}
-            onChange={(e) => editingClient
-              ? setEditingClient({...editingClient, address: e.target.value})
-              : setNewClient({...newClient, address: e.target.value})
+            onChange={(e) =>
+              editingClient
+                ? setEditingClient({ ...editingClient, address: e.target.value })
+                : setNewClient({ ...newClient, address: e.target.value })
             }
             className='border p-2 rounded md:col-span-2'
           />
+
           <input
             type='text'
             placeholder='Tax ID (RNC)'
             value={editingClient ? editingClient.tax_id : newClient.tax_id}
-            onChange={(e) => editingClient
-              ? setEditingClient({...editingClient, tax_id: e.target.value})
-              : setNewClient({...newClient, tax_id: e.target.value})
+            onChange={(e) =>
+              editingClient
+                ? setEditingClient({ ...editingClient, tax_id: e.target.value })
+                : setNewClient({ ...newClient, tax_id: e.target.value })
             }
             className='border p-2 rounded'
           />
+
           <textarea
             placeholder='Notes'
             value={editingClient ? editingClient.notes : newClient.notes}
-            onChange={(e) => editingClient
-              ? setEditingClient({...editingClient, notes: e.target.value})
-              : setNewClient({...newClient, notes: e.target.value})
+            onChange={(e) =>
+              editingClient
+                ? setEditingClient({ ...editingClient, notes: e.target.value })
+                : setNewClient({ ...newClient, notes: e.target.value })
             }
             className='border p-2 rounded md:col-span-2'
             rows='3'
           />
+
           <div className='md:col-span-2 flex gap-2'>
             <button
               type='submit'
               disabled={loading}
               className='bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 disabled:opacity-50'
             >
-              {loading ? 'Saving...' : (editingClient ? 'Update Client' : 'Add Client')}
+              {loading ? "Saving..." : editingClient ? "Update Client" : "Add Client"}
             </button>
+
             {editingClient && (
               <button
                 type='button'
@@ -289,11 +304,11 @@ export default function ClientsPage() {
           </div>
         </form>
       </div>
-      
+
       {/* Clients List */}
       <div className='bg-white rounded-lg shadow overflow-hidden'>
         <div className='p-4 border-b font-bold'>Client List ({clients.length})</div>
-        
+
         {clients.length === 0 ? (
           <div className='p-8 text-center text-gray-500'>
             No clients yet. Add one above or import via CSV!
@@ -310,6 +325,7 @@ export default function ClientsPage() {
                 <th className='p-3 text-right'>Actions</th>
               </tr>
             </thead>
+
             <tbody>
               {clients.map((client) => (
                 <tr key={client.id} className='border-t hover:bg-gray-50'>
@@ -318,6 +334,7 @@ export default function ClientsPage() {
                   <td className='p-3'>{client.email || '-'}</td>
                   <td className='p-3'>{client.phone || '-'}</td>
                   <td className='p-3'>{client.tax_id || '-'}</td>
+
                   <td className='p-3 text-right'>
                     <div className='flex justify-end gap-2'>
                       <button
@@ -326,6 +343,7 @@ export default function ClientsPage() {
                       >
                         Edit
                       </button>
+
                       <button
                         onClick={() => handleDeleteClient(client.id)}
                         className='text-red-600 hover:text-red-800 px-2 py-1 rounded hover:bg-red-50 transition'
