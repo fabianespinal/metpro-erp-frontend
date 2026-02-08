@@ -20,10 +20,9 @@ export default function ProductsPage() {
     }
   }
 
-  useEffect(() => {
-    fetchProducts()
-  }, [])
-}
+useEffect(() => {
+  fetchProducts()
+}, [])
 
   // 🔒 Fetch products WITH token
   const fetchProducts = async () => {

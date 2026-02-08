@@ -31,13 +31,12 @@ export default function ProjectsPage() {
     }
   }
 
-  useEffect(() => {
-    fetchProjects()
-    fetchClients()
-  }, [filters.status])
-}
+useEffect(() => {
+  fetchProjects()
+  fetchClients()
+}, [filters.status])
 
-  const fetchProjects = async () => {
+const fetchProjects = async () => {
   try {
     const params = filters.status ? `?status=${filters.status}` : ''
     const res = await fetch(`https://metpro-erp-api.onrender.com/projects${params}`, {

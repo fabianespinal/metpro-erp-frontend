@@ -24,10 +24,9 @@ export default function ReportsPage() {
     }
   }
 
-  useEffect(() => {
-    fetchClients()
-  }, [])
-}
+useEffect(() => {
+  fetchClients()
+}, [])
 
   const fetchClients = async () => {
     try {
