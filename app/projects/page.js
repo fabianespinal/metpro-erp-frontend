@@ -112,10 +112,12 @@ export default function ProjectsPage() {
     if (!confirm('Delete this project? This cannot be undone.')) return
     
     try {
-      const res = await fetch(`https://metpro-erp-api.onrender.com/projects/${id}`, {
-        method: 'DELETE',
-        headers: getAuthHeaders()
-      })
+    const res = await fetch(`https://metpro-erp-api.onrender.com/projects/${id}`, {
+      method: 'DELETE',
+      headers: {
+        ...getAuthHeaders()
+      }
+    })
       
       if (!res.ok) throw new Error('Delete failed')
       
