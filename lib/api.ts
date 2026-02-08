@@ -10,17 +10,22 @@ export async function api(
     token = localStorage.getItem("token");
   }
 
-  // Force headers to be a mutable string dictionary
-  const headers: Record<string, string> = {
-    ...(options.headers as Record<string, string>),
-  };
+  // Always create a clean mutable header object
+  const headers: Record<string, string> = {};
+
+  // Copy user-provided headers safely
+  if (options.headers) {
+    Object.assign(headers, options.headers as Record<string, string>);
+  }
 
   const isFormData = options.body instanceof FormData;
 
+  // Only set JSON content-type when NOT uploading files
   if (!isFormData) {
     headers["Content-Type"] = "application/json";
   }
 
+  // Attach token if available
   if (token) {
     headers["Authorization"] = `Bearer ${token}`;
   }
@@ -29,8 +34,10 @@ export async function api(
     ...options,
     headers,
     cache: "no-store",
+    mode: "cors",
   });
 
+  // Handle expired token
   if (res.status === 401) {
     if (typeof window !== "undefined") {
       localStorage.removeItem("token");
@@ -39,11 +46,21 @@ export async function api(
     throw new Error("Unauthorized");
   }
 
+  // Handle all other errors
   if (!res.ok) {
-    const text = await res.text();
-    throw new Error(text || "Request failed");
+    let message = "Request failed";
+
+    try {
+      const text = await res.text();
+      message = text || message;
+    } catch {
+      /* ignore */
+    }
+
+    throw new Error(`API error ${res.status}: ${message}`);
   }
 
+  // Try to parse JSON, fallback to null
   try {
     return await res.json();
   } catch {
