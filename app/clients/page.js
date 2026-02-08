@@ -2,6 +2,7 @@
 export const dynamic = "force-dynamic";
 
 import { useState, useEffect } from 'react'
+import { api } from '@/lib/api'
 import CSVImportModal from '@/components/client/CSVImportModal'
 
 export default function ClientsPage() {
@@ -29,49 +30,22 @@ export default function ClientsPage() {
     }
   }, [])
 
-  const getAuthHeaders = () => {
-    if (typeof window === "undefined") {
-      return { 'Content-Type': 'application/json' }
-    }
-
-    const token = localStorage.getItem("token")
-
-    if (!token) {
-      console.error("❌ NO TOKEN FOUND")
-      return { 'Content-Type': 'application/json' }
-    }
-
-    return {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
-    }
-  }
-
   useEffect(() => {
     fetchClients()
   }, [])
 
   const fetchClients = async () => {
     try {
-      const headers = getAuthHeaders()
-
-      const response = await fetch('https://metpro-erp-api.onrender.com/clients/', {
-        headers
-      })
-
-      if (!response.ok) {
-        if (response.status === 401) {
-          alert("Session expired. Please login again.")
-        }
-        throw new Error(`HTTP ${response.status}`)
-      }
-
-      const data = await response.json()
+      const data = await api('/clients/', { method: 'GET' })
       setClients(Array.isArray(data) ? data : [])
     } catch (error) {
       console.error("Failed to fetch clients:", error)
       setClients([])
-      alert("Error loading clients. Please login again.")
+      if (error.message.includes('401') || error.message.includes('unauthorized')) {
+        alert("Session expired. Please login again.")
+      } else {
+        alert("Error loading clients. Please try again.")
+      }
     }
   }
 
@@ -80,16 +54,10 @@ export default function ClientsPage() {
     setLoading(true)
 
     try {
-      const response = await fetch('https://metpro-erp-api.onrender.com/clients/', {
+      await api('/clients/', {
         method: 'POST',
-        headers: getAuthHeaders(),
         body: JSON.stringify(newClient)
       })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.detail || "Failed to create client")
-      }
 
       await fetchClients()
       setNewClient({
@@ -114,16 +82,10 @@ export default function ClientsPage() {
     setLoading(true)
 
     try {
-      const response = await fetch(
-        `https://metpro-erp-api.onrender.com/clients/${editingClient.id}`,
-        {
-          method: 'PUT',
-          headers: getAuthHeaders(),
-          body: JSON.stringify(editingClient)
-        }
-      )
-
-      if (!response.ok) throw new Error("Failed to update client")
+      await api(`/clients/${editingClient.id}`, {
+        method: 'PUT',
+        body: JSON.stringify(editingClient)
+      })
 
       await fetchClients()
       setEditingClient(null)
@@ -139,16 +101,7 @@ export default function ClientsPage() {
     if (!confirm("Delete this client? This cannot be undone.")) return
 
     try {
-      const response = await fetch(
-        `https://metpro-erp-api.onrender.com/clients/${clientId}`,
-        {
-          method: 'DELETE',
-          headers: getAuthHeaders()
-        }
-      )
-
-      if (!response.ok) throw new Error("Failed to delete client")
-
+      await api(`/clients/${clientId}`, { method: 'DELETE' })
       await fetchClients()
       alert("Client deleted!")
     } catch (error) {

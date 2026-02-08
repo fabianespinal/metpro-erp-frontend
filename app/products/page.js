@@ -1,6 +1,6 @@
 'use client'
-
 import { useState, useEffect } from 'react'
+import { api } from "@/lib/api"
 
 export default function ProductsPage() {
   const [products, setProducts] = useState([])
@@ -10,16 +10,6 @@ export default function ProductsPage() {
   const [importResult, setImportResult] = useState(null)
   const [csvFile, setCsvFile] = useState(null)
 
-  const getAuthHeaders = () => {
-    const token = typeof window !== "undefined"
-      ? localStorage.getItem("token")
-      : null
-
-    return {
-      ...(token && { 'Authorization': `Bearer ${token}` })
-    }
-  }
-
   useEffect(() => {
     fetchProducts()
   }, [])
@@ -27,13 +17,10 @@ export default function ProductsPage() {
   // 🔒 Fetch products WITH token
   const fetchProducts = async () => {
     try {
-      const response = await fetch('https://metpro-erp-api.onrender.com/products/', {
-        method: 'GET',
-        headers: {
-          ...getAuthHeaders()
-        }
-      })
+      const response = await api('/products/', { method: 'GET' })
+      
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      
       const data = await response.json()
       setProducts(Array.isArray(data) ? data : [])
     } catch (error) {
@@ -48,11 +35,10 @@ export default function ProductsPage() {
     setLoading(true)
     
     try {
-      const response = await fetch('https://metpro-erp-api.onrender.com/products/', {
+      const response = await api('/products/', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          ...getAuthHeaders()
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify(newProduct)
       })
@@ -78,11 +64,10 @@ export default function ProductsPage() {
     setLoading(true)
     
     try {
-      const response = await fetch(`https://metpro-erp-api.onrender.com/products/${editingProduct.id}`, {
+      const response = await api(`/products/${editingProduct.id}`, {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/json',
-          ...getAuthHeaders()
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify(editingProduct)
       })
@@ -104,12 +89,7 @@ export default function ProductsPage() {
     if (!confirm('Delete this product?')) return
     
     try {
-      const response = await fetch(`https://metpro-erp-api.onrender.com/products/${productId}`, {
-        method: 'DELETE',
-        headers: {
-          ...getAuthHeaders()
-        }
-      })
+      const response = await api(`/products/${productId}`, { method: 'DELETE' })
       
       if (!response.ok) throw new Error('Failed to delete product')
       
@@ -123,7 +103,6 @@ export default function ProductsPage() {
   // 🔒 Import CSV WITH token
   const handleCsvImport = async (e) => {
     e.preventDefault()
-
     if (!csvFile) {
       alert('Please select a CSV file')
       return
@@ -135,11 +114,8 @@ export default function ProductsPage() {
     formData.append('file', csvFile)
 
     try {
-      const response = await fetch('https://metpro-erp-api.onrender.com/products/import-csv', {
+      const response = await api('/products/import-csv', {
         method: 'POST',
-        headers: {
-          ...getAuthHeaders()
-        },
         body: formData
       })
 
@@ -193,13 +169,13 @@ export default function ProductsPage() {
           <p>📋 CSV Format: Must have columns: <code>name</code>, <code>description</code>, <code>unit_price</code></p>
           <p className='mt-2'>Example:</p>
           <pre className='bg-gray-100 p-2 rounded text-xs'>
-name,description,unit_price
-Cement,Portland cement 50kg bag,50.00
-Steel,Reinforcing steel bars,200.00
+            name,description,unit_price
+            Cement,Portland cement 50kg bag,50.00
+            Steel,Reinforcing steel bars,200.00
           </pre>
         </div>
       </div>
-      
+
       {/* Create/Edit Product Form */}
       <div className='bg-white rounded-lg shadow p-6 mb-8'>
         <h2 className='text-xl font-semibold mb-4'>
@@ -260,7 +236,7 @@ Steel,Reinforcing steel bars,200.00
           </div>
         </form>
       </div>
-      
+
       {/* Products List */}
       <div className='bg-white rounded-lg shadow overflow-hidden'>
         <div className='p-4 border-b font-bold'>Product Catalog ({products.length})</div>

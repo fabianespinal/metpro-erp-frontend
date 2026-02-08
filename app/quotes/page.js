@@ -1,6 +1,6 @@
 'use client'
-
 import { useState, useEffect } from 'react'
+import { api } from "@/lib/api"
 import StatusPill from '@/components/ui/StatusPill'
 import PrimaryActionButton from '@/components/quote/PrimaryActionButton'
 import OverflowMenu from '@/components/quote/OverflowMenu'
@@ -38,18 +38,6 @@ export default function QuotesPage() {
   const [productModal, setProductModal] = useState({ isOpen: false, itemIndex: null })
   const [searchTerm, setSearchTerm] = useState('')
 
-  // Get auth headers with token
-  const getAuthHeaders = () => {
-    const token = typeof window !== "undefined"
-      ? localStorage.getItem("token")
-      : null
-
-    return {
-      "Content-Type": "application/json",
-      ...(token && { Authorization: `Bearer ${token}` })
-    }
-  }
-
   useEffect(() => {
     fetchClients()
     fetchQuotes()
@@ -63,14 +51,7 @@ export default function QuotesPage() {
   // Fetch clients
   const fetchClients = async () => {
     try {
-      const response = await fetch('https://metpro-erp-api.onrender.com/clients/', {
-        method: 'GET',
-        headers: {
-          ...getAuthHeaders()
-        }
-      })
-      if (!response.ok) throw new Error(`HTTP ${response.status}`)
-      const data = await response.json()
+      const data = await api("/clients/", { method: "GET" })
       setClients(Array.isArray(data) ? data : [])
     } catch (error) {
       console.error('Failed to fetch clients:', error)
@@ -81,14 +62,7 @@ export default function QuotesPage() {
   // Fetch quotes
   const fetchQuotes = async () => {
     try {
-      const response = await fetch('https://metpro-erp-api.onrender.com/quotes/', {
-        method: 'GET',
-        headers: {
-          ...getAuthHeaders()
-        }
-      })
-      if (!response.ok) throw new Error(`HTTP ${response.status}`)
-      const data = await response.json()
+      const data = await api("/quotes/", { method: "GET" })
       setQuotes(Array.isArray(data) ? data : [])
     } catch (error) {
       console.error('Failed to fetch quotes:', error)
@@ -99,14 +73,7 @@ export default function QuotesPage() {
   // Fetch products
   const fetchProducts = async () => {
     try {
-      const response = await fetch('https://metpro-erp-api.onrender.com/products/', {
-        method: 'GET',
-        headers: {
-          ...getAuthHeaders()
-        }
-      })
-      if (!response.ok) throw new Error(`HTTP ${response.status}`)
-      const data = await response.json()
+      const data = await api("/products/", { method: "GET" })
       setProducts(Array.isArray(data) ? data : [])
     } catch (error) {
       console.error('Failed to fetch products:', error)
@@ -116,7 +83,6 @@ export default function QuotesPage() {
 
   const calculateTotals = () => {
     const items_total = quoteItems.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0)
-    
     const total_discounts = quoteItems.reduce((sum, item) => {
       const subtotal = item.quantity * item.unit_price
       if (item.discount_type === 'percentage') {
@@ -126,9 +92,9 @@ export default function QuotesPage() {
       }
       return sum
     }, 0)
-    
+
     const items_after_discount = items_total - total_discounts
-    
+
     const supervision = charges.supervision 
       ? items_after_discount * (charges.supervision_percentage / 100) 
       : 0
@@ -144,11 +110,11 @@ export default function QuotesPage() {
     const contingency = charges.contingency 
       ? items_after_discount * (charges.contingency_percentage / 100) 
       : 0
-    
+
     const subtotal_general = items_after_discount + supervision + admin + insurance + transport + contingency
     const itbis = subtotal_general * 0.18
     const grand_total = subtotal_general + itbis
-    
+
     setTotals({
       items_total: items_total.toFixed(2),
       total_discounts: total_discounts.toFixed(2),
@@ -196,9 +162,9 @@ export default function QuotesPage() {
   const getPdfUrl = (quoteId) => {
     const quote = (Array.isArray(quotes) ? quotes : []).find(q => q.quote_id === quoteId)
     if (quote && quote.status === 'Invoiced') {
-      return `https://metpro-erp-api.onrender.com/invoices/${quoteId}/pdf`
+      return `/invoices/${quoteId}/pdf`
     }
-    return `https://metpro-erp-api.onrender.com/quotes/${quoteId}/pdf`
+    return `/quotes/${quoteId}/pdf`
   }
 
   // ✅ FIX: Returns the correct filename based on quote status
@@ -212,28 +178,12 @@ export default function QuotesPage() {
 
   // Download PDF
   const handleDownloadPDF = async (quoteId) => {
-  try {
-    const token = typeof window !== "undefined"
-      ? localStorage.getItem("token")
-      : null
-
-    if (!token) {
-      alert("You must be logged in to download PDFs")
-      window.location.href = "/login"
-      return
-    }
-
-      // ✅ FIX: Uses correct URL and filename based on status
+    try {
       const url = getPdfUrl(quoteId)
       const filename = getPdfFilename(quoteId)
 
-      const response = await fetch(url, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      })
-
+      const response = await api(url, { method: "GET" }, { raw: true })
+      
       if (!response.ok) {
         throw new Error(`PDF download failed: ${response.status} ${response.statusText}`)
       }
@@ -255,23 +205,8 @@ export default function QuotesPage() {
 
   // Generate Conduce
   const handleGenerateConduce = async (invoiceId) => {
-  try {
-    const token = typeof window !== "undefined"
-      ? localStorage.getItem("token")
-      : null
-
-    if (!token) {
-      alert("You must be logged in to generate conduce")
-      window.location.href = "/login"
-      return
-    }
-
-      const response = await fetch(`https://metpro-erp-api.onrender.com/invoices/${invoiceId}/conduce/pdf`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      })
+    try {
+      const response = await api(`/invoices/${invoiceId}/conduce/pdf`, { method: "GET" }, { raw: true })
 
       if (!response.ok) {
         throw new Error(`Conduce generation failed: ${response.status} ${response.statusText}`)
@@ -301,26 +236,10 @@ export default function QuotesPage() {
 
   // Preview PDF
   const handlePreviewPDF = async (quoteId) => {
-  try {
-    const token = typeof window !== "undefined"
-      ? localStorage.getItem("token")
-      : null
-
-    if (!token) {
-      alert("You must be logged in to preview PDFs")
-      window.location.href = "/login"
-      return
-    }
-
-      // ✅ FIX: Uses correct URL based on status
+    try {
       const url = getPdfUrl(quoteId)
 
-      const response = await fetch(url, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      })
+      const response = await api(url, { method: "GET" }, { raw: true })
 
       if (!response.ok) {
         throw new Error(`Preview failed: ${response.status} ${response.statusText}`)
@@ -342,51 +261,22 @@ export default function QuotesPage() {
 
   // Duplicate quote
   const handleDuplicateQuote = async (quoteId) => {
-  if (!confirm("Duplicate this quote?")) return
+    if (!confirm("Duplicate this quote?")) return
+    try {
+      const data = await api(`/quotes/${quoteId}/duplicate`, { method: "POST" })
 
-  try {
-    const token = typeof window !== "undefined"
-      ? localStorage.getItem("token")
-      : null
-
-    const response = await fetch(
-      `https://metpro-erp-api.onrender.com/quotes/${quoteId}/duplicate`,
-      {
-        method: "POST",
-        headers: {
-          ...(token && { Authorization: `Bearer ${token}` })
-        }
-      }
-    )
-
-    if (!response.ok) throw new Error("Failed to duplicate")
-
-    const data = await response.json()
-    alert(`✅ Quote duplicated! New ID: ${data.quote_id}`)
-    fetchQuotes()
-
-  } catch (error) {
-    alert("Error duplicating quote: " + error.message)
+      alert(`✅ Quote duplicated! New ID: ${data.quote_id}`)
+      fetchQuotes()
+    } catch (error) {
+      alert("Error duplicating quote: " + error.message)
+    }
   }
-}
 
   // Convert to invoice
   const handleConvertToInvoice = async (quoteId) => {
     if (!confirm(`Convert quote ${quoteId} to invoice?\nThis will change the ID from COT- to INV- prefix and cannot be undone.`)) return
-    
     try {
-    const response = await fetch(`https://metpro-erp-api.onrender.com/quotes/${quoteId}/convert-to-invoice`, {
-      method: 'POST',
-      headers: {
-        ...getAuthHeaders()
-      }
-    })
-      
-      const data = await response.json()
-      
-      if (!response.ok) {
-        throw new Error(data.detail || 'Failed to convert to invoice')
-      }
+      const data = await api(`/quotes/${quoteId}/convert-to-invoice`, { method: "POST" })
       
       alert(`✅ SUCCESS!\nQuote converted to invoice:\nNEW ID: ${data.invoice_id}`)
       fetchQuotes()
@@ -406,16 +296,10 @@ export default function QuotesPage() {
   // Update status
   const handleUpdateStatus = async (quoteId, newStatus) => {
     try {
-      const response = await fetch(`https://metpro-erp-api.onrender.com/quotes/${quoteId}/status`, {
-        method: 'PUT',
-        headers: {
-          ...getAuthHeaders(),
-          'Content-Type': 'application/json'
-        },
+      await api(`/quotes/${quoteId}/status`, {
+        method: "PATCH",
         body: JSON.stringify({ status: newStatus })
       })
-
-      if (!response.ok) throw new Error('Failed to update status')
       
       fetchQuotes()
       
@@ -432,29 +316,8 @@ export default function QuotesPage() {
 
   // Delete quote
   const handleDeleteQuote = async (quoteId) => {
-  try {
-    const token = typeof window !== "undefined"
-      ? localStorage.getItem("token")
-      : null
-
-    if (!token) {
-      alert("You must be logged in to delete quotes")
-      window.location.href = "/login"
-      return
-    }
-
-      const response = await fetch(`https://metpro-erp-api.onrender.com/quotes/${quoteId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }))
-        throw new Error(errorData.detail || `HTTP ${response.status}`)
-      }
+    try {
+      await api(`/quotes/${quoteId}`, { method: "DELETE" })
 
       setQuotes(prevQuotes => prevQuotes.filter(q => q.quote_id !== quoteId))
       
@@ -480,45 +343,28 @@ export default function QuotesPage() {
 
   // Save edit
   const handleSaveEdit = async (quoteId, updatedData) => {
-  try {
-    const token = typeof window !== "undefined"
-      ? localStorage.getItem("token")
-      : null
+    try {
+      const { client_id, ...updatePayload } = updatedData
 
-    const { client_id, ...updatePayload } = updatedData
-
-    const response = await fetch(
-      `https://metpro-erp-api.onrender.com/quotes/${quoteId}`,
-      {
+      await api(`/quotes/${quoteId}`, {
         method: "PUT",
-        headers: {
-          ...(token && { Authorization: `Bearer ${token}` }),
-          "Content-Type": "application/json"
-        },
         body: JSON.stringify(updatePayload)
-      }
-    )
-
-    if (!response.ok) {
-      const error = await response.json()
-      throw new Error(error.detail || "Update failed")
-    }
-
-    fetchQuotes()
-
-    if (window.toast) {
-      window.toast("Quote updated!", {
-        title: "✅ Success",
-        description: `Quote ${quoteId} has been updated.`
       })
-    }
 
-  } catch (error) {
-    console.error("Edit Quote Error:", error)
-    alert("Error updating quote: " + error.message)
-    throw error
+      fetchQuotes()
+
+      if (window.toast) {
+        window.toast("Quote updated!", {
+          title: "✅ Success",
+          description: `Quote ${quoteId} has been updated.`
+        })
+      }
+    } catch (error) {
+      console.error("Edit Quote Error:", error)
+      alert("Error updating quote: " + error.message)
+      throw error
+    }
   }
-}
 
   // Create quote
   const handleCreateQuote = async (e) => {
@@ -531,30 +377,19 @@ export default function QuotesPage() {
       alert('Please add at least one product')
       return
     }
-    
     setLoading(true)
     try {
-    const response = await fetch('https://metpro-erp-api.onrender.com/quotes/', {
-      method: 'POST',
-      headers: {
-        ...getAuthHeaders(),
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        client_id: selectedClient.id,
-        project_name: projectName,
-        notes: notes,
-        included_charges: charges,
-        items: quoteItems
+      const data = await api("/quotes/", {
+        method: "POST",
+        body: JSON.stringify({
+          client_id: selectedClient.id,
+          project_name: projectName,
+          notes: notes,
+          included_charges: charges,
+          items: quoteItems
+        })
       })
-    })
-      
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.detail || 'Failed to create quote')
-      }
 
-      const data = await response.json()
       alert(`Quote created successfully! ID: ${data.quote_id}`)
       fetchQuotes()
       
@@ -584,13 +419,13 @@ export default function QuotesPage() {
 
   // Filter quotes
   const safeQuotes = Array.isArray(quotes) ? quotes : []
-  const filteredQuotes = statusFilter === 'all' 
-    ? safeQuotes 
+  const filteredQuotes = statusFilter === 'all'
+    ? safeQuotes
     : safeQuotes.filter(q => q.status === statusFilter)
 
   return (
-    <div className='p-8 max-w-6xl mx-auto'>
-      <h1 className='text-3xl font-bold mb-8 text-center'>METPRO ERP - Quotes</h1>
+    <div className='p-6 max-w-7xl mx-auto'>
+      <h1 className='text-2xl font-bold mb-6'>METPRO ERP - Quotes</h1>
       
       {/* Create Quote Form */}
       <div className='bg-white rounded-lg shadow p-6 mb-8'>
@@ -1011,5 +846,3 @@ export default function QuotesPage() {
     </div>
   )
 }
-{/* fix all at once */}
-

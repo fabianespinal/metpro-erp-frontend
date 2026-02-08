@@ -1,341 +1,320 @@
 'use client'
-
 import { useState, useEffect } from 'react'
-import StatusPill from '@/components/ui/StatusPill'
+import { api } from "@/lib/api"
 
-export default function ProjectsPage() {
-  const [projects, setProjects] = useState([])
-  const [clients, setClients] = useState([])
-  const [newProject, setNewProject] = useState({
-    client_id: '',
-    name: '',
-    description: '',
-    status: 'planning',
+export default function ReportsPage() {
+  const [reportType, setReportType] = useState('quotes-summary')
+  const [filters, setFilters] = useState({
     start_date: '',
     end_date: '',
-    estimated_budget: '',
-    notes: ''
+    client_id: ''
   })
-  const [editingProject, setEditingProject] = useState(null)
+  const [clients, setClients] = useState([])
+  const [reportData, setReportData] = useState(null)
   const [loading, setLoading] = useState(false)
-  const [filters, setFilters] = useState({ status: '' })
 
-  const getAuthHeaders = () => {
-    const token = typeof window !== "undefined"
-      ? localStorage.getItem("token")
-      : null
-
-    return {
-      'Content-Type': 'application/json',
-      ...(token && { 'Authorization': `Bearer ${token}` })
-    }
-  }
-
-  const fetchProjects = async () => {
-    try {
-      const params = filters.status ? `?status=${filters.status}` : ''
-      const res = await fetch(`https://metpro-erp-api.onrender.com/projects${params}`, {
-        method: 'GET',
-        headers: {
-          ...getAuthHeaders()
-        }
-      })
-      if (!res.ok) throw new Error('Failed to fetch projects')
-      const data = await res.json()
-      setProjects(Array.isArray(data) ? data : [])
-    } catch (error) {
-      console.error('Fetch projects error:', error)
-      setProjects([])
-      alert('Error loading projects. Please login again.')
-    }
-  }
+  useEffect(() => {
+    fetchClients()
+  }, [])
 
   const fetchClients = async () => {
     try {
-      const res = await fetch('https://metpro-erp-api.onrender.com/clients/', {
-        method: 'GET',
-        headers: {
-          ...getAuthHeaders()
-        }
-      })
-      if (!res.ok) throw new Error('Failed to fetch clients')
-      const data = await res.json()
+      const data = await api("/clients/", { method: "GET" })
       setClients(Array.isArray(data) ? data : [])
     } catch (error) {
       console.error('Fetch clients error:', error)
-      setClients([])
     }
   }
 
-  useEffect(() => {
-    fetchProjects()
-    fetchClients()
-  }, [filters.status])
-
-  const handleSubmit = async (e) => {
-    e.preventDefault()
+  const runReport = async () => {
+    if (!filters.start_date || !filters.end_date) {
+      alert('Please select both start and end dates')
+      return
+    }
     setLoading(true)
-    
     try {
-      const url = editingProject 
-        ? `https://metpro-erp-api.onrender.com/projects/${editingProject.id}`
-        : 'https://metpro-erp-api.onrender.com/projects/'
+      const params = new URLSearchParams({
+        start_date: filters.start_date,
+        end_date: filters.end_date,
+        ...(filters.client_id && { client_id: filters.client_id })
+      }).toString()
       
-      const method = editingProject ? 'PUT' : 'POST'
-      const body = {
-        client_id: parseInt(newProject.client_id),
-        name: newProject.name,
-        description: newProject.description,
-        status: newProject.status,
-        start_date: newProject.start_date,
-        end_date: newProject.end_date || null,
-        estimated_budget: newProject.estimated_budget ? parseFloat(newProject.estimated_budget) : null,
-        notes: newProject.notes
-      }
-      
-      const res = await fetch(url, {
-        method,
-        headers: {
-          ...getAuthHeaders(),
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(body)
-      })
-      
-      if (!res.ok) throw new Error('Operation failed')
-      
-      await fetchProjects()
-      resetForm()
-      alert(editingProject ? 'Project updated!' : 'Project created!')
+      const data = await api(`/reports/${reportType}?${params}`, { method: "GET" })
+
+      setReportData(data)
     } catch (error) {
-      alert(`Error: ${error.message}`)
+      console.error('Report generation failed:', error)
+      alert(`Report failed: ${error.message}`)
     } finally {
       setLoading(false)
     }
   }
 
-  const handleDelete = async (id) => {
-    if (!confirm('Delete this project? This cannot be undone.')) return
-    
-    try {
-      const res = await fetch(`https://metpro-erp-api.onrender.com/projects/${id}`, {
-        method: 'DELETE',
-        headers: {
-          ...getAuthHeaders()
-        }
+  const exportCSV = () => {
+    if (!reportData) return
+    let csvContent = ''
+    let filename = reportType
+
+    if (reportType === 'quotes-summary') {
+      filename = 'quotes_summary'
+      csvContent = 'Status,Count,Percentage\n'
+      reportData.status_breakdown?.forEach(row => {
+        csvContent += `${row.status},${row.count},${row.percentage}%\n`
       })
-      
-      if (!res.ok) throw new Error('Delete failed')
-      
-      await fetchProjects()
-      alert('Project deleted!')
-    } catch (error) {
-      alert(`Error: ${error.message}`)
+      csvContent += `\nTotal Quotes,${reportData.summary?.total_quotes || 0},100%`
+    } 
+    else if (reportType === 'revenue') {
+      filename = 'revenue_report'
+      csvContent = 'Status,Revenue,Quote Count\n'
+      reportData.revenue_breakdown?.forEach(row => {
+        csvContent += `${row.status},$${row.total_revenue.toFixed(2)},${row.quote_count}\n`
+      })
+      csvContent += `\nGrand Total,$${reportData.grand_total.toFixed(2)}`
+    } 
+    else if (reportType === 'client-activity') {
+      filename = 'client_activity'
+      csvContent = 'Client,Quotes,Total Quoted,Last Quote Date\n'
+      reportData.clients?.forEach(row => {
+        csvContent += `${row.client_name},${row.quote_count},$${row.total_quoted.toFixed(2)},${row.last_quote_date || 'N/A'}\n`
+      })
     }
-  }
 
-  const resetForm = () => {
-    setNewProject({
-      client_id: '',
-      name: '',
-      description: '',
-      status: 'planning',
-      start_date: '',
-      end_date: '',
-      estimated_budget: '',
-      notes: ''
-    })
-    setEditingProject(null)
-  }
-
-  const startEdit = (project) => {
-    setNewProject({
-      client_id: project.client_id.toString(),
-      name: project.name,
-      description: project.description || '',
-      status: project.status,
-      start_date: project.start_date,
-      end_date: project.end_date || '',
-      estimated_budget: project.estimated_budget?.toString() || '',
-      notes: project.notes || ''
-    })
-    setEditingProject(project)
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.setAttribute('href', url)
+    link.setAttribute('download', `${filename}_${new Date().toISOString().split('T')[0]}.csv`)
+    link.style.visibility = 'hidden'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
   }
 
   return (
-    <div className='p-8 max-w-7xl mx-auto'>
-      <div className='flex justify-between items-center mb-8'>
-        <h1 className='text-3xl font-bold text-gray-900'>Projects</h1>
-        <select
-          value={filters.status}
-          onChange={(e) => setFilters({...filters, status: e.target.value})}
-          className='border border-gray-300 p-2 rounded text-sm bg-white'
-        >
-          <option value=''>All Statuses</option>
-          <option value='planning'>Planning</option>
-          <option value='active'>Active</option>
-          <option value='closed'>Closed</option>
-        </select>
-      </div>
+    <div className='p-6 max-w-7xl mx-auto'>
+      <h1 className='text-2xl font-bold mb-6'>Reports</h1>
 
-      {/* Create/Edit Form */}
-      <div className='bg-white rounded-lg shadow p-6 mb-8 border border-gray-200'>
-        <h2 className='text-xl font-semibold mb-4 text-gray-800'>
-          {editingProject ? 'Edit Project' : 'New Project'}
-        </h2>
-        <form onSubmit={handleSubmit} className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+      {/* Report Type Selector */}
+      <div className='bg-white rounded-lg shadow p-6 mb-6 border border-gray-200'>
+        <div className='flex flex-col md:flex-row gap-4'>
           <select
-            value={newProject.client_id}
-            onChange={(e) => setNewProject({...newProject, client_id: e.target.value})}
-            className='border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
-            required
+            value={reportType}
+            onChange={(e) => {
+              setReportType(e.target.value)
+              setReportData(null)
+            }}
+            className='border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 flex-1'
           >
-            <option value=''>Select Client *</option>
+            <option value='quotes-summary'>Quotes Summary</option>
+            <option value='revenue'>Revenue Report</option>
+            <option value='client-activity'>Client Activity</option>
+          </select>
+
+          <input
+            type='date'
+            value={filters.start_date}
+            onChange={(e) => setFilters({...filters, start_date: e.target.value})}
+            className='border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+            placeholder='Start Date'
+          />
+
+          <input
+            type='date'
+            value={filters.end_date}
+            onChange={(e) => setFilters({...filters, end_date: e.target.value})}
+            className='border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+            placeholder='End Date'
+          />
+
+          <select
+            value={filters.client_id}
+            onChange={(e) => setFilters({...filters, client_id: e.target.value})}
+            className='border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+          >
+            <option value=''>All Clients</option>
             {clients.map(client => (
               <option key={client.id} value={client.id}>
-                {client.company_name} {client.contact_name ? `(${client.contact_name})` : ''}
+                {client.company_name}
               </option>
             ))}
           </select>
-          
-          <input
-            type='text'
-            placeholder='Project Name *'
-            value={newProject.name}
-            onChange={(e) => setNewProject({...newProject, name: e.target.value})}
-            className='border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
-            required
-          />
-          
-          <input
-            type='date'
-            value={newProject.start_date}
-            onChange={(e) => setNewProject({...newProject, start_date: e.target.value})}
-            className='border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
-            required
-          />
-          
-          <input
-            type='date'
-            value={newProject.end_date}
-            onChange={(e) => setNewProject({...newProject, end_date: e.target.value})}
-            className='border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
-          />
-          
-          <select
-            value={newProject.status}
-            onChange={(e) => setNewProject({...newProject, status: e.target.value})}
-            className='border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+
+          <button
+            onClick={runReport}
+            disabled={loading}
+            className='bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 disabled:opacity-50 flex items-center justify-center font-medium transition shadow-md hover:shadow-lg'
           >
-            <option value='planning'>Planning</option>
-            <option value='active'>Active</option>
-            <option value='closed'>Closed</option>
-          </select>
-          
-          <input
-            type='number'
-            placeholder='Estimated Budget'
-            value={newProject.estimated_budget}
-            onChange={(e) => setNewProject({...newProject, estimated_budget: e.target.value})}
-            className='border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
-            step='0.01'
-          />
-          
-          <textarea
-            placeholder='Description'
-            value={newProject.description}
-            onChange={(e) => setNewProject({...newProject, description: e.target.value})}
-            className='border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 md:col-span-2'
-            rows='2'
-          />
-          
-          <textarea
-            placeholder='Notes'
-            value={newProject.notes}
-            onChange={(e) => setNewProject({...newProject, notes: e.target.value})}
-            className='border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 md:col-span-2'
-            rows='2'
-          />
-          
-          <div className='md:col-span-2 flex gap-2'>
-            <button
-              type='submit'
-              disabled={loading}
-              className='bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 disabled:opacity-50 font-medium transition shadow-md hover:shadow-lg'
-            >
-              {loading ? 'Saving...' : (editingProject ? 'Update Project' : 'Create Project')}
-            </button>
-            {editingProject && (
-              <button
-                type='button'
-                onClick={resetForm}
-                className='bg-gray-300 text-gray-700 px-6 py-2 rounded hover:bg-gray-400 font-medium transition'
-              >
-                Cancel
-              </button>
-            )}
-          </div>
-        </form>
+            {loading ? (
+              <span className='flex items-center'>
+                <svg className='animate-spin -ml-1 mr-2 h-4 w-4 text-white' xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24'>
+                  <circle className='opacity-25' cx='12' cy='12' r='10' stroke='currentColor' strokeWidth='4'></circle>
+                  <path className='opacity-75' fill='currentColor' d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'></path>
+                </svg>
+                Running...
+              </span>
+            ) : 'Run Report'}
+          </button>
+        </div>
       </div>
 
-      {/* Projects Table */}
-      <div className='bg-white rounded-lg shadow overflow-hidden border border-gray-200'>
-        <div className='p-4 border-b border-gray-200 font-bold text-gray-800'>
-          Project List ({projects.length})
-        </div>
-        
-        {projects.length === 0 ? (
-          <div className='p-8 text-center text-gray-500'>
-            No projects yet. Create one above!
+      {/* Report Results */}
+      {reportData && (
+        <div className='bg-white rounded-lg shadow p-6 border border-gray-200'>
+          <div className='flex justify-between items-center mb-4'>
+            <h2 className='text-2xl font-bold text-gray-900'>
+              {reportType === 'quotes-summary' && 'Quotes Summary Report'}
+              {reportType === 'revenue' && 'Revenue Report'}
+              {reportType === 'client-activity' && 'Client Activity Report'}
+            </h2>
+            <button
+              onClick={exportCSV}
+              className='bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 flex items-center gap-2 font-medium transition shadow-md hover:shadow-lg'
+            >
+              📥 Export CSV
+            </button>
           </div>
-        ) : (
-          <div className='overflow-x-auto'>
-            <table className='w-full'>
-              <thead className='bg-gray-50'>
-                <tr>
-                  <th className='p-3 text-left text-sm font-medium text-gray-700'>Project</th>
-                  <th className='p-3 text-left text-sm font-medium text-gray-700'>Client</th>
-                  <th className='p-3 text-left text-sm font-medium text-gray-700'>Status</th>
-                  <th className='p-3 text-left text-sm font-medium text-gray-700'>Start Date</th>
-                  <th className='p-3 text-left text-sm font-medium text-gray-700'>Budget</th>
-                  <th className='p-3 text-right text-sm font-medium text-gray-700'>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {projects.map(project => (
-                  <tr key={project.id} className='border-t border-gray-200 hover:bg-gray-50'>
-                    <td className='p-3 font-medium text-gray-900'>{project.name}</td>
-                    <td className='p-3 text-gray-700'>{project.client_name || 'Unknown'}</td>
-                    <td className='p-3'>
-                      <StatusPill status={project.status} />
-                    </td>
-                    <td className='p-3 text-gray-700'>{project.start_date}</td>
-                    <td className='p-3 text-gray-700'>
-                      {project.estimated_budget ? `$${parseFloat(project.estimated_budget).toLocaleString()}` : '-'}
-                    </td>
-                    <td className='p-3 text-right'>
-                      <div className='flex justify-end gap-2'>
-                        <button
-                          onClick={() => startEdit(project)}
-                          className='text-blue-600 hover:text-blue-800 px-2 py-1 rounded hover:bg-blue-50 transition text-sm'
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleDelete(project.id)}
-                          className='text-red-600 hover:text-red-800 px-2 py-1 rounded hover:bg-red-50 transition text-sm'
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
+
+          <div className='mb-6 p-4 bg-blue-50 rounded border border-blue-200'>
+            <p className='font-medium text-blue-900'>Filters Applied:</p>
+            <p className='text-sm text-blue-800'>
+              Date Range: {filters.start_date} to {filters.end_date}
+              {filters.client_id && ` | Client: ${clients.find(c => c.id == filters.client_id)?.company_name}`}
+            </p>
+          </div>
+
+          {reportType === 'quotes-summary' && (
+            <div>
+              <div className='grid grid-cols-2 md:grid-cols-4 gap-4 mb-6'>
+                <div className='bg-white border border-gray-200 p-4 rounded text-center shadow-sm'>
+                  <div className='text-3xl font-bold text-blue-600'>{reportData.summary?.total_quotes || 0}</div>
+                  <div className='text-gray-600 mt-1'>Total Quotes</div>
+                </div>
+                {reportData.status_breakdown?.map(status => (
+                  <div key={status.status} className='bg-white border border-gray-200 p-4 rounded text-center shadow-sm'>
+                    <div className='text-xl font-bold text-gray-900'>{status.count}</div>
+                    <div className='text-sm text-gray-700 mt-1'>{status.status}</div>
+                    <div className='text-xs text-gray-500'>{status.percentage}%</div>
+                  </div>
                 ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+              </div>
+
+              <h3 className='font-bold mb-2 text-gray-800'>Status Breakdown</h3>
+              <table className='w-full border border-gray-200'>
+                <thead className='bg-gray-100'>
+                  <tr>
+                    <th className='p-2 border border-gray-200'>Status</th>
+                    <th className='p-2 border border-gray-200'>Count</th>
+                    <th className='p-2 border border-gray-200'>Percentage</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {reportData.status_breakdown?.map((row, i) => (
+                    <tr key={i} className={i % 2 === 0 ? 'bg-gray-50' : ''}>
+                      <td className='p-2 border border-gray-200 text-gray-700'>{row.status}</td>
+                      <td className='p-2 border border-gray-200 text-right text-gray-900 font-medium'>{row.count}</td>
+                      <td className='p-2 border border-gray-200 text-right text-gray-700'>{row.percentage}%</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {reportType === 'revenue' && (
+            <div>
+              <div className='grid grid-cols-1 md:grid-cols-3 gap-4 mb-6'>
+                <div className='bg-white border border-gray-200 p-4 rounded text-center shadow-sm'>
+                  <div className='text-2xl font-bold text-green-600'>
+                    ${reportData.revenue_breakdown?.find(r => r.status === 'Approved')?.total_revenue.toFixed(2) || '0.00'}
+                  </div>
+                  <div className='text-gray-600 mt-1'>Approved Revenue</div>
+                </div>
+                <div className='bg-white border border-gray-200 p-4 rounded text-center shadow-sm'>
+                  <div className='text-2xl font-bold text-yellow-600'>
+                    ${reportData.revenue_breakdown?.find(r => r.status === 'Pending (Draft)')?.total_revenue.toFixed(2) || '0.00'}
+                  </div>
+                  <div className='text-gray-600 mt-1'>Pending Revenue</div>
+                </div>
+                <div className='bg-white border border-gray-200 p-4 rounded text-center shadow-sm'>
+                  <div className='text-3xl font-bold text-blue-600'>
+                    ${reportData.grand_total?.toFixed(2) || '0.00'}
+                  </div>
+                  <div className='text-gray-600 mt-1'>Grand Total</div>
+                </div>
+              </div>
+
+              <h3 className='font-bold mb-2 text-gray-800'>Revenue Breakdown</h3>
+              <table className='w-full border border-gray-200'>
+                <thead className='bg-gray-100'>
+                  <tr>
+                    <th className='p-2 border border-gray-200'>Status</th>
+                    <th className='p-2 border border-gray-200'>Revenue</th>
+                    <th className='p-2 border border-gray-200'>Quote Count</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {reportData.revenue_breakdown?.map((row, i) => (
+                    <tr key={i} className={i % 2 === 0 ? 'bg-gray-50' : ''}>
+                      <td className='p-2 border border-gray-200 text-gray-700'>{row.status}</td>
+                      <td className='p-2 border border-gray-200 text-right font-medium text-gray-900'>
+                        ${row.total_revenue.toFixed(2)}
+                      </td>
+                      <td className='p-2 border border-gray-200 text-right text-gray-700'>{row.quote_count}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {reportType === 'client-activity' && (
+            <div>
+              <div className='grid grid-cols-1 md:grid-cols-3 gap-4 mb-6'>
+                <div className='bg-white border border-gray-200 p-4 rounded text-center shadow-sm'>
+                  <div className='text-3xl font-bold text-blue-600'>{reportData.summary?.total_clients || 0}</div>
+                  <div className='text-gray-600 mt-1'>Active Clients</div>
+                </div>
+                <div className='bg-white border border-gray-200 p-4 rounded text-center shadow-sm'>
+                  <div className='text-3xl font-bold text-purple-600'>{reportData.summary?.total_quotes || 0}</div>
+                  <div className='text-gray-600 mt-1'>Total Quotes</div>
+                </div>
+                <div className='bg-white border border-gray-200 p-4 rounded text-center shadow-sm'>
+                  <div className='text-2xl font-bold text-green-600'>
+                    ${reportData.summary?.total_revenue.toFixed(2) || '0.00'}
+                  </div>
+                  <div className='text-gray-600 mt-1'>Total Revenue</div>
+                </div>
+              </div>
+
+              <h3 className='font-bold mb-2 text-gray-800'>Client Activity</h3>
+              <div className='overflow-x-auto'>
+                <table className='w-full border border-gray-200'>
+                  <thead className='bg-gray-100'>
+                    <tr>
+                      <th className='p-2 border border-gray-200'>Client</th>
+                      <th className='p-2 border border-gray-200'>Quotes</th>
+                      <th className='p-2 border border-gray-200'>Total Quoted</th>
+                      <th className='p-2 border border-gray-200'>Last Quote</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {reportData.clients?.map((row, i) => (
+                      <tr key={i} className={i % 2 === 0 ? 'bg-gray-50' : ''}>
+                        <td className='p-2 border border-gray-200 font-medium text-gray-900'>{row.client_name}</td>
+                        <td className='p-2 border border-gray-200 text-right text-gray-700'>{row.quote_count}</td>
+                        <td className='p-2 border border-gray-200 text-right font-medium text-gray-900'>
+                          ${row.total_quoted.toFixed(2)}
+                        </td>
+                        <td className='p-2 border border-gray-200 text-gray-700'>{row.last_quote_date || 'N/A'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }
