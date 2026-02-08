@@ -31,46 +31,46 @@ export default function ProjectsPage() {
     }
   }
 
-useEffect(() => {
-  fetchProjects()
-  fetchClients()
-}, [filters.status])
-
-const fetchProjects = async () => {
-  try {
-    const params = filters.status ? `?status=${filters.status}` : ''
-    const res = await fetch(`https://metpro-erp-api.onrender.com/projects${params}`, {
-      method: 'GET',
-      headers: {
-        ...getAuthHeaders()
-      }
-    })
-    if (!res.ok) throw new Error('Failed to fetch projects')
-    const data = await res.json()
-    setProjects(Array.isArray(data) ? data : [])
-  } catch (error) {
-    console.error('Fetch projects error:', error)
-    setProjects([])
-    alert('Error loading projects. Please login again.')
+  const fetchProjects = async () => {
+    try {
+      const params = filters.status ? `?status=${filters.status}` : ''
+      const res = await fetch(`https://metpro-erp-api.onrender.com/projects${params}`, {
+        method: 'GET',
+        headers: {
+          ...getAuthHeaders()
+        }
+      })
+      if (!res.ok) throw new Error('Failed to fetch projects')
+      const data = await res.json()
+      setProjects(Array.isArray(data) ? data : [])
+    } catch (error) {
+      console.error('Fetch projects error:', error)
+      setProjects([])
+      alert('Error loading projects. Please login again.')
+    }
   }
-}
 
   const fetchClients = async () => {
-  try {
-    const res = await fetch('https://metpro-erp-api.onrender.com/clients/', {
-      method: 'GET',
-      headers: {
-        ...getAuthHeaders()
-      }
-    })
-    if (!res.ok) throw new Error('Failed to fetch clients')
-    const data = await res.json()
-    setClients(Array.isArray(data) ? data : [])
-  } catch (error) {
-    console.error('Fetch clients error:', error)
-    setClients([])
+    try {
+      const res = await fetch('https://metpro-erp-api.onrender.com/clients/', {
+        method: 'GET',
+        headers: {
+          ...getAuthHeaders()
+        }
+      })
+      if (!res.ok) throw new Error('Failed to fetch clients')
+      const data = await res.json()
+      setClients(Array.isArray(data) ? data : [])
+    } catch (error) {
+      console.error('Fetch clients error:', error)
+      setClients([])
+    }
   }
-}
+
+  useEffect(() => {
+    fetchProjects()
+    fetchClients()
+  }, [filters.status])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -94,13 +94,13 @@ const fetchProjects = async () => {
       }
       
       const res = await fetch(url, {
-      method,
-      headers: {
-        ...getAuthHeaders(),
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(body)
-  })
+        method,
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body)
+      })
       
       if (!res.ok) throw new Error('Operation failed')
       
@@ -118,12 +118,12 @@ const fetchProjects = async () => {
     if (!confirm('Delete this project? This cannot be undone.')) return
     
     try {
-    const res = await fetch(`https://metpro-erp-api.onrender.com/projects/${id}`, {
-      method: 'DELETE',
-      headers: {
-        ...getAuthHeaders()
-      }
-    })
+      const res = await fetch(`https://metpro-erp-api.onrender.com/projects/${id}`, {
+        method: 'DELETE',
+        headers: {
+          ...getAuthHeaders()
+        }
+      })
       
       if (!res.ok) throw new Error('Delete failed')
       

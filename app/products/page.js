@@ -20,9 +20,9 @@ export default function ProductsPage() {
     }
   }
 
-useEffect(() => {
-  fetchProducts()
-}, [])
+  useEffect(() => {
+    fetchProducts()
+  }, [])
 
   // 🔒 Fetch products WITH token
   const fetchProducts = async () => {
@@ -39,8 +39,8 @@ useEffect(() => {
     } catch (error) {
       console.error('Failed to fetch products:', error)
       setProducts([])
+    }
   }
-}
 
   // 🔒 Create product WITH token
   const handleCreateProduct = async (e) => {
@@ -117,10 +117,10 @@ useEffect(() => {
       alert('Product deleted!')
     } catch (error) {
       alert('Error deleting product: ' + error.message)
+    }
   }
-}
 
-  // 🔒 FIXED: Import CSV WITH token (correct FormData handling)
+  // 🔒 Import CSV WITH token
   const handleCsvImport = async (e) => {
     e.preventDefault()
 
@@ -138,7 +138,7 @@ useEffect(() => {
       const response = await fetch('https://metpro-erp-api.onrender.com/products/import-csv', {
         method: 'POST',
         headers: {
-          ...getAuthHeaders()   // ONLY Authorization header (no Content-Type for FormData)
+          ...getAuthHeaders()
         },
         body: formData
       })
