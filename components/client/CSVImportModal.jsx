@@ -64,7 +64,6 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete }) {
     setError(null)
     setImportResult(null)
     
-    // 🔒 FIXED: Get token from 'token' key (not 'auth_token')
     const token = typeof window !== "undefined"
       ? localStorage.getItem("token")
       : null
@@ -74,33 +73,44 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete }) {
       setIsUploading(false)
       return
     }
-    
+
     try {
       const formData = new FormData()
-      formData.append('file', file)
-      formData.append('skip_duplicates', skipDuplicates.toString())
-      
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://metpro-erp-api.onrender.com'
+      formData.append("file", file)
+      formData.append("skip_duplicates", skipDuplicates.toString())
+
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL as string
+
       const response = await fetch(`${apiUrl}/clients/bulk-import`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Authorization': `Bearer ${token}`
+          "Authorization": `Bearer ${token}`
         },
         body: formData
       })
-      
+
+      // Handle non-OK responses BEFORE parsing JSON
       if (!response.ok) {
-        const result = await response.json()
-        throw new Error(result.detail || `Server error: ${response.status}`)
+        let errorMessage = "Import failed"
+        try {
+          const errorData = await response.json()
+          errorMessage = errorData.message || errorData.error || errorMessage
+        } catch {
+          // Fallback to text if JSON parsing fails
+          const text = await response.text()
+          if (text) errorMessage = text
+        }
+        throw new Error(errorMessage)
       }
 
+      // Parse successful response
       const result = await response.json()
       setImportResult(result)
-      
-      // Auto-close after 5 seconds if successful
+
+      // Auto-close on success
       if (result.success) {
         setTimeout(() => {
-          onClose()
+          handleClose()
           onImportComplete()
         }, 5000)
       }

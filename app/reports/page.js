@@ -28,60 +28,63 @@ useEffect(() => {
   fetchClients()
 }, [])
 
-  const fetchClients = async () => {
-    try {
-      const res = await fetch('https://metpro-erp-api.onrender.com/clients/', { // FIXED: Removed trailing spaces
+const fetchClients = async () => {
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/`, {
+      method: 'GET',
+      headers: {
+        ...getAuthHeaders()
+      }
+    })
+
+    if (res.ok) {
+      const data = await res.json()
+      setClients(Array.isArray(data) ? data : [])
+    }
+  } catch (error) {
+    console.error('Fetch clients error:', error)
+  }
+}
+
+  const runReport = async () => {
+  if (!filters.start_date || !filters.end_date) {
+    alert('Please select both start and end dates')
+    return
+  }
+
+  setLoading(true)
+  try {
+    const params = new URLSearchParams({
+      start_date: filters.start_date,
+      end_date: filters.end_date,
+      ...(filters.client_id && { client_id: filters.client_id })
+    }).toString()
+
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL
+
+    const res = await fetch(
+      `${apiUrl}/reports/${reportType}?${params}`,
+      {
         method: 'GET',
         headers: {
           ...getAuthHeaders()
         }
-      })
-      if (res.ok) {
-        const data = await res.json()
-        setClients(Array.isArray(data) ? data : [])
       }
-    } catch (error) {
-      console.error('Fetch clients error:', error)
+    )
+
+    if (!res.ok) {
+      const errText = await res.text()
+      throw new Error(`Server error: ${errText || res.status}`)
     }
+
+    setReportData(await res.json())
+  } catch (error) {
+    console.error('Report generation failed:', error)
+    alert(`Report failed: ${error.message}`)
+  } finally {
+    setLoading(false)
   }
-
-  const runReport = async () => {
-    if (!filters.start_date || !filters.end_date) {
-      alert('Please select both start and end dates')
-      return
-    }
-    
-    setLoading(true)
-    try {
-      const params = new URLSearchParams({
-        start_date: filters.start_date,
-        end_date: filters.end_date,
-        ...(filters.client_id && { client_id: filters.client_id })
-      }).toString()
-      
-      const res = await fetch(
-        `https://metpro-erp-api.onrender.com/reports/${reportType}?${params}`, // FIXED: Removed invalid spaces
-        {
-          method: 'GET',
-          headers: {
-            ...getAuthHeaders()
-          }
-        }
-      )
-
-      if (!res.ok) {
-        const errText = await res.text()
-        throw new Error(`Server error: ${errText || res.status}`)
-      }
-
-      setReportData(await res.json())
-    } catch (error) {
-      console.error('Report generation failed:', error)
-      alert(`Report failed: ${error.message}`)
-    } finally {
-      setLoading(false) // CRITICAL: Prevents stuck loading state
-    }
-  }
+}
 
   const exportCSV = () => {
     if (!reportData) return
