@@ -2,7 +2,14 @@ export async function api(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<unknown> {
-  const BASE_URL = process.env.NEXT_PUBLIC_API_URL as string;
+  // Ensure backend URL exists
+  const rawBase = process.env.NEXT_PUBLIC_API_URL;
+  if (!rawBase) {
+    throw new Error("Backend URL is not configured (NEXT_PUBLIC_API_URL missing)");
+  }
+
+  // Normalize URL (remove trailing slash)
+  const BASE_URL = rawBase.replace(/\/+$/, "");
 
   let token: string | null = null;
 
@@ -53,9 +60,7 @@ export async function api(
     try {
       const text = await res.text();
       message = text || message;
-    } catch {
-      /* ignore */
-    }
+    } catch {}
 
     throw new Error(`API error ${res.status}: ${message}`);
   }
