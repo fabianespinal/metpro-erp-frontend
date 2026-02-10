@@ -79,7 +79,7 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete }) {
       formData.append("file", file)
       formData.append("skip_duplicates", skipDuplicates.toString())
 
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL as string
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL
 
       const response = await fetch(`${apiUrl}/clients/bulk-import`, {
         method: "POST",
