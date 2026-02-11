@@ -16,18 +16,14 @@ export default function ProductsPage() {
 
   // 🔒 Fetch products WITH token
   const fetchProducts = async () => {
-    try {
-      const response = await api('/products/', { method: 'GET' })
-      
-      if (!response.ok) throw new Error(`HTTP ${response.status}`)
-      
-      const data = await response.json()
-      setProducts(Array.isArray(data) ? data : [])
-    } catch (error) {
-      console.error('Failed to fetch products:', error)
-      setProducts([])
-    }
+  try {
+    const data = await api('/products', { method: 'GET' })
+    setProducts(Array.isArray(data) ? data : [])
+  } catch (error) {
+    console.error('Failed to fetch products:', error)
+    setProducts([])
   }
+}
 
   // 🔒 Create product WITH token
   const handleCreateProduct = async (e) => {
