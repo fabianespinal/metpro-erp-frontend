@@ -1,9 +1,14 @@
 "use client";
 
-import { useEffect } from "react";
+import { ReactNode, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import type { Route } from "next";
 
-export default function AuthGuard({ children }) {
+interface AuthGuardProps {
+  children: ReactNode;
+}
+
+export default function AuthGuard({ children }: AuthGuardProps) {
   const router = useRouter();
   const pathname = usePathname();
 
@@ -11,17 +16,17 @@ export default function AuthGuard({ children }) {
     const token = localStorage.getItem("token");
 
     if (!token && pathname !== "/login") {
-      router.push("/login");
+      router.push("/login" as Route);
       return;
     }
 
     if (token && pathname === "/login") {
-      router.push("/dashboard");
+      router.push("/dashboard" as Route);
       return;
     }
 
     if (token && pathname === "/") {
-      router.push("/dashboard");
+      router.push("/dashboard" as Route);
       return;
     }
   }, [router, pathname]);
