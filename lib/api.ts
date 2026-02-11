@@ -1,5 +1,4 @@
-"use server";
-
+"use client";
 export async function api(
   endpoint: string,
   options: RequestInit = {}
