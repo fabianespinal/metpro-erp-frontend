@@ -1,4 +1,5 @@
 'use client'
+
 import { useState, useEffect } from 'react'
 import { api } from "@/lib/api"
 import StatusPill from '@/components/ui/StatusPill'
@@ -15,7 +16,21 @@ export default function InvoicesPage() {
   const fetchInvoices = async () => {
     try {
       setLoading(true)
-      const data = await api("/invoices", { method: "GET" })
+
+      const token = localStorage.getItem("token")
+      if (!token) {
+        console.error("No token found")
+        setInvoices([])
+        return
+      }
+
+      const data = await api("/invoices/", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
       setInvoices(Array.isArray(data) ? data : [])
     } catch (error) {
       console.error('Failed to fetch invoices:', error)
@@ -27,8 +42,18 @@ export default function InvoicesPage() {
 
   const handleDownloadPDF = async (invoiceId, invoiceNumber) => {
     try {
-      const response = await api(`/pdf/invoices/${invoiceId}`, { method: "GET" }, { raw: true })
-      
+      const token = localStorage.getItem("token")
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/pdf/invoices/${invoiceId}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
+
       if (!response.ok) {
         throw new Error(`PDF download failed: ${response.status}`)
       }
@@ -50,8 +75,18 @@ export default function InvoicesPage() {
 
   const handleDownloadConduce = async (invoiceId, invoiceNumber) => {
     try {
-      const response = await api(`/invoices/${invoiceId}/conduce/pdf`, { method: "GET" }, { raw: true })
-      
+      const token = localStorage.getItem("token")
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/invoices/${invoiceId}/conduce/pdf`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
+
       if (!response.ok) {
         throw new Error(`Conduce download failed: ${response.status}`)
       }
@@ -73,17 +108,22 @@ export default function InvoicesPage() {
 
   const handleUpdateStatus = async (invoiceId, newStatus) => {
     try {
+      const token = localStorage.getItem("token")
+
       await api(`/invoices/${invoiceId}/status`, {
         method: "PATCH",
-        body: JSON.stringify({ status: newStatus })
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ status: newStatus }),
       })
-      
+
       fetchInvoices()
-      
+
       if (window.toast) {
         window.toast('Status updated!', {
           title: '✅ Success',
-          description: `Invoice status changed to ${newStatus}`
+          description: `Invoice status changed to ${newStatus}`,
         })
       }
     } catch (error) {
@@ -91,9 +131,10 @@ export default function InvoicesPage() {
     }
   }
 
-  const filteredInvoices = statusFilter === 'all' 
-    ? invoices 
-    : invoices.filter(inv => inv.status === statusFilter)
+  const filteredInvoices =
+    statusFilter === 'all'
+      ? invoices
+      : invoices.filter(inv => inv.status === statusFilter)
 
   if (loading) {
     return (
@@ -161,6 +202,7 @@ export default function InvoicesPage() {
                 </th>
               </tr>
             </thead>
+
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredInvoices.length === 0 ? (
                 <tr>
@@ -181,14 +223,16 @@ export default function InvoicesPage() {
                       {invoice.invoice_date}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
-                      ${parseFloat(invoice.total_amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      ${parseFloat(invoice.total_amount || 0).toLocaleString('en-US', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <StatusPill status={invoice.status} />
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end gap-2">
-                        {/* Status Dropdown */}
                         <select
                           value={invoice.status}
                           onChange={(e) => handleUpdateStatus(invoice.id, e.target.value)}
@@ -200,20 +244,16 @@ export default function InvoicesPage() {
                           <option value="Cancelled">Cancelled</option>
                         </select>
 
-                        {/* Download Invoice PDF */}
                         <button
                           onClick={() => handleDownloadPDF(invoice.id, invoice.invoice_number)}
                           className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 text-xs"
-                          title="Download Invoice PDF"
                         >
                           📄 Invoice
                         </button>
 
-                        {/* Download Conduce */}
                         <button
                           onClick={() => handleDownloadConduce(invoice.id, invoice.invoice_number)}
                           className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 text-xs"
-                          title="Download Delivery Note (No Prices)"
                         >
                           🚚 Conduce
                         </button>
