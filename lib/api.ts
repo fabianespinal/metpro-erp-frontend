@@ -1,4 +1,5 @@
 "use client";
+
 export async function api(
   endpoint: string,
   options: RequestInit = {}
@@ -11,6 +12,13 @@ export async function api(
   const headers: Record<string, string> = {
     ...(options.headers as Record<string, string>),
   };
+
+  const token =
+    typeof window !== "undefined" ? localStorage.getItem("token") : null;
+
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
 
   const isFormData = options.body instanceof FormData;
   if (!isFormData) headers["Content-Type"] = "application/json";
