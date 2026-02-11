@@ -15,7 +15,7 @@ export default function InvoicesPage() {
   const fetchInvoices = async () => {
     try {
       setLoading(true)
-      const data = await api("/invoices/", { method: "GET" })
+      const data = await api("/invoices", { method: "GET" })
       setInvoices(Array.isArray(data) ? data : [])
     } catch (error) {
       console.error('Failed to fetch invoices:', error)
