@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { api } from "@/lib/api";
 
 type User = {
   id: number;
@@ -14,18 +15,15 @@ export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
 
   useEffect(() => {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
     const token = localStorage.getItem("token");
 
-    if (!apiUrl) return;
-
-    fetch(`${apiUrl}/users`, {
+    api("/users", {
+      method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
       },
     })
-      .then((res) => res.json())
-      .then((data) => setUsers(data))
+      .then((data) => setUsers(data as User[]))
       .catch((err) => console.error("Fetch users error:", err));
   }, []);
 
@@ -57,5 +55,3 @@ export default function UsersPage() {
     </div>
   );
 }
-// DEBUG: File updated ok
-// METPRO redeploy trigger

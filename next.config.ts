@@ -1,7 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  reactStrictMode: true, // added real config change
+  reactStrictMode: true,
+  experimental: {
+    typedRoutes: true,
+  },
 };
 
 export default nextConfig;
