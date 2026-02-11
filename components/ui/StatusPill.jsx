@@ -1,3 +1,4 @@
+"use client";
 export default function StatusPill({ status }) {
   const statusConfig = {
     Draft: { color: 'bg-gray-100 text-gray-800', icon: '📄' },
