@@ -169,4 +169,59 @@ export default function InvoicesPage() {
     </div>
   )
 }
+{/* TABLE */}
+<div className="bg-white shadow rounded-lg overflow-hidden mt-6">
+  <table className="min-w-full divide-y divide-gray-200">
+    <thead className="bg-gray-50">
+      <tr>
+        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Invoice #</th>
+        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Client</th>
+        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Total</th>
+        <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Status</th>
+        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+      </tr>
+    </thead>
 
+    <tbody className="bg-white divide-y divide-gray-200">
+      {filteredInvoices.map((inv) => (
+        <tr key={inv.id} className="hover:bg-gray-50">
+          <td className="px-4 py-3 font-medium">{inv.invoice_number}</td>
+          <td className="px-4 py-3">{inv.client_name}</td>
+          <td className="px-4 py-3">{inv.invoice_date?.split("T")[0]}</td>
+          <td className="px-4 py-3 text-right font-bold">${inv.total_amount.toFixed(2)}</td>
+          <td className="px-4 py-3 text-center">
+            <StatusPill status={inv.status} />
+          </td>
+
+          <td className="px-4 py-3 text-right space-x-2">
+            <button
+              onClick={() => handleDownloadPDF(inv.id, inv.invoice_number)}
+              className="text-blue-600 hover:underline"
+            >
+              PDF
+            </button>
+
+            <button
+              onClick={() => handleDownloadConduce(inv.id, inv.invoice_number)}
+              className="text-green-600 hover:underline"
+            >
+              Conduce
+            </button>
+
+            <select
+              className="border rounded px-2 py-1 text-sm"
+              value={inv.status}
+              onChange={(e) => handleUpdateStatus(inv.id, e.target.value)}
+            >
+              <option value="Pending">Pending</option>
+              <option value="Paid">Paid</option>
+              <option value="Cancelled">Cancelled</option>
+              <option value="Overdue">Overdue</option>
+            </select>
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
