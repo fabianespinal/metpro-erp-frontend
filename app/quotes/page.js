@@ -32,6 +32,7 @@ export default function QuotesPage() {
   const [totals, setTotals] = useState(null)
   const [loading, setLoading] = useState(false)
   const [quotes, setQuotes] = useState([])
+  const [invoices, setInvoices] = useState([]) // NEW: Store invoices
   const [statusFilter, setStatusFilter] = useState('all')
   const [previewPDF, setPreviewPDF] = useState({ isOpen: false, quoteId: null, pdfUrl: null })
   const [products, setProducts] = useState([])
@@ -41,6 +42,7 @@ export default function QuotesPage() {
   useEffect(() => {
     fetchClients()
     fetchQuotes()
+    fetchInvoices() // NEW: Fetch invoices
     fetchProducts()
   }, [])
 
@@ -68,6 +70,38 @@ export default function QuotesPage() {
       console.error('Failed to fetch quotes:', error)
       setQuotes([])
     }
+  }
+
+  // NEW: Fetch invoices and merge with quotes
+  const fetchInvoices = async () => {
+    try {
+      const data = await api("/invoices/", { method: "GET" })
+      setInvoices(Array.isArray(data) ? data : [])
+    } catch (error) {
+      console.error('Failed to fetch invoices:', error)
+      setInvoices([])
+    }
+  }
+
+  // NEW: Merge invoice data into quotes
+  const getMergedQuotes = () => {
+    return quotes.map(quote => {
+      const invoice = invoices.find(inv => inv.quote_id === quote.quote_id)
+      if (invoice) {
+        return {
+          ...quote,
+          invoice_id: invoice.id,
+          invoice_number: invoice.invoice_number,
+          invoice_status: invoice.status,
+          invoice_date: invoice.invoice_date,
+          has_invoice: true
+        }
+      }
+      return {
+        ...quote,
+        has_invoice: false
+      }
+    })
   }
 
   // Fetch products
@@ -158,20 +192,20 @@ export default function QuotesPage() {
     setProductModal({ isOpen: false, itemIndex: null })
   }
 
-  // ✅ FIX: Returns the correct endpoint based on quote status
+  // ✅ FIX: Returns the correct endpoint based on invoice data
   const getPdfUrl = (quoteId) => {
-    const quote = (Array.isArray(quotes) ? quotes : []).find(q => q.quote_id === quoteId)
-    if (quote && quote.status === 'Invoiced') {
-      return `/invoices/${quoteId}/pdf`
+    const quote = getMergedQuotes().find(q => q.quote_id === quoteId)
+    if (quote && quote.has_invoice) {
+      return `/invoices/${quote.invoice_id}/pdf`
     }
     return `/quotes/${quoteId}/pdf`
   }
 
-  // ✅ FIX: Returns the correct filename based on quote status
+  // ✅ FIX: Returns the correct filename based on invoice data
   const getPdfFilename = (quoteId) => {
-    const quote = (Array.isArray(quotes) ? quotes : []).find(q => q.quote_id === quoteId)
-    if (quote && quote.status === 'Invoiced') {
-      return `${quoteId}_factura.pdf`
+    const quote = getMergedQuotes().find(q => q.quote_id === quoteId)
+    if (quote && quote.has_invoice) {
+      return `${quote.invoice_number}_factura.pdf`
     }
     return `${quoteId}_cotizacion.pdf`
   }
@@ -203,10 +237,16 @@ export default function QuotesPage() {
     }
   }
 
-  // Generate Conduce
-  const handleGenerateConduce = async (invoiceId) => {
+  // Generate Conduce - UPDATED to use invoice_id
+  const handleGenerateConduce = async (quoteId) => {
+    const quote = getMergedQuotes().find(q => q.quote_id === quoteId)
+    if (!quote || !quote.has_invoice) {
+      alert('This quote has not been converted to an invoice yet.')
+      return
+    }
+
     try {
-      const response = await api(`/invoices/${invoiceId}/conduce/pdf`, { method: "GET" }, { raw: true })
+      const response = await api(`/invoices/${quote.invoice_id}/conduce/pdf`, { method: "GET" }, { raw: true })
 
       if (!response.ok) {
         throw new Error(`Conduce generation failed: ${response.status} ${response.statusText}`)
@@ -216,7 +256,7 @@ export default function QuotesPage() {
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `CD-${invoiceId}_conduce.pdf`
+      a.download = `CD-${quote.invoice_number}_conduce.pdf`
       document.body.appendChild(a)
       a.click()
       window.URL.revokeObjectURL(url)
@@ -225,7 +265,7 @@ export default function QuotesPage() {
       if (window.toast) {
         window.toast('Conduce Generated!', {
           title: '✅ Success',
-          description: `Delivery note for ${invoiceId} downloaded`
+          description: `Delivery note for ${quote.invoice_number} downloaded`
         })
       }
     } catch (error) {
@@ -267,6 +307,7 @@ export default function QuotesPage() {
 
       alert(`✅ Quote duplicated! New ID: ${data.quote_id}`)
       fetchQuotes()
+      fetchInvoices() // Refresh invoices too
     } catch (error) {
       alert("Error duplicating quote: " + error.message)
     }
@@ -280,6 +321,7 @@ export default function QuotesPage() {
       
       alert(`✅ SUCCESS!\nQuote converted to invoice:\nNEW ID: ${data.invoice_id}`)
       fetchQuotes()
+      fetchInvoices() // Refresh invoices
       
       if (window.toast) {
         window.toast('Converted to Invoice!', {
@@ -320,6 +362,7 @@ export default function QuotesPage() {
       await api(`/quotes/${quoteId}`, { method: "DELETE" })
 
       setQuotes(prevQuotes => prevQuotes.filter(q => q.quote_id !== quoteId))
+      setInvoices(prevInvoices => prevInvoices.filter(inv => inv.quote_id !== quoteId)) // Remove associated invoice
       
       if (window.toast) {
         window.toast('Quote deleted!', {
@@ -417,8 +460,9 @@ export default function QuotesPage() {
     }
   }
 
-  // Filter quotes
-  const safeQuotes = Array.isArray(quotes) ? quotes : []
+  // Filter quotes - UPDATED to use merged quotes
+  const mergedQuotes = getMergedQuotes()
+  const safeQuotes = Array.isArray(mergedQuotes) ? mergedQuotes : []
   const filteredQuotes = statusFilter === 'all'
     ? safeQuotes
     : safeQuotes.filter(q => q.status === statusFilter)
@@ -693,6 +737,9 @@ export default function QuotesPage() {
                   <td className='p-3 text-right font-bold'>${quote.total_amount.toFixed(2)}</td>
                   <td className='p-3'>
                     <StatusPill status={quote.status} />
+                    {quote.has_invoice && (
+                      <div className='text-xs text-blue-600 mt-1'>Invoice: {quote.invoice_number}</div>
+                    )}
                   </td> 
                   <td className='p-3 text-right'>
                     <div className='flex items-center gap-2 justify-end'>
@@ -700,7 +747,13 @@ export default function QuotesPage() {
                         quote={quote}
                         onApprove={() => handleUpdateStatus(quote.quote_id, 'Approved')}
                         onConvert={() => handleConvertToInvoice(quote.quote_id)}
-                        onViewInvoice={() => alert(`View invoice for ${quote.quote_id}`)}
+                        onViewInvoice={() => {
+                          if (quote.has_invoice) {
+                            window.location.href = `/invoices?invoice_id=${quote.invoice_id}`
+                          } else {
+                            alert('This quote has not been converted to an invoice yet.')
+                          }
+                        }}
                       />
                       <OverflowMenu
                         quote={quote}
