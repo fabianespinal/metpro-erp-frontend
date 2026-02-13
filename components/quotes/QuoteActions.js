@@ -8,12 +8,12 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 /**
  * Helper to build headers with auth token
  */
-function getHeaders(token, isJSON = true) {
+function getHeaders(token, isJSON) {
   const headers = {
-    Authorization: `Bearer ${token}`,
+    Authorization: "Bearer " + token,
   };
-  if (isJSON) {
-    headers['Content-Type'] = 'application/json';
+  if (isJSON === true) {
+    headers["Content-Type"] = "application/json";
   }
   return headers;
 }
@@ -23,7 +23,7 @@ function getHeaders(token, isJSON = true) {
  */
 async function handleResponse(response) {
   if (!response.ok) {
-    let errorMessage = `Request failed with status ${response.status}`;
+    let errorMessage = "Request failed with status " + response.status;
     try {
       const errorData = await response.json();
       errorMessage = errorData.message || errorData.error || errorMessage;
@@ -42,8 +42,9 @@ async function handleResponse(response) {
  */
 export async function previewPDF(quoteId, token) {
   try {
-    const response = await fetch(`${API_URL}/pdf/quotes/${quoteId}`, {
-      method: 'GET',
+    const url = API_URL + "/pdf/quotes/" + quoteId;
+    const response = await fetch(url, {
+      method: "GET",
       headers: getHeaders(token, false),
     });
 
@@ -51,7 +52,7 @@ export async function previewPDF(quoteId, token) {
     const blob = await response.blob();
     return blob;
   } catch (error) {
-    console.error('Preview PDF error:', error);
+    console.error("Preview PDF error:", error);
     throw error;
   }
 }
@@ -61,8 +62,9 @@ export async function previewPDF(quoteId, token) {
  */
 export async function downloadPDF(quoteId, token) {
   try {
-    const response = await fetch(`${API_URL}/pdf/quotes/${quoteId}`, {
-      method: 'GET',
+    const url = API_URL + "/pdf/quotes/" + quoteId;
+    const response = await fetch(url, {
+      method: "GET",
       headers: getHeaders(token, false),
     });
 
@@ -70,7 +72,7 @@ export async function downloadPDF(quoteId, token) {
     const blob = await response.blob();
     return blob;
   } catch (error) {
-    console.error('Download PDF error:', error);
+    console.error("Download PDF error:", error);
     throw error;
   }
 }
@@ -80,16 +82,17 @@ export async function downloadPDF(quoteId, token) {
  */
 export async function approveQuote(quoteId, token) {
   try {
-    const response = await fetch(`${API_URL}/quotes/${quoteId}/approve`, {
-      method: 'POST',
-      headers: getHeaders(token),
+    const url = API_URL + "/quotes/" + quoteId + "/approve";
+    const response = await fetch(url, {
+      method: "POST",
+      headers: getHeaders(token, true),
     });
 
     await handleResponse(response);
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error('Approve quote error:', error);
+    console.error("Approve quote error:", error);
     throw error;
   }
 }
@@ -99,16 +102,17 @@ export async function approveQuote(quoteId, token) {
  */
 export async function duplicateQuote(quoteId, token) {
   try {
-    const response = await fetch(`${API_URL}/quotes/${quoteId}/duplicate`, {
-      method: 'POST',
-      headers: getHeaders(token),
+    const url = API_URL + "/quotes/" + quoteId + "/duplicate";
+    const response = await fetch(url, {
+      method: "POST",
+      headers: getHeaders(token, true),
     });
 
     await handleResponse(response);
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error('Duplicate quote error:', error);
+    console.error("Duplicate quote error:", error);
     throw error;
   }
 }
@@ -118,9 +122,10 @@ export async function duplicateQuote(quoteId, token) {
  */
 export async function deleteQuote(quoteId, token) {
   try {
-    const response = await fetch(`${API_URL}/quotes/${quoteId}`, {
-      method: 'DELETE',
-      headers: getHeaders(token),
+    const url = API_URL + "/quotes/" + quoteId;
+    const response = await fetch(url, {
+      method: "DELETE",
+      headers: getHeaders(token, true),
     });
 
     await handleResponse(response);
@@ -133,7 +138,7 @@ export async function deleteQuote(quoteId, token) {
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error('Delete quote error:', error);
+    console.error("Delete quote error:", error);
     throw error;
   }
 }
@@ -143,9 +148,10 @@ export async function deleteQuote(quoteId, token) {
  */
 export async function editQuote(quoteId, token, payload) {
   try {
-    const response = await fetch(`${API_URL}/quotes/${quoteId}`, {
-      method: 'PUT',
-      headers: getHeaders(token),
+    const url = API_URL + "/quotes/" + quoteId;
+    const response = await fetch(url, {
+      method: "PUT",
+      headers: getHeaders(token, true),
       body: JSON.stringify(payload),
     });
 
@@ -153,7 +159,7 @@ export async function editQuote(quoteId, token, payload) {
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error('Edit quote error:', error);
+    console.error("Edit quote error:", error);
     throw error;
   }
 }
@@ -163,16 +169,17 @@ export async function editQuote(quoteId, token, payload) {
  */
 export async function convertToInvoice(quoteId, token) {
   try {
-    const response = await fetch(`${API_URL}/quotes/${quoteId}/convert-to-invoice`, {
-      method: 'POST',
-      headers: getHeaders(token),
+    const url = API_URL + "/quotes/" + quoteId + "/convert-to-invoice";
+    const response = await fetch(url, {
+      method: "POST",
+      headers: getHeaders(token, true),
     });
 
     await handleResponse(response);
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error('Convert to invoice error:', error);
+    console.error("Convert to invoice error:", error);
     throw error;
   }
 }
@@ -182,9 +189,10 @@ export async function convertToInvoice(quoteId, token) {
  */
 export async function updateQuoteStatus(quoteId, token, newStatus) {
   try {
-    const response = await fetch(`${API_URL}/quotes/${quoteId}/status`, {
-      method: 'PATCH',
-      headers: getHeaders(token),
+    const url = API_URL + "/quotes/" + quoteId + "/status";
+    const response = await fetch(url, {
+      method: "PATCH",
+      headers: getHeaders(token, true),
       body: JSON.stringify({ status: newStatus }),
     });
 
@@ -192,7 +200,7 @@ export async function updateQuoteStatus(quoteId, token, newStatus) {
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error('Update status error:', error);
+    console.error("Update status error:", error);
     throw error;
   }
 }
@@ -202,8 +210,9 @@ export async function updateQuoteStatus(quoteId, token, newStatus) {
  */
 export async function generateConduce(invoiceId, token) {
   try {
-    const response = await fetch(`${API_URL}/pdf/invoices/${invoiceId}/conduce`, {
-      method: 'GET',
+    const url = API_URL + "/pdf/invoices/" + invoiceId + "/conduce";
+    const response = await fetch(url, {
+      method: "GET",
       headers: getHeaders(token, false),
     });
 
@@ -211,7 +220,7 @@ export async function generateConduce(invoiceId, token) {
     const blob = await response.blob();
     return blob;
   } catch (error) {
-    console.error('Generate conduce error:', error);
+    console.error("Generate conduce error:", error);
     throw error;
   }
 }
@@ -219,21 +228,26 @@ export async function generateConduce(invoiceId, token) {
 /**
  * Fetch all quotes (optional helper)
  */
-export async function fetchQuotes(token, params = {}) {
+export async function fetchQuotes(token, params) {
   try {
-    const queryString = new URLSearchParams(params).toString();
-    const url = `${API_URL}/quotes${queryString ? `?${queryString}` : ''}`;
+    let url = API_URL + "/quotes";
+    if (params) {
+      const queryString = new URLSearchParams(params).toString();
+      if (queryString) {
+        url = url + "?" + queryString;
+      }
+    }
     
     const response = await fetch(url, {
-      method: 'GET',
-      headers: getHeaders(token),
+      method: "GET",
+      headers: getHeaders(token, true),
     });
 
     await handleResponse(response);
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error('Fetch quotes error:', error);
+    console.error("Fetch quotes error:", error);
     throw error;
   }
 }
@@ -243,16 +257,17 @@ export async function fetchQuotes(token, params = {}) {
  */
 export async function fetchQuote(quoteId, token) {
   try {
-    const response = await fetch(`${API_URL}/quotes/${quoteId}`, {
-      method: 'GET',
-      headers: getHeaders(token),
+    const url = API_URL + "/quotes/" + quoteId;
+    const response = await fetch(url, {
+      method: "GET",
+      headers: getHeaders(token, true),
     });
 
     await handleResponse(response);
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error('Fetch quote error:', error);
+    console.error("Fetch quote error:", error);
     throw error;
   }
 }
@@ -262,9 +277,10 @@ export async function fetchQuote(quoteId, token) {
  */
 export async function createQuote(token, payload) {
   try {
-    const response = await fetch(`${API_URL}/quotes`, {
-      method: 'POST',
-      headers: getHeaders(token),
+    const url = API_URL + "/quotes";
+    const response = await fetch(url, {
+      method: "POST",
+      headers: getHeaders(token, true),
       body: JSON.stringify(payload),
     });
 
@@ -272,7 +288,7 @@ export async function createQuote(token, payload) {
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error('Create quote error:', error);
+    console.error("Create quote error:", error);
     throw error;
   }
 }
