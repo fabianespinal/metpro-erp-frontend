@@ -18,7 +18,7 @@ export default function ProductsPage() {
   // Fetch products
   const fetchProducts = async () => {
     try {
-      const data = await api('/products', { method: 'GET' })
+      const data = await api('/products/', { method: 'GET' })   // ⭐ FIXED
       setProducts(Array.isArray(data) ? data : [])
     } catch (error) {
       console.error('Failed to fetch products:', error)
@@ -32,7 +32,7 @@ export default function ProductsPage() {
     setLoading(true)
 
     try {
-      await api('/products/', {
+      await api('/products/', {                                // ⭐ FIXED
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newProduct)
@@ -54,7 +54,7 @@ export default function ProductsPage() {
     setLoading(true)
 
     try {
-      await api(`/products/${editingProduct.id}`, {
+      await api(`/products/${editingProduct.id}/`, {            // ⭐ FIXED
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(editingProduct)
@@ -75,7 +75,7 @@ export default function ProductsPage() {
     if (!confirm('Delete this product?')) return
 
     try {
-      await api(`/products/${productId}`, { method: 'DELETE' })
+      await api(`/products/${productId}/`, { method: 'DELETE' }) // ⭐ FIXED
       await fetchProducts()
       alert('Product deleted!')
     } catch (error) {
@@ -97,7 +97,7 @@ export default function ProductsPage() {
     formData.append('file', csvFile)
 
     try {
-      const data = await api('/products/import-csv', {
+      const data = await api('/products/import-csv/', {         // ⭐ FIXED
         method: 'POST',
         body: formData
       })
