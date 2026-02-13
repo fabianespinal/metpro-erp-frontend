@@ -301,9 +301,9 @@ export default function QuotesPage() {
       quoteId,
       pdfUrl: url,
     });
-  } catch (err) {
-    console.error("PDF Preview Error:", err);
-    alert("Error previewing PDF: " + err.message);
+  } catch (e) {
+    console.error("PDF Preview Error:", e);
+    alert("Error previewing PDF: " + e.message);
   }
 };
 
