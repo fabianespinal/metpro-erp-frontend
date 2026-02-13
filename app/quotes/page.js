@@ -32,7 +32,7 @@ export default function QuotesPage() {
   const [totals, setTotals] = useState(null)
   const [loading, setLoading] = useState(false)
   const [quotes, setQuotes] = useState([])
-  const [invoices, setInvoices] = useState([]) // NEW: Store invoices
+  const [invoices, setInvoices] = useState([])
   const [statusFilter, setStatusFilter] = useState('all')
   const [previewPDF, setPreviewPDF] = useState({ isOpen: false, quoteId: null, pdfUrl: null })
   const [products, setProducts] = useState([])
@@ -42,7 +42,7 @@ export default function QuotesPage() {
   useEffect(() => {
     fetchClients()
     fetchQuotes()
-    fetchInvoices() // NEW: Fetch invoices
+    fetchInvoices()
     fetchProducts()
   }, [])
 
@@ -72,7 +72,7 @@ export default function QuotesPage() {
     }
   }
 
-  // NEW: Fetch invoices and merge with quotes
+  // Fetch invoices
   const fetchInvoices = async () => {
     try {
       const data = await api("/invoices/", { method: "GET" })
@@ -83,7 +83,7 @@ export default function QuotesPage() {
     }
   }
 
-  // NEW: Merge invoice data into quotes
+  // Merge invoice data into quotes
   const getMergedQuotes = () => {
     return quotes.map(quote => {
       const invoice = invoices.find(inv => inv.quote_id === quote.quote_id)
@@ -192,16 +192,16 @@ export default function QuotesPage() {
     setProductModal({ isOpen: false, itemIndex: null })
   }
 
-  // ✅ FIX: Returns the correct endpoint based on invoice data
+  // Get PDF URL based on invoice status
   const getPdfUrl = (quoteId) => {
     const quote = getMergedQuotes().find(q => q.quote_id === quoteId)
     if (quote && quote.has_invoice) {
-      return `/invoices/${quote.invoice_id}/pdf`
+      return `/pdf/invoices/${quote.invoice_id}`
     }
-    return `/quotes/${quoteId}/pdf`
+    return `/pdf/quotes/${quoteId}`
   }
 
-  // ✅ FIX: Returns the correct filename based on invoice data
+  // Get PDF filename based on invoice status
   const getPdfFilename = (quoteId) => {
     const quote = getMergedQuotes().find(q => q.quote_id === quoteId)
     if (quote && quote.has_invoice) {
@@ -237,7 +237,7 @@ export default function QuotesPage() {
     }
   }
 
-  // Generate Conduce - UPDATED to use invoice_id
+  // Generate Conduce
   const handleGenerateConduce = async (quoteId) => {
     const quote = getMergedQuotes().find(q => q.quote_id === quoteId)
     if (!quote || !quote.has_invoice) {
@@ -246,7 +246,7 @@ export default function QuotesPage() {
     }
 
     try {
-      const response = await api(`/invoices/${quote.invoice_id}/conduce/pdf`, { method: "GET" }, { raw: true })
+      const response = await api(`/pdf/invoices/${quote.invoice_id}/conduce`, { method: "GET" }, { raw: true })
 
       if (!response.ok) {
         throw new Error(`Conduce generation failed: ${response.status} ${response.statusText}`)
@@ -278,7 +278,6 @@ export default function QuotesPage() {
   const handlePreviewPDF = async (quoteId) => {
     try {
       const url = getPdfUrl(quoteId)
-
       const response = await api(url, { method: "GET" }, { raw: true })
 
       if (!response.ok) {
@@ -304,10 +303,9 @@ export default function QuotesPage() {
     if (!confirm("Duplicate this quote?")) return
     try {
       const data = await api(`/quotes/${quoteId}/duplicate`, { method: "POST" })
-
       alert(`✅ Quote duplicated! New ID: ${data.quote_id}`)
       fetchQuotes()
-      fetchInvoices() // Refresh invoices too
+      fetchInvoices()
     } catch (error) {
       alert("Error duplicating quote: " + error.message)
     }
@@ -318,10 +316,9 @@ export default function QuotesPage() {
     if (!confirm(`Convert quote ${quoteId} to invoice?\nThis will change the ID from COT- to INV- prefix and cannot be undone.`)) return
     try {
       const data = await api(`/quotes/${quoteId}/convert-to-invoice`, { method: "POST" })
-      
       alert(`✅ SUCCESS!\nQuote converted to invoice:\nNEW ID: ${data.invoice_id}`)
       fetchQuotes()
-      fetchInvoices() // Refresh invoices
+      fetchInvoices()
       
       if (window.toast) {
         window.toast('Converted to Invoice!', {
@@ -342,7 +339,6 @@ export default function QuotesPage() {
         method: "PATCH",
         body: JSON.stringify({ status: newStatus })
       })
-      
       fetchQuotes()
       
       if (window.toast) {
@@ -360,9 +356,8 @@ export default function QuotesPage() {
   const handleDeleteQuote = async (quoteId) => {
     try {
       await api(`/quotes/${quoteId}`, { method: "DELETE" })
-
       setQuotes(prevQuotes => prevQuotes.filter(q => q.quote_id !== quoteId))
-      setInvoices(prevInvoices => prevInvoices.filter(inv => inv.quote_id !== quoteId)) // Remove associated invoice
+      setInvoices(prevInvoices => prevInvoices.filter(inv => inv.quote_id !== quoteId))
       
       if (window.toast) {
         window.toast('Quote deleted!', {
@@ -388,12 +383,10 @@ export default function QuotesPage() {
   const handleSaveEdit = async (quoteId, updatedData) => {
     try {
       const { client_id, ...updatePayload } = updatedData
-
       await api(`/quotes/${quoteId}`, {
         method: "PUT",
         body: JSON.stringify(updatePayload)
       })
-
       fetchQuotes()
 
       if (window.toast) {
@@ -432,7 +425,6 @@ export default function QuotesPage() {
           items: quoteItems
         })
       })
-
       alert(`Quote created successfully! ID: ${data.quote_id}`)
       fetchQuotes()
       
@@ -460,7 +452,7 @@ export default function QuotesPage() {
     }
   }
 
-  // Filter quotes - UPDATED to use merged quotes
+  // Filter quotes using merged data
   const mergedQuotes = getMergedQuotes()
   const safeQuotes = Array.isArray(mergedQuotes) ? mergedQuotes : []
   const filteredQuotes = statusFilter === 'all'
@@ -770,6 +762,8 @@ export default function QuotesPage() {
                           quoteId: quote.quote_id,
                           quoteStatus: quote.status
                         })}
+                        onApprove={() => handleUpdateStatus(quote.quote_id, 'Approved')}
+                        onConvertToInvoice={() => handleConvertToInvoice(quote.quote_id)}
                       />
                     </div>
                   </td>
@@ -878,7 +872,7 @@ export default function QuotesPage() {
                     p.name.toLowerCase().includes(searchTerm.toLowerCase())
                   ).length === 0 && searchTerm && (
                     <div className='text-center text-gray-500 py-4'>
-                      No products match "{searchTerm}"
+                      No products match &quot;{searchTerm}&quot;
                     </div>
                   )}
                 </div>
