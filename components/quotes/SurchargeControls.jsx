@@ -1,73 +1,135 @@
-'use client'
+export default function SurchargeControls({ charges, setCharges }) {
+  const handleToggle = (field) => {
+    setCharges({ ...charges, [field]: !charges[field] })
+  }
 
-export default function SurchargeControls({ charges, onChargesChange }) {
-  const surchargeOptions = [
-    { key: 'supervision', label: 'Supervision surcharge (%)', default: 10 },
-    { key: 'admin', label: 'Admin surcharge (%)', default: 4 },
-    { key: 'insurance', label: 'Insurance surcharge (%)', default: 1 },
-    { key: 'transport', label: 'Transport surcharge (%)', default: 3 },
-    { key: 'contingency', label: 'Contingency surcharge (%)', default: 3 }
-  ]
+  const handlePercentageChange = (field, value) => {
+    setCharges({ ...charges, [field]: parseFloat(value) || 0 })
+  }
 
   return (
-    <div className="space-y-3">
-      <label className="block text-sm font-semibold text-gray-700 mb-2">
-        Included Charges
-      </label>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        {surchargeOptions.map((option) => (
-          <div 
-            key={option.key} 
-            className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg border border-gray-200 hover:border-gray-300 transition-all duration-200"
-          >
-            <div className="flex-1">
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id={`charge-${option.key}`}
-                  checked={charges[option.key] || false}
-                  onChange={(e) => {
-                    onChargesChange({
-                      ...charges,
-                      [option.key]: e.target.checked
-                    })
-                  }}
-                  className="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                />
-                <label 
-                  htmlFor={`charge-${option.key}`} 
-                  className="text-sm font-medium text-gray-700 cursor-pointer"
-                >
-                  {option.label}
-                </label>
-              </div>
-            </div>
-            
-            <div className="w-24">
-              <input
-                type="number"
-                min="0"
-                max="100"
-                step="0.01"
-                value={charges[`${option.key}_percentage`] || option.default}
-                onChange={(e) => {
-                  const value = parseFloat(e.target.value) || 0
-                  onChargesChange({
-                    ...charges,
-                    [`${option.key}_percentage`]: value
-                  })
-                }}
-                disabled={!charges[option.key]}
-                className={`w-full text-right text-sm font-medium px-2 py-1 border rounded-md ${
-                  !charges[option.key] 
-                    ? 'bg-gray-100 cursor-not-allowed text-gray-400' 
-                    : 'bg-white border-gray-300 focus:ring-blue-500 focus:border-blue-500'
-                }`}
-              />
-            </div>
+    <div className='mb-4'>
+      <label className='block text-sm font-medium mb-3'>Additional Charges</label>
+      <div className='border rounded-lg p-4 space-y-3'>
+        <div className='flex items-center justify-between'>
+          <div className='flex items-center gap-2'>
+            <input
+              type='checkbox'
+              checked={charges.supervision}
+              onChange={() => handleToggle('supervision')}
+              className='w-4 h-4'
+            />
+            <label className='text-sm font-medium'>Supervision</label>
           </div>
-        ))}
+          <div className='flex items-center gap-2'>
+            <input
+              type='number'
+              value={charges.supervision_percentage}
+              onChange={(e) => handlePercentageChange('supervision_percentage', e.target.value)}
+              disabled={!charges.supervision}
+              className='w-20 border rounded px-2 py-1 text-sm'
+              min='0'
+              step='0.1'
+            />
+            <span className='text-sm'>%</span>
+          </div>
+        </div>
+
+        <div className='flex items-center justify-between'>
+          <div className='flex items-center gap-2'>
+            <input
+              type='checkbox'
+              checked={charges.admin}
+              onChange={() => handleToggle('admin')}
+              className='w-4 h-4'
+            />
+            <label className='text-sm font-medium'>Admin</label>
+          </div>
+          <div className='flex items-center gap-2'>
+            <input
+              type='number'
+              value={charges.admin_percentage}
+              onChange={(e) => handlePercentageChange('admin_percentage', e.target.value)}
+              disabled={!charges.admin}
+              className='w-20 border rounded px-2 py-1 text-sm'
+              min='0'
+              step='0.1'
+            />
+            <span className='text-sm'>%</span>
+          </div>
+        </div>
+
+        <div className='flex items-center justify-between'>
+          <div className='flex items-center gap-2'>
+            <input
+              type='checkbox'
+              checked={charges.insurance}
+              onChange={() => handleToggle('insurance')}
+              className='w-4 h-4'
+            />
+            <label className='text-sm font-medium'>Insurance</label>
+          </div>
+          <div className='flex items-center gap-2'>
+            <input
+              type='number'
+              value={charges.insurance_percentage}
+              onChange={(e) => handlePercentageChange('insurance_percentage', e.target.value)}
+              disabled={!charges.insurance}
+              className='w-20 border rounded px-2 py-1 text-sm'
+              min='0'
+              step='0.1'
+            />
+            <span className='text-sm'>%</span>
+          </div>
+        </div>
+
+        <div className='flex items-center justify-between'>
+          <div className='flex items-center gap-2'>
+            <input
+              type='checkbox'
+              checked={charges.transport}
+              onChange={() => handleToggle('transport')}
+              className='w-4 h-4'
+            />
+            <label className='text-sm font-medium'>Transport</label>
+          </div>
+          <div className='flex items-center gap-2'>
+            <input
+              type='number'
+              value={charges.transport_percentage}
+              onChange={(e) => handlePercentageChange('transport_percentage', e.target.value)}
+              disabled={!charges.transport}
+              className='w-20 border rounded px-2 py-1 text-sm'
+              min='0'
+              step='0.1'
+            />
+            <span className='text-sm'>%</span>
+          </div>
+        </div>
+
+        <div className='flex items-center justify-between'>
+          <div className='flex items-center gap-2'>
+            <input
+              type='checkbox'
+              checked={charges.contingency}
+              onChange={() => handleToggle('contingency')}
+              className='w-4 h-4'
+            />
+            <label className='text-sm font-medium'>Contingency</label>
+          </div>
+          <div className='flex items-center gap-2'>
+            <input
+              type='number'
+              value={charges.contingency_percentage}
+              onChange={(e) => handlePercentageChange('contingency_percentage', e.target.value)}
+              disabled={!charges.contingency}
+              className='w-20 border rounded px-2 py-1 text-sm'
+              min='0'
+              step='0.1'
+            />
+            <span className='text-sm'>%</span>
+          </div>
+        </div>
       </div>
     </div>
   )
