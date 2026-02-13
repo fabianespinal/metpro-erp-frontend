@@ -8,6 +8,16 @@ import PDFPreviewModal from '@/components/quote/PDFPreviewModal'
 import SurchargeControls from '@/components/quote/SurchargeControls'
 import DeleteQuoteModal from '@/components/quote/DeleteQuoteModal'
 import EditQuoteModal from '@/components/quote/EditQuoteModal'
+import {
+  previewPDF,
+  downloadPDF,
+  approveQuote,
+  duplicateQuote,
+  deleteQuote,
+  convertToInvoice,
+  updateQuoteStatus,
+  generateConduce,
+} from '@/components/quotes/QuoteActions'
 
 export default function QuotesPage() {
   const [clients, setClients] = useState([])
@@ -192,52 +202,26 @@ export default function QuotesPage() {
     setProductModal({ isOpen: false, itemIndex: null })
   }
 
-  // Get PDF URL based on invoice status
-  const getPdfUrl = (quoteId) => {
-    const quote = getMergedQuotes().find(q => q.quote_id === quoteId)
-    if (quote && quote.has_invoice) {
-      return `/pdf/invoices/${quote.invoice_id}`
-    }
-    return `/pdf/quotes/${quoteId}`
-  }
-
-  // Get PDF filename based on invoice status
-  const getPdfFilename = (quoteId) => {
-    const quote = getMergedQuotes().find(q => q.quote_id === quoteId)
-    if (quote && quote.has_invoice) {
-      return `${quote.invoice_number}_factura.pdf`
-    }
-    return `${quoteId}_cotizacion.pdf`
-  }
-
-  // Download PDF
+  // Download PDF handler
   const handleDownloadPDF = async (quoteId) => {
     try {
-      const url = getPdfUrl(quoteId)
-      const filename = getPdfFilename(quoteId)
-
-      const response = await api(url, { method: "GET" }, { raw: true })
-      
-      if (!response.ok) {
-        throw new Error(`PDF download failed: ${response.status} ${response.statusText}`)
-      }
-
-      const blob = await response.blob()
-      const blobUrl = window.URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = blobUrl
-      a.download = filename
-      document.body.appendChild(a)
-      a.click()
-      window.URL.revokeObjectURL(blobUrl)
-      document.body.removeChild(a)
-    } catch (error) {
-      console.error('PDF Download Error:', error)
-      alert('Error downloading PDF: ' + error.message)
+      const token = localStorage.getItem("token")
+      const blob = await downloadPDF(quoteId, token)
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement("a")
+      link.href = url
+      link.download = `Q-${quoteId}.pdf`
+      document.body.appendChild(link)
+      link.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(link)
+    } catch (e) {
+      console.error("PDF Download Error:", e)
+      alert("Error downloading PDF: " + e.message)
     }
   }
 
-  // Generate Conduce
+  // Generate Conduce handler
   const handleGenerateConduce = async (quoteId) => {
     const quote = getMergedQuotes().find(q => q.quote_id === quoteId)
     if (!quote || !quote.has_invoice) {
@@ -246,13 +230,8 @@ export default function QuotesPage() {
     }
 
     try {
-      const response = await api(`/pdf/invoices/${quote.invoice_id}/conduce`, { method: "GET" }, { raw: true })
-
-      if (!response.ok) {
-        throw new Error(`Conduce generation failed: ${response.status} ${response.statusText}`)
-      }
-
-      const blob = await response.blob()
+      const token = localStorage.getItem("token")
+      const blob = await generateConduce(quote.invoice_id, token)
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
@@ -274,44 +253,29 @@ export default function QuotesPage() {
     }
   }
 
-  // Preview PDF
+  // Preview PDF handler
   const handlePreviewPDF = async (quoteId) => {
-  try {
-    const token = localStorage.getItem("token");
-
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/pdf/quotes/${quoteId}`,
-      {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-
-    if (!res.ok) {
-      throw new Error(`Preview failed: ${res.status} ${res.statusText}`);
+    try {
+      const token = localStorage.getItem("token")
+      const blob = await previewPDF(quoteId, token)
+      const url = window.URL.createObjectURL(blob)
+      setPreviewPDF({
+        isOpen: true,
+        quoteId,
+        pdfUrl: url,
+      })
+    } catch (e) {
+      console.error("PDF Preview Error:", e)
+      alert("Error previewing PDF: " + e.message)
     }
-
-    const blob = await res.blob();
-    const url = window.URL.createObjectURL(blob);
-
-    setPreviewPDF({
-      isOpen: true,
-      quoteId,
-      pdfUrl: url,
-    });
-  } catch (e) {
-    console.error("PDF Preview Error:", e);
-    alert("Error previewing PDF: " + e.message);
   }
-};
 
-  // Duplicate quote
+  // Duplicate quote handler
   const handleDuplicateQuote = async (quoteId) => {
     if (!confirm("Duplicate this quote?")) return
     try {
-      const data = await api(`/quotes/${quoteId}/duplicate`, { method: "POST" })
+      const token = localStorage.getItem("token")
+      const data = await duplicateQuote(quoteId, token)
       alert(`✅ Quote duplicated! New ID: ${data.quote_id}`)
       fetchQuotes()
       fetchInvoices()
@@ -320,11 +284,12 @@ export default function QuotesPage() {
     }
   }
 
-  // Convert to invoice
+  // Convert to invoice handler
   const handleConvertToInvoice = async (quoteId) => {
     if (!confirm(`Convert quote ${quoteId} to invoice?\nThis will change the ID from COT- to INV- prefix and cannot be undone.`)) return
     try {
-      const data = await api(`/quotes/${quoteId}/convert-to-invoice`, { method: "POST" })
+      const token = localStorage.getItem("token")
+      const data = await convertToInvoice(quoteId, token)
       alert(`✅ SUCCESS!\nQuote converted to invoice:\nNEW ID: ${data.invoice_id}`)
       fetchQuotes()
       fetchInvoices()
@@ -341,13 +306,11 @@ export default function QuotesPage() {
     }
   }
 
-  // Update status
+  // Update status handler
   const handleUpdateStatus = async (quoteId, newStatus) => {
     try {
-      await api(`/quotes/${quoteId}/status`, {
-        method: "PATCH",
-        body: JSON.stringify({ status: newStatus })
-      })
+      const token = localStorage.getItem("token")
+      await updateQuoteStatus(quoteId, token, newStatus)
       fetchQuotes()
       
       if (window.toast) {
@@ -361,10 +324,11 @@ export default function QuotesPage() {
     }
   }
 
-  // Delete quote
+  // Delete quote handler
   const handleDeleteQuote = async (quoteId) => {
     try {
-      await api(`/quotes/${quoteId}`, { method: "DELETE" })
+      const token = localStorage.getItem("token")
+      await deleteQuote(quoteId, token)
       setQuotes(prevQuotes => prevQuotes.filter(q => q.quote_id !== quoteId))
       setInvoices(prevInvoices => prevInvoices.filter(inv => inv.quote_id !== quoteId))
       
@@ -380,7 +344,7 @@ export default function QuotesPage() {
     }
   }
 
-  // Confirm delete
+  // Confirm delete handler
   const handleConfirmDelete = async () => {
     if (deleteModal.quoteId) {
       await handleDeleteQuote(deleteModal.quoteId)
@@ -388,7 +352,7 @@ export default function QuotesPage() {
     setDeleteModal({ isOpen: false, quoteId: null, quoteStatus: null })
   }
 
-  // Save edit
+  // Save edit handler
   const handleSaveEdit = async (quoteId, updatedData) => {
     try {
       const { client_id, ...updatePayload } = updatedData
@@ -411,7 +375,7 @@ export default function QuotesPage() {
     }
   }
 
-  // Create quote
+  // Create quote handler
   const handleCreateQuote = async (e) => {
     e.preventDefault()
     if (!selectedClient) {
@@ -490,214 +454,221 @@ export default function QuotesPage() {
             ))}
           </select>
         </div>
-        
-        {selectedClient && (
-          <>
-            <div className='mb-4'>
-              <label className='block text-sm font-medium mb-2'>Project Name</label>
-              <input
-                type='text'
-                value={projectName}
-                onChange={(e) => setProjectName(e.target.value)}
-                className='w-full border p-2 rounded'
-                placeholder='e.g., Construction Project'
-              />
-            </div>
-            
-            <div className='mb-4'>
-              <label className='block text-sm font-medium mb-2'>Products/Items</label>
-              {quoteItems.map((item, index) => (
-                <div key={index} className='flex flex-wrap md:flex-nowrap gap-2 mb-2'>
-                  {/* Product Name + DB Button */}
-                  <div className='flex gap-1 flex-1 min-w-[200px]'>
-                    <input
-                      type='text'
-                      placeholder='Product name'
-                      value={item.product_name}
-                      onChange={(e) => handleItemChange(index, 'product_name', e.target.value)}
-                      className='flex-1 border p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
-                    />
-                    <button
-                      type='button'
-                      onClick={() => {
-                        console.log('DB button clicked for row', index)
-                        setProductModal({ isOpen: true, itemIndex: index })
-                        setSearchTerm('')
-                      }}
-                      className='bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-3 rounded transition-colors whitespace-nowrap'
-                      title='Select from product database'
-                    >
-                      Base Datos
-                    </button>
-                  </div>
-                  
-                  {/* Quantity */}
-                  <input
-                    type='number'
-                    placeholder='Qty'
-                    value={item.quantity}
-                    onChange={(e) => handleItemChange(index, 'quantity', parseFloat(e.target.value) || 0)}
-                    className='w-20 md:w-24 border p-2 rounded'
-                    min='0'
-                    step='0.01'
-                  />
-                  
-                  {/* Unit Price */}
-                  <input
-                    type='number'
-                    placeholder='Unit Price'
-                    value={item.unit_price}
-                    onChange={(e) => handleItemChange(index, 'unit_price', parseFloat(e.target.value) || 0)}
-                    className='w-28 md:w-32 border p-2 rounded'
-                    min='0'
-                    step='0.01'
-                  />
-                  
-                  {/* Discount Type */}
-                  <select
-                    value={item.discount_type}
-                    onChange={(e) => handleItemChange(index, 'discount_type', e.target.value)}
-                    className='w-28 md:w-32 border p-2 rounded'
-                  >
-                    <option value='none'>No Discount</option>
-                    <option value='percentage'>%</option>
-                    <option value='fixed'>Fixed</option>
-                  </select>
-                  
-                  {/* Discount Value */}
-                  {item.discount_type !== 'none' && (
-                    <input
-                      type='number'
-                      placeholder='Value'
-                      value={item.discount_value}
-                      onChange={(e) => handleItemChange(index, 'discount_value', parseFloat(e.target.value) || 0)}
-                      className='w-20 md:w-24 border p-2 rounded'
-                      min='0'
-                      step='0.01'
-                    />
-                  )}
-                  
-                  {/* Remove Button */}
+
+        <div className='mb-4'>
+          <label className='block text-sm font-medium mb-2'>Project Name (optional)</label>
+          <input
+            type='text'
+            value={projectName}
+            onChange={(e) => setProjectName(e.target.value)}
+            className='w-full border p-2 rounded'
+            placeholder='Enter project name'
+          />
+        </div>
+
+        <div className='mb-4'>
+          <label className='block text-sm font-medium mb-2'>Quote Items *</label>
+          {quoteItems.map((item, index) => (
+            <div key={index} className='mb-4 p-4 border rounded'>
+              <div className='flex justify-between items-center mb-3'>
+                <h4 className='font-medium'>Item {index + 1}</h4>
+                {quoteItems.length > 1 && (
                   <button
                     type='button'
                     onClick={() => handleRemoveItem(index)}
-                    className='bg-red-500 hover:bg-red-600 text-white px-3 rounded font-medium'
+                    className='text-red-600 hover:text-red-800 font-bold text-xl'
                   >
-                    ✕
+                    ×
                   </button>
-                </div>
-              ))}
-              <button
-                type='button'
-                onClick={handleAddItem}
-                className='mt-2 bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600'
-              >
-                ➕ Add Item
-              </button>
-            </div>
-            
-            <div className='mb-4'>
-              <SurchargeControls
-                charges={charges}
-                onChargesChange={setCharges}
-              />
-            </div>
-            
-            <div className='mb-4'>
-              <label className='block text-sm font-medium mb-2'>Notes</label>
-              <textarea
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                className='w-full border p-2 rounded'
-                rows='3'
-                placeholder='Additional notes for this quote...'
-              />
-            </div>
-            
-            {totals && (
-              <div className='bg-blue-50 p-4 rounded mb-4'>
-                <h3 className='font-bold mb-2'>💰 Quote Totals</h3>
-                <div className='grid grid-cols-2 gap-4 text-sm'>
-                  <div>
-                    <div className='flex justify-between'>
-                      <span>Items Total:</span>
-                      <span>${totals.items_total}</span>
-                    </div>
-                    {parseFloat(totals.total_discounts) > 0 && (
-                      <div className='flex justify-between text-red-600'>
-                        <span>Discounts:</span>
-                        <span>-${totals.total_discounts}</span>
-                      </div>
-                    )}
-                    <div className='flex justify-between font-medium mt-2 pt-2 border-t'>
-                      <span>Subtotal:</span>
-                      <span>${totals.subtotal_general}</span>
-                    </div>
+                )}
+              </div>
+              
+              <div className='grid grid-cols-1 md:grid-cols-4 gap-3 mb-3'>
+                <div className='md:col-span-2'>
+                  <label className='block text-xs font-medium mb-1'>Product/Service</label>
+                  <div className='flex gap-2'>
+                    <input
+                      type='text'
+                      value={item.product_name}
+                      onChange={(e) => handleItemChange(index, 'product_name', e.target.value)}
+                      className='flex-1 border p-2 rounded text-sm'
+                      placeholder='Enter product name'
+                    />
+                    <button
+                      type='button'
+                      onClick={() => setProductModal({ isOpen: true, itemIndex: index })}
+                      className='px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm'
+                      title='Select from database'
+                    >
+                      📦
+                    </button>
                   </div>
-                  <div>
-                    {charges.supervision && (
-                      <div className='flex justify-between text-sm'>
-                        <span>Supervision ({charges.supervision_percentage}%):</span>
-                        <span>${totals.supervision}</span>
-                      </div>
-                    )}
-                    {charges.admin && (
-                      <div className='flex justify-between text-sm'>
-                        <span>Admin ({charges.admin_percentage}%):</span>
-                        <span>${totals.admin}</span>
-                      </div>
-                    )}
-                    {charges.insurance && (
-                      <div className='flex justify-between text-sm'>
-                        <span>Insurance ({charges.insurance_percentage}%):</span>
-                        <span>${totals.insurance}</span>
-                      </div>
-                    )}
-                    {charges.transport && (
-                      <div className='flex justify-between text-sm'>
-                        <span>Transport ({charges.transport_percentage}%):</span>
-                        <span>${totals.transport}</span>
-                      </div>
-                    )}
-                    {charges.contingency && (
-                      <div className='flex justify-between text-sm'>
-                        <span>Contingency ({charges.contingency_percentage}%):</span>
-                        <span>${totals.contingency}</span>
-                      </div>
-                    )}
-                    <div className='flex justify-between font-medium pt-2 border-t'>
-                      <span>ITBIS (18%):</span>
-                      <span>${totals.itbis}</span>
-                    </div>
-                    <div className='flex justify-between text-xl font-bold mt-2 pt-2 border-t border-blue-500'>
-                      <span>TOTAL:</span>
-                      <span>${totals.grand_total}</span>
-                    </div>
+                </div>
+                <div>
+                  <label className='block text-xs font-medium mb-1'>Quantity</label>
+                  <input
+                    type='number'
+                    value={item.quantity}
+                    onChange={(e) => handleItemChange(index, 'quantity', parseFloat(e.target.value) || 0)}
+                    className='w-full border p-2 rounded text-sm'
+                    min='1'
+                    step='1'
+                  />
+                </div>
+                <div>
+                  <label className='block text-xs font-medium mb-1'>Unit Price ($)</label>
+                  <input
+                    type='number'
+                    value={item.unit_price}
+                    onChange={(e) => handleItemChange(index, 'unit_price', parseFloat(e.target.value) || 0)}
+                    className='w-full border p-2 rounded text-sm'
+                    min='0'
+                    step='0.01'
+                  />
+                </div>
+              </div>
+
+              <div className='grid grid-cols-1 md:grid-cols-3 gap-3'>
+                <div>
+                  <label className='block text-xs font-medium mb-1'>Discount Type</label>
+                  <select
+                    value={item.discount_type}
+                    onChange={(e) => handleItemChange(index, 'discount_type', e.target.value)}
+                    className='w-full border p-2 rounded text-sm'
+                  >
+                    <option value='none'>No Discount</option>
+                    <option value='percentage'>Percentage</option>
+                    <option value='fixed'>Fixed Amount</option>
+                  </select>
+                </div>
+                <div>
+                  <label className='block text-xs font-medium mb-1'>Discount Value</label>
+                  <input
+                    type='number'
+                    value={item.discount_value}
+                    onChange={(e) => handleItemChange(index, 'discount_value', parseFloat(e.target.value) || 0)}
+                    className='w-full border p-2 rounded text-sm'
+                    min='0'
+                    step='0.01'
+                    disabled={item.discount_type === 'none'}
+                  />
+                </div>
+                <div>
+                  <label className='block text-xs font-medium mb-1'>Line Total</label>
+                  <div className='w-full border p-2 rounded bg-gray-100 font-bold text-sm'>
+                    ${((item.quantity * item.unit_price) - (
+                      item.discount_type === 'percentage' 
+                        ? (item.quantity * item.unit_price * item.discount_value / 100)
+                        : item.discount_type === 'fixed' 
+                          ? item.discount_value 
+                          : 0
+                    )).toFixed(2)}
                   </div>
                 </div>
               </div>
+            </div>
+          ))}
+          
+          <button
+            type='button'
+            onClick={handleAddItem}
+            className='w-full bg-blue-100 text-blue-700 py-2 rounded hover:bg-blue-200'
+          >
+            + Add Item
+          </button>
+        </div>
+
+        <SurchargeControls charges={charges} setCharges={setCharges} />
+
+        {totals && (
+          <div className='mt-6 p-4 bg-gray-50 rounded-lg space-y-2'>
+            <div className='flex justify-between text-sm'>
+              <span>Items Subtotal:</span>
+              <span className='font-medium'>${totals.items_total}</span>
+            </div>
+            {parseFloat(totals.total_discounts) > 0 && (
+              <div className='flex justify-between text-sm text-red-600'>
+                <span>Discounts:</span>
+                <span className='font-medium'>-${totals.total_discounts}</span>
+              </div>
             )}
-            
-            <button
-              type='button'
-              onClick={handleCreateQuote}
-              disabled={loading}
-              className='w-full bg-blue-600 text-white py-3 px-4 rounded hover:bg-blue-700 disabled:opacity-50 font-bold text-lg'
-            >
-              {loading ? 'Creating Quote...' : 'CREATE QUOTE'}
-            </button>
-          </>
+            <div className='flex justify-between text-sm'>
+              <span>After Discounts:</span>
+              <span className='font-medium'>${totals.items_after_discount}</span>
+            </div>
+            {parseFloat(totals.supervision) > 0 && (
+              <div className='flex justify-between text-sm text-blue-600'>
+                <span>Supervision ({charges.supervision_percentage}%):</span>
+                <span>${totals.supervision}</span>
+              </div>
+            )}
+            {parseFloat(totals.admin) > 0 && (
+              <div className='flex justify-between text-sm text-blue-600'>
+                <span>Admin ({charges.admin_percentage}%):</span>
+                <span>${totals.admin}</span>
+              </div>
+            )}
+            {parseFloat(totals.insurance) > 0 && (
+              <div className='flex justify-between text-sm text-blue-600'>
+                <span>Insurance ({charges.insurance_percentage}%):</span>
+                <span>${totals.insurance}</span>
+              </div>
+            )}
+            {parseFloat(totals.transport) > 0 && (
+              <div className='flex justify-between text-sm text-blue-600'>
+                <span>Transport ({charges.transport_percentage}%):</span>
+                <span>${totals.transport}</span>
+              </div>
+            )}
+            {parseFloat(totals.contingency) > 0 && (
+              <div className='flex justify-between text-sm text-blue-600'>
+                <span>Contingency ({charges.contingency_percentage}%):</span>
+                <span>${totals.contingency}</span>
+              </div>
+            )}
+            <div className='flex justify-between text-sm border-t pt-2'>
+              <span>Subtotal General:</span>
+              <span className='font-medium'>${totals.subtotal_general}</span>
+            </div>
+            <div className='flex justify-between text-sm'>
+              <span>ITBIS (18%):</span>
+              <span className='font-medium'>${totals.itbis}</span>
+            </div>
+            <div className='flex justify-between text-xl font-bold border-t-2 pt-2'>
+              <span>Grand Total:</span>
+              <span className='text-green-600'>${totals.grand_total}</span>
+            </div>
+          </div>
         )}
+
+        <div className='mb-4 mt-4'>
+          <label className='block text-sm font-medium mb-2'>Notes (optional)</label>
+          <textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            className='w-full border p-2 rounded'
+            rows='3'
+            placeholder='Any additional notes or terms'
+          />
+        </div>
+
+        <button
+          onClick={handleCreateQuote}
+          disabled={loading}
+          className='w-full bg-blue-600 text-white py-3 rounded hover:bg-blue-700 disabled:bg-gray-400'
+        >
+          {loading ? 'Creating...' : 'Create Quote'}
+        </button>
       </div>
-      
+
       {/* Quotes List */}
-      <div className='bg-white rounded-lg shadow overflow-visible'>
-        <div className='p-4 border-b font-bold flex justify-between items-center'>
-          <span>Quote History ({safeQuotes.length})</span>
+      <div className='bg-white rounded-lg shadow p-6'>
+        <div className='flex justify-between items-center mb-6'>
+          <h2 className='text-xl font-semibold'>Existing Quotes</h2>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className='border p-1 rounded text-sm'
+            className='border p-2 rounded'
           >
             <option value='all'>All Statuses</option>
             <option value='Draft'>Draft</option>
