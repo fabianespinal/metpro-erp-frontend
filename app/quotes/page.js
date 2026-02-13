@@ -276,27 +276,36 @@ export default function QuotesPage() {
 
   // Preview PDF
   const handlePreviewPDF = async (quoteId) => {
-    try {
-      const url = getPdfUrl(quoteId)
-      const response = await api(url, { method: "GET" }, { raw: true })
+  try {
+    const token = localStorage.getItem("token");
 
-      if (!response.ok) {
-        throw new Error(`Preview failed: ${response.status} ${response.statusText}`)
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/pdf/quotes/${quoteId}`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       }
+    );
 
-      const blob = await response.blob()
-      const blobUrl = window.URL.createObjectURL(blob)
-
-      setPreviewPDF({
-        isOpen: true,
-        quoteId,
-        pdfUrl: blobUrl
-      })
-    } catch (error) {
-      console.error('PDF Preview Error:', error)
-      alert('Error previewing PDF: ' + error.message)
+    if (!res.ok) {
+      throw new Error(`Preview failed: ${res.status} ${res.statusText}`);
     }
+
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+
+    setPreviewPDF({
+      isOpen: true,
+      quoteId,
+      pdfUrl: url,
+    });
+  } catch (err) {
+    console.error("PDF Preview Error:", err);
+    alert("Error previewing PDF: " + err.message);
   }
+};
 
   // Duplicate quote
   const handleDuplicateQuote = async (quoteId) => {
@@ -682,7 +691,7 @@ export default function QuotesPage() {
       </div>
       
       {/* Quotes List */}
-      <div className='bg-white rounded-lg shadow overflow-hidden'>
+      <div className='bg-white rounded-lg shadow overflow-visible'>
         <div className='p-4 border-b font-bold flex justify-between items-center'>
           <span>Quote History ({safeQuotes.length})</span>
           <select
