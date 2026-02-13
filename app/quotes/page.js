@@ -2,12 +2,14 @@
 import { useState, useEffect } from 'react'
 import { api } from "@/lib/api"
 import StatusPill from '@/components/ui/StatusPill'
-import PrimaryActionButton from '@/components/quote/PrimaryActionButton'
-import OverflowMenu from '@/components/quote/OverflowMenu'
-import PDFPreviewModal from '@/components/quote/PDFPreviewModal'
-import SurchargeControls from '@/components/quote/SurchargeControls'
-import DeleteQuoteModal from '@/components/quote/DeleteQuoteModal'
-import EditQuoteModal from '@/components/quote/EditQuoteModal'
+
+import PrimaryActionButton from '@/components/quotes/PrimaryActionButton'
+import OverflowMenu from '@/components/quotes/OverflowMenu'
+import PDFPreviewModal from '@/components/quotes/PDFPreviewModal'
+import SurchargeControls from '@/components/quotes/SurchargeControls'
+import DeleteQuoteModal from '@/components/quotes/DeleteQuoteModal'
+import EditQuoteModal from '@/components/quotes/EditQuoteModal'
+
 import {
   previewPDF,
   downloadPDF,
