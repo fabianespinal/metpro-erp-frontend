@@ -266,7 +266,7 @@ export default function ProjectsPage() {
         >
           <option value=''>All Statuses</option>
           <option value='planning'>Planning</option>
-          <option value='in_progress'>In Progress</option>
+          <option value='in progress'>In Progress</option>
           <option value='completed'>Completed</option>
         </select>
       </div>
@@ -286,10 +286,10 @@ export default function ProjectsPage() {
           <div>
             <div className='bg-blue-100 p-3 rounded-t-lg border border-blue-300'>
               <h2 className='font-semibold text-gray-900'>In Progress</h2>
-              <p className='text-sm text-gray-600'>{getProjectsByStatus('in_progress').length} projects</p>
+              <p className='text-sm text-gray-600'>{getProjectsByStatus('in progress').length} projects</p>
             </div>
             <div className='bg-blue-50 p-3 rounded-b-lg border border-t-0 border-blue-300 min-h-[200px]'>
-              {getProjectsByStatus('in_progress').map(renderProjectCard)}
+              {getProjectsByStatus('in progress').map(renderProjectCard)}
             </div>
           </div>
 
@@ -355,7 +355,7 @@ export default function ProjectsPage() {
             className='border p-2 rounded'
           >
             <option value='planning'>Planning</option>
-            <option value='in_progress'>In Progress</option>
+            <option value='in progress'>In Progress</option>
             <option value='completed'>Completed</option>
           </select>
 
