@@ -1,4 +1,5 @@
 'use client'
+
 import { useState, useEffect } from 'react'
 import StatusPill from '@/components/ui/StatusPill'
 
@@ -7,8 +8,8 @@ import StatusPill from '@/components/ui/StatusPill'
 // ============================================================
 /**
  * Normalize ANY status value to backend-safe format
- * @param {string} s - Raw status from backend or user input
- * @returns {string|null} Backend-safe status or null
+ * Backend accepts: planning, active, in_progress, completed, on_hold, cancelled
+ * Backend normalizes "in progress" → "in_progress"
  */
 function normalizeStatus(s) {
   if (!s || typeof s !== 'string') return 'planning'
@@ -17,24 +18,14 @@ function normalizeStatus(s) {
   
   // Handle common variations
   if (v === 'in progress' || v === 'in-progress') return 'in_progress'
-  if (v === 'on hold') return 'on_hold'
+  if (v === 'on hold' || v === 'on-hold') return 'on_hold'
   
   // Valid backend statuses
   const valid = ['planning', 'active', 'in_progress', 'completed', 'on_hold', 'cancelled']
   return valid.includes(v) ? v : 'planning'
 }
 
-// Display mapping (UI only)
-const STATUS_LABELS = {
-  planning: 'Planning',
-  active: 'Active',
-  in_progress: 'In Progress',
-  completed: 'Completed',
-  on_hold: 'On Hold',
-  cancelled: 'Cancelled'
-}
-
-// Dropdown options (backend-safe values, human labels)
+// Dropdown options (backend-safe values with human labels)
 const STATUS_OPTIONS = [
   { label: 'Planning', value: 'planning' },
   { label: 'Active', value: 'active' },
@@ -78,7 +69,7 @@ export default function ProjectsPage() {
   }, [filters.status])
 
   // ============================================================
-  // FETCH PROJECTS (NORMALIZES BEFORE STATE UPDATE)
+  // FETCH PROJECTS (NORMALIZES EVERY STATUS BEFORE STATE)
   // ============================================================
   const fetchProjects = async () => {
     try {
@@ -94,18 +85,18 @@ export default function ProjectsPage() {
 
       const rawData = await res.json()
 
-      // 🔒 CRITICAL: Normalize EVERY project's status BEFORE storing in state
+      // 🔒 CRITICAL FIX: Normalize EVERY project status BEFORE storing
       const normalizedProjects = rawData.map(project => ({
         ...project,
-        status: normalizeStatus(project.status) // Ensures backend-safe value
+        status: normalizeStatus(project.status)
       }))
 
-      // Apply filter if active
+      // Apply filter if active (compare normalized values)
       if (!filters.status) {
         setProjects(normalizedProjects)
       } else {
         setProjects(
-          normalizedProjects.filter(p => p.status === filters.status)
+          normalizedProjects.filter(p => p.status === normalizeStatus(filters.status))
         )
       }
 
@@ -151,7 +142,7 @@ export default function ProjectsPage() {
   }
 
   // ============================================================
-  // SANITIZE PAYLOAD (empty strings → null)
+  // SANITIZE PAYLOAD (empty strings → null, normalize status)
   // ============================================================
   const sanitizePayload = (data) => {
     const payload = { ...data }
@@ -182,7 +173,7 @@ export default function ProjectsPage() {
       throw new Error(dateError)
     }
 
-    // 🔒 Ensure status is backend-safe
+    // 🔒 CRITICAL FIX: Normalize status before sending to backend
     if (payload.status) {
       payload.status = normalizeStatus(payload.status)
     }
@@ -212,7 +203,6 @@ export default function ProjectsPage() {
       )
 
       if (res.ok) {
-        // ✅ Re-fetch to get normalized data from backend
         await fetchProjects()
         
         setNewProject({
@@ -239,7 +229,7 @@ export default function ProjectsPage() {
   }
 
   // ============================================================
-  // UPDATE PROJECT
+  // UPDATE PROJECT (PREVENTS DISAPPEARING PROJECTS)
   // ============================================================
   const handleUpdate = async () => {
     if (!editingProject) return
@@ -257,8 +247,20 @@ export default function ProjectsPage() {
       )
 
       if (res.ok) {
-        // ✅ Re-fetch ALL projects to ensure state is perfectly synced
-        // This prevents any Kanban column mismatches
+        const updatedProject = await res.json()
+        
+        // 🔒 CRITICAL FIX: Normalize the returned project status
+        updatedProject.status = normalizeStatus(updatedProject.status)
+        
+        // 🔒 CRITICAL FIX: Update local state IMMEDIATELY before refetch
+        // This prevents visual glitches and ensures instant Kanban updates
+        setProjects(prevProjects => 
+          prevProjects.map(p => 
+            p.id === updatedProject.id ? updatedProject : p
+          )
+        )
+        
+        // Then refetch to ensure perfect sync
         await fetchProjects()
         
         setEditingProject(null)
@@ -291,7 +293,6 @@ export default function ProjectsPage() {
       )
 
       if (res.ok) {
-        // ✅ Re-fetch to remove deleted project from state
         await fetchProjects()
       }
     } catch (err) {
@@ -300,13 +301,11 @@ export default function ProjectsPage() {
   }
 
   // ============================================================
-  // GET PROJECTS BY STATUS (BACKEND-SAFE VALUES ONLY)
+  // GET PROJECTS BY STATUS (BACKEND-SAFE COMPARISON ONLY)
   // ============================================================
   const getProjectsByStatus = (backendStatus) => {
-    // 🔒 Always compare normalized values
-    return projects.filter(p => 
-      normalizeStatus(p.status) === normalizeStatus(backendStatus)
-    )
+    const normalized = normalizeStatus(backendStatus)
+    return projects.filter(p => p.status === normalized)
   }
 
   // ============================================================
@@ -323,6 +322,19 @@ export default function ProjectsPage() {
     const day = String(date.getDate()).padStart(2, '0')
     
     return `${year}-${month}-${day}`
+  }
+
+  // ============================================================
+  // HANDLE EDIT CLICK (NORMALIZES STATUS WHEN LOADING)
+  // ============================================================
+  const handleEditClick = (project) => {
+    const editData = {
+      ...project,
+      status: normalizeStatus(project.status), // 🔒 Ensure normalized value enters edit form
+      start_date: formatDateForInput(project.start_date),
+      end_date: formatDateForInput(project.end_date)
+    }
+    setEditingProject(editData)
   }
 
   // ============================================================
@@ -366,14 +378,7 @@ export default function ProjectsPage() {
         <div className='flex gap-2 pt-2 border-t border-gray-200'>
           <button
             className='text-blue-600 text-sm hover:underline'
-            onClick={() => {
-              const editData = {
-                ...project,
-                start_date: formatDateForInput(project.start_date),
-                end_date: formatDateForInput(project.end_date)
-              }
-              setEditingProject(editData)
-            }}
+            onClick={() => handleEditClick(project)}
           >
             Edit
           </button>
@@ -509,7 +514,7 @@ export default function ProjectsPage() {
             ))}
           </select>
 
-          {/* Status - Backend-safe values */}
+          {/* Status - Backend-safe values with human labels */}
           <select
             value={editingProject?.status ?? newProject.status}
             onChange={(e) =>
