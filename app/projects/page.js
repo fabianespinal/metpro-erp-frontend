@@ -1,7 +1,36 @@
 'use client'
-
 import { useState, useEffect } from 'react'
 import StatusPill from '@/components/ui/StatusPill'
+
+// ============================================================
+// STATUS NORMALIZATION
+// ============================================================
+const BACKEND_TO_DISPLAY = {
+  planning: 'Planning',
+  active: 'Active',
+  completed: 'Completed',
+  on_hold: 'On Hold',
+  cancelled: 'Cancelled',
+  in_progress: 'In Progress'
+}
+
+const DISPLAY_TO_BACKEND = {
+  'Planning': 'planning',
+  'Active': 'active',
+  'Completed': 'completed',
+  'On Hold': 'on_hold',
+  'Cancelled': 'cancelled',
+  'In Progress': 'in_progress'
+}
+
+const ALL_STATUSES = [
+  { label: 'Planning', value: 'planning' },
+  { label: 'Active', value: 'active' },
+  { label: 'In Progress', value: 'in_progress' },
+  { label: 'Completed', value: 'completed' },
+  { label: 'On Hold', value: 'on_hold' },
+  { label: 'Cancelled', value: 'cancelled' }
+]
 
 export default function ProjectsPage() {
   const [projects, setProjects] = useState([])
@@ -30,6 +59,9 @@ export default function ProjectsPage() {
     fetchClients()
   }, [filters.status])
 
+  // ============================================================
+  // FETCH PROJECTS
+  // ============================================================
   const fetchProjects = async () => {
     try {
       const res = await fetch(
@@ -49,6 +81,9 @@ export default function ProjectsPage() {
     }
   }
 
+  // ============================================================
+  // FETCH CLIENTS
+  // ============================================================
   const fetchClients = async () => {
     try {
       const res = await fetch(
@@ -63,59 +98,71 @@ export default function ProjectsPage() {
     }
   }
 
+  // ============================================================
+  // DATE VALIDATION
+  // ============================================================
   const validateDates = (startDate, endDate) => {
     if (!startDate || !endDate) {
       return null
     }
-    
     const start = new Date(startDate)
     const end = new Date(endDate)
-    
+
     if (isNaN(start.getTime()) || isNaN(end.getTime())) {
       return null
     }
-    
+
     if (end < start) {
       return 'End date must be after start date'
     }
-    
+
     return null
   }
 
+  // ============================================================
+  // SANITIZE PAYLOAD (empty strings → null)
+  // ============================================================
   const sanitizePayload = (data) => {
     const payload = { ...data }
-    
+
+    // Client ID
     if (payload.client_id === '') {
       delete payload.client_id
     } else {
-      payload.client_id = parseInt(payload.client_id)
+      payload.client_id = parseInt(payload.client_id, 10)
     }
-    
+
+    // Budget
     if (payload.estimated_budget === '') {
       payload.estimated_budget = null
-    } else if (payload.estimated_budget) {
+    } else if (payload.estimated_budget !== null && payload.estimated_budget !== undefined) {
       payload.estimated_budget = parseFloat(payload.estimated_budget)
     }
-    
+
+    // Empty strings → null
     if (payload.description === '') payload.description = null
     if (payload.notes === '') payload.notes = null
     if (payload.start_date === '') payload.start_date = null
     if (payload.end_date === '') payload.end_date = null
-    
+
+    // Validate dates
     const dateError = validateDates(payload.start_date, payload.end_date)
     if (dateError) {
       throw new Error(dateError)
     }
-    
+
     return payload
   }
 
+  // ============================================================
+  // CREATE PROJECT
+  // ============================================================
   const handleCreate = async () => {
     if (!newProject.client_id || !newProject.name) {
       alert('Please fill in required fields: Client and Project Name')
       return
     }
-    
+
     setLoading(true)
     try {
       const payload = sanitizePayload(newProject)
@@ -127,6 +174,7 @@ export default function ProjectsPage() {
           body: JSON.stringify(payload)
         }
       )
+
       if (res.ok) {
         fetchProjects()
         setNewProject({
@@ -152,10 +200,13 @@ export default function ProjectsPage() {
     }
   }
 
+  // ============================================================
+  // UPDATE PROJECT
+  // ============================================================
   const handleUpdate = async () => {
     if (!editingProject) return
-    setLoading(true)
 
+    setLoading(true)
     try {
       const payload = sanitizePayload(editingProject)
       const res = await fetch(
@@ -166,6 +217,7 @@ export default function ProjectsPage() {
           body: JSON.stringify(payload)
         }
       )
+
       if (res.ok) {
         fetchProjects()
         setEditingProject(null)
@@ -182,6 +234,9 @@ export default function ProjectsPage() {
     }
   }
 
+  // ============================================================
+  // DELETE PROJECT
+  // ============================================================
   const handleDelete = async (id) => {
     if (!confirm('Delete this project?')) return
     try {
@@ -198,10 +253,16 @@ export default function ProjectsPage() {
     }
   }
 
-  const getProjectsByStatus = (status) => {
-    return projects.filter(p => p.status === status)
+  // ============================================================
+  // FILTER BY STATUS (backend-safe values)
+  // ============================================================
+  const getProjectsByStatus = (backendStatus) => {
+    return projects.filter(p => p.status === backendStatus)
   }
 
+  // ============================================================
+  // FORMAT DATE FOR INPUT
+  // ============================================================
   const formatDateForInput = (dateStr) => {
     if (!dateStr) return ''
     const date = new Date(dateStr)
@@ -212,6 +273,9 @@ export default function ProjectsPage() {
     return `${year}-${month}-${day}`
   }
 
+  // ============================================================
+  // RENDER PROJECT CARD
+  // ============================================================
   const renderProjectCard = (project) => {
     const client = clients.find(c => c.id === project.client_id)
     const budget = (Number(project.estimated_budget) || 0).toFixed(2)
@@ -272,9 +336,10 @@ export default function ProjectsPage() {
   }
 
   return (
-    <div className='p-8 max-w-7xl mx-auto'>
-      <h1 className='text-3xl font-bold mb-8 text-gray-900'>Projects</h1>
+    <div className='p-6 max-w-7xl mx-auto'>
+      <h1 className='text-2xl font-bold mb-6'>Projects</h1>
 
+      {/* FILTER DROPDOWN */}
       <div className='mb-6'>
         <select
           value={filters.status}
@@ -282,14 +347,18 @@ export default function ProjectsPage() {
           className='border border-gray-300 p-2 rounded'
         >
           <option value=''>All Statuses</option>
-          <option value='planning'>Planning</option>
-          <option value='in progress'>In Progress</option>
-          <option value='completed'>Completed</option>
+          {ALL_STATUSES.map(s => (
+            <option key={s.value} value={s.value}>
+              {s.label}
+            </option>
+          ))}
         </select>
       </div>
 
+      {/* KANBAN VIEW - NO FILTER */}
       {!filters.status ? (
         <div className='grid grid-cols-1 md:grid-cols-3 gap-6 mb-10'>
+          {/* PLANNING */}
           <div>
             <div className='bg-gray-100 p-3 rounded-t-lg border border-gray-300'>
               <h2 className='font-semibold text-gray-900'>Planning</h2>
@@ -300,16 +369,18 @@ export default function ProjectsPage() {
             </div>
           </div>
 
+          {/* IN PROGRESS */}
           <div>
             <div className='bg-blue-100 p-3 rounded-t-lg border border-blue-300'>
               <h2 className='font-semibold text-gray-900'>In Progress</h2>
-              <p className='text-sm text-gray-600'>{getProjectsByStatus('in progress').length} projects</p>
+              <p className='text-sm text-gray-600'>{getProjectsByStatus('in_progress').length} projects</p>
             </div>
             <div className='bg-blue-50 p-3 rounded-b-lg border border-t-0 border-blue-300 min-h-[200px]'>
-              {getProjectsByStatus('in progress').map(renderProjectCard)}
+              {getProjectsByStatus('in_progress').map(renderProjectCard)}
             </div>
           </div>
 
+          {/* COMPLETED */}
           <div>
             <div className='bg-green-100 p-3 rounded-t-lg border border-green-300'>
               <h2 className='font-semibold text-gray-900'>Completed</h2>
@@ -321,6 +392,7 @@ export default function ProjectsPage() {
           </div>
         </div>
       ) : (
+        // FILTERED VIEW
         <div className='bg-white rounded-lg shadow p-6 border border-gray-200 mb-10'>
           <h2 className='font-semibold text-gray-900 mb-4'>Filtered Results</h2>
           <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
@@ -329,12 +401,14 @@ export default function ProjectsPage() {
         </div>
       )}
 
+      {/* CREATE/EDIT FORM */}
       <div className='mt-10 bg-white p-6 rounded-lg shadow border border-gray-200'>
         <h2 className='text-xl font-bold mb-4'>
           {editingProject ? 'Edit Project' : 'Create Project'}
         </h2>
 
         <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+          {/* Project Name */}
           <input
             type='text'
             placeholder='Project Name *'
@@ -347,6 +421,7 @@ export default function ProjectsPage() {
             className='border p-2 rounded'
           />
 
+          {/* Client */}
           <select
             value={editingProject?.client_id ?? newProject.client_id}
             onChange={(e) =>
@@ -362,6 +437,7 @@ export default function ProjectsPage() {
             ))}
           </select>
 
+          {/* Status */}
           <select
             value={editingProject?.status ?? newProject.status}
             onChange={(e) =>
@@ -371,11 +447,14 @@ export default function ProjectsPage() {
             }
             className='border p-2 rounded'
           >
-            <option value='planning'>Planning</option>
-            <option value='in progress'>In Progress</option>
-            <option value='completed'>Completed</option>
+            {ALL_STATUSES.map(s => (
+              <option key={s.value} value={s.value}>
+                {s.label}
+              </option>
+            ))}
           </select>
 
+          {/* Start Date */}
           <input
             type='date'
             placeholder='Start Date'
@@ -388,6 +467,7 @@ export default function ProjectsPage() {
             className='border p-2 rounded'
           />
 
+          {/* End Date */}
           <input
             type='date'
             placeholder='End Date'
@@ -400,6 +480,7 @@ export default function ProjectsPage() {
             className='border p-2 rounded'
           />
 
+          {/* Budget */}
           <input
             type='number'
             placeholder='Estimated Budget'
@@ -412,6 +493,7 @@ export default function ProjectsPage() {
             className='border p-2 rounded'
           />
 
+          {/* Description */}
           <textarea
             placeholder='Description'
             value={editingProject?.description ?? newProject.description}
@@ -423,6 +505,7 @@ export default function ProjectsPage() {
             className='border p-2 rounded col-span-1 md:col-span-2'
           />
 
+          {/* Notes */}
           <textarea
             placeholder='Notes'
             value={editingProject?.notes ?? newProject.notes}
@@ -435,6 +518,7 @@ export default function ProjectsPage() {
           />
         </div>
 
+        {/* Buttons */}
         <div className='mt-4 flex gap-3'>
           {editingProject ? (
             <>
@@ -445,7 +529,6 @@ export default function ProjectsPage() {
               >
                 Update
               </button>
-
               <button
                 onClick={() => setEditingProject(null)}
                 className='bg-gray-300 px-4 py-2 rounded'
