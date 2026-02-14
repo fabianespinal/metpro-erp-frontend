@@ -37,7 +37,12 @@ export default function ProjectsPage() {
         { headers: getAuthHeaders() }
       )
       if (res.ok) {
-        setProjects(await res.json())
+        const data = await res.json()
+        if (!filters.status) {
+          setProjects(data)
+        } else {
+          setProjects(data.filter(p => p.status === filters.status))
+          }
       }
     } catch (err) {
       console.error('Fetch projects error:', err)
@@ -92,6 +97,7 @@ export default function ProjectsPage() {
   const handleUpdate = async () => {
     if (!editingProject) return
     setLoading(true)
+
     try {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/projects/${editingProject.id}`,
@@ -163,15 +169,19 @@ export default function ProjectsPage() {
             {projects.map((project) => (
               <tr key={project.id} className='odd:bg-gray-50'>
                 <td className='p-2 border'>{project.name}</td>
+
                 <td className='p-2 border'>
                   {clients.find(c => c.id === project.client_id)?.company_name || '—'}
                 </td>
+
                 <td className='p-2 border'>
                   <StatusPill status={project.status} />
                 </td>
+
                 <td className='p-2 border text-right font-medium'>
                   ${ (Number(project.estimated_budget ?? 0) || 0).toFixed(2) }
                 </td>
+
                 <td className='p-2 border'>
                   <button
                     className='text-blue-600 mr-3'
@@ -179,6 +189,7 @@ export default function ProjectsPage() {
                   >
                     Edit
                   </button>
+
                   <button
                     className='text-red-600'
                     onClick={() => handleDelete(project.id)}
@@ -192,13 +203,14 @@ export default function ProjectsPage() {
         </table>
       </div>
 
-      {/* Create / Edit Form */}
+      {/* CREATE / EDIT FORM */}
       <div className='mt-10 bg-white p-6 rounded-lg shadow border border-gray-200'>
         <h2 className='text-xl font-bold mb-4'>
           {editingProject ? 'Edit Project' : 'Create Project'}
         </h2>
 
         <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+          {/* Project Name */}
           <input
             type='text'
             placeholder='Project Name'
@@ -211,6 +223,7 @@ export default function ProjectsPage() {
             className='border p-2 rounded'
           />
 
+          {/* Client */}
           <select
             value={editingProject?.client_id ?? newProject.client_id}
             onChange={(e) =>
@@ -226,6 +239,22 @@ export default function ProjectsPage() {
             ))}
           </select>
 
+          {/* Status */}
+          <select
+            value={editingProject?.status ?? newProject.status}
+            onChange={(e) =>
+              editingProject
+                ? setEditingProject({ ...editingProject, status: e.target.value })
+                : setNewProject({ ...newProject, status: e.target.value })
+            }
+            className='border p-2 rounded'
+          >
+            <option value='planning'>Planning</option>
+            <option value='in_progress'>In Progress</option>
+            <option value='completed'>Completed</option>
+          </select>
+
+          {/* Start Date */}
           <input
             type='date'
             value={editingProject?.start_date ?? newProject.start_date}
@@ -237,6 +266,7 @@ export default function ProjectsPage() {
             className='border p-2 rounded'
           />
 
+          {/* End Date */}
           <input
             type='date'
             value={editingProject?.end_date ?? newProject.end_date}
@@ -248,6 +278,7 @@ export default function ProjectsPage() {
             className='border p-2 rounded'
           />
 
+          {/* Budget */}
           <input
             type='number'
             placeholder='Estimated Budget'
@@ -260,6 +291,7 @@ export default function ProjectsPage() {
             className='border p-2 rounded'
           />
 
+          {/* Notes */}
           <textarea
             placeholder='Notes'
             value={editingProject?.notes ?? newProject.notes}
@@ -272,6 +304,7 @@ export default function ProjectsPage() {
           />
         </div>
 
+        {/* Buttons */}
         <div className='mt-4 flex gap-3'>
           {editingProject ? (
             <>
@@ -281,6 +314,7 @@ export default function ProjectsPage() {
               >
                 Update
               </button>
+
               <button
                 onClick={() => setEditingProject(null)}
                 className='bg-gray-300 px-4 py-2 rounded'
