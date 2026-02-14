@@ -84,29 +84,28 @@ export default function ReportsPage() {
     csvContent += `\nGrand Total,$${(reportData.grand_total ?? 0).toFixed(2)}`
   }
 
-  // -----------------------------
-  // CLIENT ACTIVITY
-  // -----------------------------
-  else if (reportType === 'client-activity') {
-    filename = 'client_activity'
-    csvContent = 'Client,Quotes,Total Quoted,Last Quote Date\n'
+// -----------------------------
+// CLIENT ACTIVITY
+// -----------------------------
+else if (reportType === 'client-activity') {
+  filename = 'client_activity'
+  csvContent = 'Client,Quotes,Total Quoted,Last Quote Date\n'
 
-    reportData.clients?.forEach(row => {
-      csvContent += `${row.client_name},${row.quote_count},$${(row.total_quoted ?? 0).toFixed(2)},${row.last_quote_date || 'N/A'}\n`
-    })
-  }
+  reportData.clients?.forEach(row => {
+    csvContent += `${row.client_name},${row.quote_count},$${(row.total_quoted ?? 0).toFixed(2)},${row.last_quote_date || 'N/A'}\n`
+  })
 }
 
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-    const url = window.URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.setAttribute('href', url)
-    link.setAttribute('download', `${filename}_${new Date().toISOString().split('T')[0]}.csv`)
-    link.style.visibility = 'hidden'
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-  }
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+  const url = window.URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.setAttribute('href', url)
+  link.setAttribute('download', `${filename}_${new Date().toISOString().split('T')[0]}.csv`)
+  link.style.visibility = 'hidden'
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+}
 
   return (
     <div className='p-6 max-w-7xl mx-auto'>
