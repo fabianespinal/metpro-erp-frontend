@@ -63,6 +63,17 @@ export default function ProjectsPage() {
     }
   }
 
+  const validateDates = (startDate, endDate) => {
+    if (startDate && endDate) {
+      const start = new Date(startDate)
+      const end = new Date(endDate)
+      if (end < start) {
+        return 'End date must be after start date'
+      }
+    }
+    return null
+  }
+
   const sanitizePayload = (data) => {
     const payload = { ...data }
     
@@ -89,6 +100,12 @@ export default function ProjectsPage() {
   const handleCreate = async () => {
     if (!newProject.client_id || !newProject.name) {
       alert('Please fill in required fields: Client and Project Name')
+      return
+    }
+
+    const dateError = validateDates(newProject.start_date, newProject.end_date)
+    if (dateError) {
+      alert(dateError)
       return
     }
     
@@ -118,7 +135,7 @@ export default function ProjectsPage() {
       } else {
         const error = await res.json()
         console.error('Create error:', error)
-        alert('Failed to create project')
+        alert(error.detail || 'Failed to create project')
       }
     } catch (err) {
       console.error('Create project error:', err)
@@ -130,6 +147,13 @@ export default function ProjectsPage() {
 
   const handleUpdate = async () => {
     if (!editingProject) return
+
+    const dateError = validateDates(editingProject.start_date, editingProject.end_date)
+    if (dateError) {
+      alert(dateError)
+      return
+    }
+
     setLoading(true)
 
     try {
@@ -148,7 +172,7 @@ export default function ProjectsPage() {
       } else {
         const error = await res.json()
         console.error('Update error:', error)
-        alert('Failed to update project')
+        alert(error.detail || 'Failed to update project')
       }
     } catch (err) {
       console.error('Update project error:', err)
@@ -337,6 +361,7 @@ export default function ProjectsPage() {
 
           <input
             type='date'
+            placeholder='Start Date'
             value={editingProject?.start_date ?? newProject.start_date}
             onChange={(e) =>
               editingProject
@@ -348,6 +373,7 @@ export default function ProjectsPage() {
 
           <input
             type='date'
+            placeholder='End Date'
             value={editingProject?.end_date ?? newProject.end_date}
             onChange={(e) =>
               editingProject
