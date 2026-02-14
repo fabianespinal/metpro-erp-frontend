@@ -104,7 +104,7 @@ const fetchClients = async () => {
       filename = 'revenue_report'
       csvContent = 'Status,Revenue,Quote Count\n'
       reportData.revenue_breakdown?.forEach(row => { // Added optional chaining
-        csvContent += `${row.status},$${row.total_revenue.toFixed(2)},${row.quote_count}\n`
+        csvContent += `${row.status},$${(row.total_revenue ?? 0).toFixed(2)},${row.quote_count}\n`
       })
       // FIXED: Removed trailing comma causing CSV format issue
       csvContent += `\nGrand Total,$${reportData.grand_total.toFixed(2)}`
@@ -263,13 +263,13 @@ const fetchClients = async () => {
               <div className='grid grid-cols-1 md:grid-cols-3 gap-4 mb-6'>
                 <div className='bg-white border border-gray-200 p-4 rounded text-center shadow-sm'>
                   <div className='text-2xl font-bold text-green-600'>
-                    ${reportData.revenue_breakdown?.find(r => r.status === 'Approved')?.total_revenue.toFixed(2) || '0.00'}
+                    ${((reportData.revenue_breakdown?.find(r => r.status === 'Approved')?.total_revenue) ?? 0).toFixed(2)}
                   </div>
                   <div className='text-gray-600 mt-1'>Approved Revenue</div>
                 </div>
                 <div className='bg-white border border-gray-200 p-4 rounded text-center shadow-sm'>
                   <div className='text-2xl font-bold text-yellow-600'>
-                    ${reportData.revenue_breakdown?.find(r => r.status === 'Pending (Draft)')?.total_revenue.toFixed(2) || '0.00'}
+                    ${((reportData.revenue_breakdown?.find(r => r.status === 'Pending (Draft)')?.total_revenue) ?? 0).toFixed(2)}
                   </div>
                   <div className='text-gray-600 mt-1'>Pending Revenue</div>
                 </div>
@@ -295,7 +295,7 @@ const fetchClients = async () => {
                     <tr key={i} className={i % 2 === 0 ? 'bg-gray-50' : ''}>
                       <td className='p-2 border border-gray-200 text-gray-700'>{row.status}</td>
                       <td className='p-2 border border-gray-200 text-right font-medium text-gray-900'>
-                        ${row.total_revenue.toFixed(2)}
+                        ${(row.total_revenue ?? 0).toFixed(2)}
                       </td>
                       <td className='p-2 border border-gray-200 text-right text-gray-700'>{row.quote_count}</td>
                     </tr>
@@ -318,7 +318,7 @@ const fetchClients = async () => {
                 </div>
                 <div className='bg-white border border-gray-200 p-4 rounded text-center shadow-sm'>
                   <div className='text-2xl font-bold text-green-600'>
-                    ${reportData.summary?.total_revenue.toFixed(2) || '0.00'}
+                    ${(reportData.summary?.total_revenue ?? 0).toFixed(2)}
                   </div>
                   <div className='text-gray-600 mt-1'>Total Revenue</div>
                 </div>
