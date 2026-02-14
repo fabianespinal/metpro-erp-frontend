@@ -64,13 +64,21 @@ export default function ProjectsPage() {
   }
 
   const validateDates = (startDate, endDate) => {
-    if (startDate && endDate) {
-      const start = new Date(startDate)
-      const end = new Date(endDate)
-      if (end < start) {
-        return 'End date must be after start date'
-      }
+    if (!startDate || !endDate) {
+      return null
     }
+    
+    const start = new Date(startDate)
+    const end = new Date(endDate)
+    
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+      return null
+    }
+    
+    if (end < start) {
+      return 'End date must be after start date'
+    }
+    
     return null
   }
 
@@ -94,18 +102,17 @@ export default function ProjectsPage() {
     if (payload.start_date === '') payload.start_date = null
     if (payload.end_date === '') payload.end_date = null
     
+    const dateError = validateDates(payload.start_date, payload.end_date)
+    if (dateError) {
+      throw new Error(dateError)
+    }
+    
     return payload
   }
 
   const handleCreate = async () => {
     if (!newProject.client_id || !newProject.name) {
       alert('Please fill in required fields: Client and Project Name')
-      return
-    }
-
-    const dateError = validateDates(newProject.start_date, newProject.end_date)
-    if (dateError) {
-      alert(dateError)
       return
     }
     
@@ -139,7 +146,7 @@ export default function ProjectsPage() {
       }
     } catch (err) {
       console.error('Create project error:', err)
-      alert('Failed to create project')
+      alert(err.message || 'Failed to create project')
     } finally {
       setLoading(false)
     }
@@ -147,13 +154,6 @@ export default function ProjectsPage() {
 
   const handleUpdate = async () => {
     if (!editingProject) return
-
-    const dateError = validateDates(editingProject.start_date, editingProject.end_date)
-    if (dateError) {
-      alert(dateError)
-      return
-    }
-
     setLoading(true)
 
     try {
@@ -176,7 +176,7 @@ export default function ProjectsPage() {
       }
     } catch (err) {
       console.error('Update project error:', err)
-      alert('Failed to update project')
+      alert(err.message || 'Failed to update project')
     } finally {
       setLoading(false)
     }
@@ -200,6 +200,16 @@ export default function ProjectsPage() {
 
   const getProjectsByStatus = (status) => {
     return projects.filter(p => p.status === status)
+  }
+
+  const formatDateForInput = (dateStr) => {
+    if (!dateStr) return ''
+    const date = new Date(dateStr)
+    if (isNaN(date.getTime())) return ''
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
   }
 
   const renderProjectCard = (project) => {
@@ -239,7 +249,14 @@ export default function ProjectsPage() {
         <div className='flex gap-2 pt-2 border-t border-gray-200'>
           <button
             className='text-blue-600 text-sm hover:underline'
-            onClick={() => setEditingProject(project)}
+            onClick={() => {
+              const editData = {
+                ...project,
+                start_date: formatDateForInput(project.start_date),
+                end_date: formatDateForInput(project.end_date)
+              }
+              setEditingProject(editData)
+            }}
           >
             Edit
           </button>
