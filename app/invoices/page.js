@@ -85,39 +85,39 @@ export default function InvoicesPage() {
   }
 
   const handleDownloadConduce = async (invoiceId, invoiceNumber) => {
-    try {
-      const token = localStorage.getItem("token")
+  try {
+    const token = localStorage.getItem("token")
 
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/invoices/${invoiceId}/conduce/pdf`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      )
-
-      if (!response.ok) {
-        throw new Error(`Conduce download failed: ${response.status}`)
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/pdf/invoices/${invoiceId}/conduce`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       }
+    )
 
-      const blob = await response.blob()
-      const url = window.URL.createObjectURL(blob)
-
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `CD-${invoiceNumber}_conduce.pdf`
-      document.body.appendChild(a)
-      a.click()
-
-      window.URL.revokeObjectURL(url)
-      document.body.removeChild(a)
-    } catch (error) {
-      console.error('Conduce Download Error:', error)
-      alert('Error downloading conduce: ' + error.message)
+    if (!response.ok) {
+      throw new Error(`Conduce download failed: ${response.status}`)
     }
+
+    const blob = await response.blob()
+    const url = window.URL.createObjectURL(blob)
+
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `CD-${invoiceNumber}_conduce.pdf`
+    document.body.appendChild(a)
+    a.click()
+
+    window.URL.revokeObjectURL(url)
+    document.body.removeChild(a)
+  } catch (error) {
+    console.error('Conduce Download Error:', error)
+    alert('Error downloading conduce: ' + error.message)
   }
+}
 
   const handleUpdateStatus = async (invoiceId, newStatus) => {
     try {
