@@ -63,15 +63,44 @@ export default function ProjectsPage() {
     }
   }
 
+  const sanitizePayload = (data) => {
+    const payload = { ...data }
+    
+    if (payload.client_id === '') {
+      delete payload.client_id
+    } else {
+      payload.client_id = parseInt(payload.client_id)
+    }
+    
+    if (payload.estimated_budget === '') {
+      payload.estimated_budget = null
+    } else if (payload.estimated_budget) {
+      payload.estimated_budget = parseFloat(payload.estimated_budget)
+    }
+    
+    if (payload.description === '') payload.description = null
+    if (payload.notes === '') payload.notes = null
+    if (payload.start_date === '') payload.start_date = null
+    if (payload.end_date === '') payload.end_date = null
+    
+    return payload
+  }
+
   const handleCreate = async () => {
+    if (!newProject.client_id || !newProject.name) {
+      alert('Please fill in required fields: Client and Project Name')
+      return
+    }
+    
     setLoading(true)
     try {
+      const payload = sanitizePayload(newProject)
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/projects/`,
         {
           method: 'POST',
           headers: getAuthHeaders(),
-          body: JSON.stringify(newProject)
+          body: JSON.stringify(payload)
         }
       )
       if (res.ok) {
@@ -86,9 +115,14 @@ export default function ProjectsPage() {
           estimated_budget: '',
           notes: ''
         })
+      } else {
+        const error = await res.json()
+        console.error('Create error:', error)
+        alert('Failed to create project')
       }
     } catch (err) {
       console.error('Create project error:', err)
+      alert('Failed to create project')
     } finally {
       setLoading(false)
     }
@@ -99,20 +133,26 @@ export default function ProjectsPage() {
     setLoading(true)
 
     try {
+      const payload = sanitizePayload(editingProject)
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/projects/${editingProject.id}`,
         {
           method: 'PUT',
           headers: getAuthHeaders(),
-          body: JSON.stringify(editingProject)
+          body: JSON.stringify(payload)
         }
       )
       if (res.ok) {
         fetchProjects()
         setEditingProject(null)
+      } else {
+        const error = await res.json()
+        console.error('Update error:', error)
+        alert('Failed to update project')
       }
     } catch (err) {
       console.error('Update project error:', err)
+      alert('Failed to update project')
     } finally {
       setLoading(false)
     }
@@ -256,7 +296,7 @@ export default function ProjectsPage() {
         <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
           <input
             type='text'
-            placeholder='Project Name'
+            placeholder='Project Name *'
             value={editingProject?.name ?? newProject.name}
             onChange={(e) =>
               editingProject
@@ -275,7 +315,7 @@ export default function ProjectsPage() {
             }
             className='border p-2 rounded'
           >
-            <option value=''>Select Client</option>
+            <option value=''>Select Client *</option>
             {clients.map(c => (
               <option key={c.id} value={c.id}>{c.company_name}</option>
             ))}
