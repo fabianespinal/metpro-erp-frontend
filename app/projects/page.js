@@ -42,7 +42,7 @@ export default function ProjectsPage() {
           setProjects(data)
         } else {
           setProjects(data.filter(p => p.status === filters.status))
-          }
+        }
       }
     } catch (err) {
       console.error('Fetch projects error:', err)
@@ -134,11 +134,66 @@ export default function ProjectsPage() {
     }
   }
 
+  const getProjectsByStatus = (status) => {
+    return projects.filter(p => p.status === status)
+  }
+
+  const renderProjectCard = (project) => {
+    const client = clients.find(c => c.id === project.client_id)
+    const budget = (Number(project.estimated_budget) || 0).toFixed(2)
+
+    return (
+      <div key={project.id} className='bg-white p-4 rounded-lg shadow border border-gray-200 mb-3'>
+        <div className='mb-2'>
+          <h3 className='font-semibold text-gray-900 mb-1'>{project.name}</h3>
+          <p className='text-sm text-gray-600'>{client?.company_name || '—'}</p>
+        </div>
+
+        <div className='mb-2'>
+          <StatusPill status={project.status} />
+        </div>
+
+        <div className='text-sm text-gray-700 mb-2'>
+          <div className='flex justify-between mb-1'>
+            <span className='text-gray-500'>Budget:</span>
+            <span className='font-medium'>${budget}</span>
+          </div>
+          {project.start_date && (
+            <div className='flex justify-between mb-1'>
+              <span className='text-gray-500'>Start:</span>
+              <span>{project.start_date}</span>
+            </div>
+          )}
+          {project.end_date && (
+            <div className='flex justify-between'>
+              <span className='text-gray-500'>End:</span>
+              <span>{project.end_date}</span>
+            </div>
+          )}
+        </div>
+
+        <div className='flex gap-2 pt-2 border-t border-gray-200'>
+          <button
+            className='text-blue-600 text-sm hover:underline'
+            onClick={() => setEditingProject(project)}
+          >
+            Edit
+          </button>
+          <button
+            className='text-red-600 text-sm hover:underline'
+            onClick={() => handleDelete(project.id)}
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className='p-8 max-w-7xl mx-auto'>
       <h1 className='text-3xl font-bold mb-8 text-gray-900'>Projects</h1>
 
-      {/* Filters */}
       <div className='mb-6'>
         <select
           value={filters.status}
@@ -152,65 +207,53 @@ export default function ProjectsPage() {
         </select>
       </div>
 
-      {/* Projects List */}
-      <div className='bg-white rounded-lg shadow p-6 border border-gray-200'>
-        <table className='w-full border border-gray-200'>
-          <thead className='bg-gray-100'>
-            <tr>
-              <th className='p-2 border'>Project</th>
-              <th className='p-2 border'>Client</th>
-              <th className='p-2 border'>Status</th>
-              <th className='p-2 border'>Budget</th>
-              <th className='p-2 border'>Actions</th>
-            </tr>
-          </thead>
+      {!filters.status ? (
+        <div className='grid grid-cols-1 md:grid-cols-3 gap-6 mb-10'>
+          <div>
+            <div className='bg-gray-100 p-3 rounded-t-lg border border-gray-300'>
+              <h2 className='font-semibold text-gray-900'>Planning</h2>
+              <p className='text-sm text-gray-600'>{getProjectsByStatus('planning').length} projects</p>
+            </div>
+            <div className='bg-gray-50 p-3 rounded-b-lg border border-t-0 border-gray-300 min-h-[200px]'>
+              {getProjectsByStatus('planning').map(renderProjectCard)}
+            </div>
+          </div>
 
-          <tbody>
-            {projects.map((project) => (
-              <tr key={project.id} className='odd:bg-gray-50'>
-                <td className='p-2 border'>{project.name}</td>
+          <div>
+            <div className='bg-blue-100 p-3 rounded-t-lg border border-blue-300'>
+              <h2 className='font-semibold text-gray-900'>In Progress</h2>
+              <p className='text-sm text-gray-600'>{getProjectsByStatus('in_progress').length} projects</p>
+            </div>
+            <div className='bg-blue-50 p-3 rounded-b-lg border border-t-0 border-blue-300 min-h-[200px]'>
+              {getProjectsByStatus('in_progress').map(renderProjectCard)}
+            </div>
+          </div>
 
-                <td className='p-2 border'>
-                  {clients.find(c => c.id === project.client_id)?.company_name || '—'}
-                </td>
+          <div>
+            <div className='bg-green-100 p-3 rounded-t-lg border border-green-300'>
+              <h2 className='font-semibold text-gray-900'>Completed</h2>
+              <p className='text-sm text-gray-600'>{getProjectsByStatus('completed').length} projects</p>
+            </div>
+            <div className='bg-green-50 p-3 rounded-b-lg border border-t-0 border-green-300 min-h-[200px]'>
+              {getProjectsByStatus('completed').map(renderProjectCard)}
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className='bg-white rounded-lg shadow p-6 border border-gray-200 mb-10'>
+          <h2 className='font-semibold text-gray-900 mb-4'>Filtered Results</h2>
+          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
+            {projects.map(renderProjectCard)}
+          </div>
+        </div>
+      )}
 
-                <td className='p-2 border'>
-                  <StatusPill status={project.status} />
-                </td>
-
-                <td className='p-2 border text-right font-medium'>
-                  ${ (Number(project.estimated_budget ?? 0) || 0).toFixed(2) }
-                </td>
-
-                <td className='p-2 border'>
-                  <button
-                    className='text-blue-600 mr-3'
-                    onClick={() => setEditingProject(project)}
-                  >
-                    Edit
-                  </button>
-
-                  <button
-                    className='text-red-600'
-                    onClick={() => handleDelete(project.id)}
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* CREATE / EDIT FORM */}
       <div className='mt-10 bg-white p-6 rounded-lg shadow border border-gray-200'>
         <h2 className='text-xl font-bold mb-4'>
           {editingProject ? 'Edit Project' : 'Create Project'}
         </h2>
 
         <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-          {/* Project Name */}
           <input
             type='text'
             placeholder='Project Name'
@@ -223,7 +266,6 @@ export default function ProjectsPage() {
             className='border p-2 rounded'
           />
 
-          {/* Client */}
           <select
             value={editingProject?.client_id ?? newProject.client_id}
             onChange={(e) =>
@@ -239,7 +281,6 @@ export default function ProjectsPage() {
             ))}
           </select>
 
-          {/* Status */}
           <select
             value={editingProject?.status ?? newProject.status}
             onChange={(e) =>
@@ -254,7 +295,6 @@ export default function ProjectsPage() {
             <option value='completed'>Completed</option>
           </select>
 
-          {/* Start Date */}
           <input
             type='date'
             value={editingProject?.start_date ?? newProject.start_date}
@@ -266,7 +306,6 @@ export default function ProjectsPage() {
             className='border p-2 rounded'
           />
 
-          {/* End Date */}
           <input
             type='date'
             value={editingProject?.end_date ?? newProject.end_date}
@@ -278,7 +317,6 @@ export default function ProjectsPage() {
             className='border p-2 rounded'
           />
 
-          {/* Budget */}
           <input
             type='number'
             placeholder='Estimated Budget'
@@ -291,7 +329,17 @@ export default function ProjectsPage() {
             className='border p-2 rounded'
           />
 
-          {/* Notes */}
+          <textarea
+            placeholder='Description'
+            value={editingProject?.description ?? newProject.description}
+            onChange={(e) =>
+              editingProject
+                ? setEditingProject({ ...editingProject, description: e.target.value })
+                : setNewProject({ ...newProject, description: e.target.value })
+            }
+            className='border p-2 rounded col-span-1 md:col-span-2'
+          />
+
           <textarea
             placeholder='Notes'
             value={editingProject?.notes ?? newProject.notes}
@@ -304,13 +352,13 @@ export default function ProjectsPage() {
           />
         </div>
 
-        {/* Buttons */}
         <div className='mt-4 flex gap-3'>
           {editingProject ? (
             <>
               <button
                 onClick={handleUpdate}
-                className='bg-blue-600 text-white px-4 py-2 rounded'
+                disabled={loading}
+                className='bg-blue-600 text-white px-4 py-2 rounded disabled:opacity-50'
               >
                 Update
               </button>
@@ -325,7 +373,8 @@ export default function ProjectsPage() {
           ) : (
             <button
               onClick={handleCreate}
-              className='bg-green-600 text-white px-4 py-2 rounded'
+              disabled={loading}
+              className='bg-green-600 text-white px-4 py-2 rounded disabled:opacity-50'
             >
               Create
             </button>
