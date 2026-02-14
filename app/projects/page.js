@@ -3,27 +3,39 @@ import { useState, useEffect } from 'react'
 import StatusPill from '@/components/ui/StatusPill'
 
 // ============================================================
-// STATUS NORMALIZATION
+// STATUS NORMALIZATION (CRITICAL - USED EVERYWHERE)
 // ============================================================
-const BACKEND_TO_DISPLAY = {
+/**
+ * Normalize ANY status value to backend-safe format
+ * @param {string} s - Raw status from backend or user input
+ * @returns {string|null} Backend-safe status or null
+ */
+function normalizeStatus(s) {
+  if (!s || typeof s !== 'string') return 'planning'
+  
+  const v = s.toLowerCase().trim()
+  
+  // Handle common variations
+  if (v === 'in progress' || v === 'in-progress') return 'in_progress'
+  if (v === 'on hold') return 'on_hold'
+  
+  // Valid backend statuses
+  const valid = ['planning', 'active', 'in_progress', 'completed', 'on_hold', 'cancelled']
+  return valid.includes(v) ? v : 'planning'
+}
+
+// Display mapping (UI only)
+const STATUS_LABELS = {
   planning: 'Planning',
   active: 'Active',
+  in_progress: 'In Progress',
   completed: 'Completed',
   on_hold: 'On Hold',
-  cancelled: 'Cancelled',
-  in_progress: 'In Progress'
+  cancelled: 'Cancelled'
 }
 
-const DISPLAY_TO_BACKEND = {
-  'Planning': 'planning',
-  'Active': 'active',
-  'Completed': 'completed',
-  'On Hold': 'on_hold',
-  'Cancelled': 'cancelled',
-  'In Progress': 'in_progress'
-}
-
-const ALL_STATUSES = [
+// Dropdown options (backend-safe values, human labels)
+const STATUS_OPTIONS = [
   { label: 'Planning', value: 'planning' },
   { label: 'Active', value: 'active' },
   { label: 'In Progress', value: 'in_progress' },
@@ -49,18 +61,24 @@ export default function ProjectsPage() {
   const [loading, setLoading] = useState(false)
   const [filters, setFilters] = useState({ status: '' })
 
+  // ============================================================
+  // AUTH HEADERS
+  // ============================================================
   const getAuthHeaders = () => ({
     'Content-Type': 'application/json',
-    'Authorization': `Bearer ${localStorage.getItem('token')}`
+    'Authorization': `Bearer ${typeof window !== 'undefined' ? localStorage.getItem('token') : ''}`
   })
 
+  // ============================================================
+  // INITIAL LOAD
+  // ============================================================
   useEffect(() => {
     fetchProjects()
     fetchClients()
   }, [filters.status])
 
   // ============================================================
-  // FETCH PROJECTS
+  // FETCH PROJECTS (NORMALIZES BEFORE STATE UPDATE)
   // ============================================================
   const fetchProjects = async () => {
     try {
@@ -68,14 +86,29 @@ export default function ProjectsPage() {
         `${process.env.NEXT_PUBLIC_API_URL}/projects/`,
         { headers: getAuthHeaders() }
       )
-      if (res.ok) {
-        const data = await res.json()
-        if (!filters.status) {
-          setProjects(data)
-        } else {
-          setProjects(data.filter(p => p.status === filters.status))
-        }
+
+      if (!res.ok) {
+        console.error('Failed to fetch projects:', res.status)
+        return
       }
+
+      const rawData = await res.json()
+
+      // 🔒 CRITICAL: Normalize EVERY project's status BEFORE storing in state
+      const normalizedProjects = rawData.map(project => ({
+        ...project,
+        status: normalizeStatus(project.status) // Ensures backend-safe value
+      }))
+
+      // Apply filter if active
+      if (!filters.status) {
+        setProjects(normalizedProjects)
+      } else {
+        setProjects(
+          normalizedProjects.filter(p => p.status === filters.status)
+        )
+      }
+
     } catch (err) {
       console.error('Fetch projects error:', err)
     }
@@ -90,6 +123,7 @@ export default function ProjectsPage() {
         `${process.env.NEXT_PUBLIC_API_URL}/clients/`,
         { headers: getAuthHeaders() }
       )
+
       if (res.ok) {
         setClients(await res.json())
       }
@@ -102,15 +136,12 @@ export default function ProjectsPage() {
   // DATE VALIDATION
   // ============================================================
   const validateDates = (startDate, endDate) => {
-    if (!startDate || !endDate) {
-      return null
-    }
+    if (!startDate || !endDate) return null
+
     const start = new Date(startDate)
     const end = new Date(endDate)
 
-    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
-      return null
-    }
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) return null
 
     if (end < start) {
       return 'End date must be after start date'
@@ -151,6 +182,11 @@ export default function ProjectsPage() {
       throw new Error(dateError)
     }
 
+    // 🔒 Ensure status is backend-safe
+    if (payload.status) {
+      payload.status = normalizeStatus(payload.status)
+    }
+
     return payload
   }
 
@@ -176,7 +212,9 @@ export default function ProjectsPage() {
       )
 
       if (res.ok) {
-        fetchProjects()
+        // ✅ Re-fetch to get normalized data from backend
+        await fetchProjects()
+        
         setNewProject({
           client_id: '',
           name: '',
@@ -219,7 +257,10 @@ export default function ProjectsPage() {
       )
 
       if (res.ok) {
-        fetchProjects()
+        // ✅ Re-fetch ALL projects to ensure state is perfectly synced
+        // This prevents any Kanban column mismatches
+        await fetchProjects()
+        
         setEditingProject(null)
       } else {
         const error = await res.json()
@@ -239,6 +280,7 @@ export default function ProjectsPage() {
   // ============================================================
   const handleDelete = async (id) => {
     if (!confirm('Delete this project?')) return
+
     try {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/projects/${id}`,
@@ -247,17 +289,24 @@ export default function ProjectsPage() {
           headers: getAuthHeaders()
         }
       )
-      if (res.ok) fetchProjects()
+
+      if (res.ok) {
+        // ✅ Re-fetch to remove deleted project from state
+        await fetchProjects()
+      }
     } catch (err) {
       console.error('Delete project error:', err)
     }
   }
 
   // ============================================================
-  // FILTER BY STATUS (backend-safe values)
+  // GET PROJECTS BY STATUS (BACKEND-SAFE VALUES ONLY)
   // ============================================================
   const getProjectsByStatus = (backendStatus) => {
-    return projects.filter(p => p.status === backendStatus)
+    // 🔒 Always compare normalized values
+    return projects.filter(p => 
+      normalizeStatus(p.status) === normalizeStatus(backendStatus)
+    )
   }
 
   // ============================================================
@@ -265,11 +314,14 @@ export default function ProjectsPage() {
   // ============================================================
   const formatDateForInput = (dateStr) => {
     if (!dateStr) return ''
+    
     const date = new Date(dateStr)
     if (isNaN(date.getTime())) return ''
+    
     const year = date.getFullYear()
     const month = String(date.getMonth() + 1).padStart(2, '0')
     const day = String(date.getDate()).padStart(2, '0')
+    
     return `${year}-${month}-${day}`
   }
 
@@ -288,6 +340,7 @@ export default function ProjectsPage() {
         </div>
 
         <div className='mb-2'>
+          {/* 🔒 StatusPill receives normalized backend-safe value */}
           <StatusPill status={project.status} />
         </div>
 
@@ -335,11 +388,16 @@ export default function ProjectsPage() {
     )
   }
 
+  // ============================================================
+  // RENDER
+  // ============================================================
   return (
     <div className='p-6 max-w-7xl mx-auto'>
       <h1 className='text-2xl font-bold mb-6'>Projects</h1>
 
-      {/* FILTER DROPDOWN */}
+      {/* ============================================================
+           FILTER DROPDOWN (BACKEND-SAFE VALUES)
+         ============================================================ */}
       <div className='mb-6'>
         <select
           value={filters.status}
@@ -347,7 +405,7 @@ export default function ProjectsPage() {
           className='border border-gray-300 p-2 rounded'
         >
           <option value=''>All Statuses</option>
-          {ALL_STATUSES.map(s => (
+          {STATUS_OPTIONS.map(s => (
             <option key={s.value} value={s.value}>
               {s.label}
             </option>
@@ -355,44 +413,56 @@ export default function ProjectsPage() {
         </select>
       </div>
 
-      {/* KANBAN VIEW - NO FILTER */}
+      {/* ============================================================
+           KANBAN VIEW (BACKEND-SAFE COLUMN FILTERS)
+         ============================================================ */}
       {!filters.status ? (
         <div className='grid grid-cols-1 md:grid-cols-3 gap-6 mb-10'>
-          {/* PLANNING */}
+          
+          {/* PLANNING COLUMN */}
           <div>
             <div className='bg-gray-100 p-3 rounded-t-lg border border-gray-300'>
               <h2 className='font-semibold text-gray-900'>Planning</h2>
-              <p className='text-sm text-gray-600'>{getProjectsByStatus('planning').length} projects</p>
+              <p className='text-sm text-gray-600'>
+                {getProjectsByStatus('planning').length} projects
+              </p>
             </div>
             <div className='bg-gray-50 p-3 rounded-b-lg border border-t-0 border-gray-300 min-h-[200px]'>
               {getProjectsByStatus('planning').map(renderProjectCard)}
             </div>
           </div>
 
-          {/* IN PROGRESS */}
+          {/* IN PROGRESS COLUMN */}
           <div>
             <div className='bg-blue-100 p-3 rounded-t-lg border border-blue-300'>
               <h2 className='font-semibold text-gray-900'>In Progress</h2>
-              <p className='text-sm text-gray-600'>{getProjectsByStatus('in_progress').length} projects</p>
+              <p className='text-sm text-gray-600'>
+                {getProjectsByStatus('in_progress').length} projects
+              </p>
             </div>
             <div className='bg-blue-50 p-3 rounded-b-lg border border-t-0 border-blue-300 min-h-[200px]'>
               {getProjectsByStatus('in_progress').map(renderProjectCard)}
             </div>
           </div>
 
-          {/* COMPLETED */}
+          {/* COMPLETED COLUMN */}
           <div>
             <div className='bg-green-100 p-3 rounded-t-lg border border-green-300'>
               <h2 className='font-semibold text-gray-900'>Completed</h2>
-              <p className='text-sm text-gray-600'>{getProjectsByStatus('completed').length} projects</p>
+              <p className='text-sm text-gray-600'>
+                {getProjectsByStatus('completed').length} projects
+              </p>
             </div>
             <div className='bg-green-50 p-3 rounded-b-lg border border-t-0 border-green-300 min-h-[200px]'>
               {getProjectsByStatus('completed').map(renderProjectCard)}
             </div>
           </div>
+
         </div>
       ) : (
-        // FILTERED VIEW
+        // ============================================================
+        // FILTERED VIEW (BACKEND-SAFE FILTERING)
+        // ============================================================
         <div className='bg-white rounded-lg shadow p-6 border border-gray-200 mb-10'>
           <h2 className='font-semibold text-gray-900 mb-4'>Filtered Results</h2>
           <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
@@ -401,7 +471,9 @@ export default function ProjectsPage() {
         </div>
       )}
 
-      {/* CREATE/EDIT FORM */}
+      {/* ============================================================
+           CREATE/EDIT FORM (BACKEND-SAFE VALUES)
+         ============================================================ */}
       <div className='mt-10 bg-white p-6 rounded-lg shadow border border-gray-200'>
         <h2 className='text-xl font-bold mb-4'>
           {editingProject ? 'Edit Project' : 'Create Project'}
@@ -437,7 +509,7 @@ export default function ProjectsPage() {
             ))}
           </select>
 
-          {/* Status */}
+          {/* Status - Backend-safe values */}
           <select
             value={editingProject?.status ?? newProject.status}
             onChange={(e) =>
@@ -447,7 +519,7 @@ export default function ProjectsPage() {
             }
             className='border p-2 rounded'
           >
-            {ALL_STATUSES.map(s => (
+            {STATUS_OPTIONS.map(s => (
               <option key={s.value} value={s.value}>
                 {s.label}
               </option>
@@ -457,7 +529,6 @@ export default function ProjectsPage() {
           {/* Start Date */}
           <input
             type='date'
-            placeholder='Start Date'
             value={editingProject?.start_date ?? newProject.start_date}
             onChange={(e) =>
               editingProject
@@ -470,7 +541,6 @@ export default function ProjectsPage() {
           {/* End Date */}
           <input
             type='date'
-            placeholder='End Date'
             value={editingProject?.end_date ?? newProject.end_date}
             onChange={(e) =>
               editingProject
