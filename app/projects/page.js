@@ -31,6 +31,7 @@ export default function ReportsPage() {
       alert('Please select both start and end dates')
       return
     }
+
     setLoading(true)
     try {
       const params = new URLSearchParams({
@@ -38,10 +39,10 @@ export default function ReportsPage() {
         end_date: filters.end_date,
         ...(filters.client_id && { client_id: filters.client_id })
       }).toString()
-      
-      const data = await api(`/reports/${reportType}?${params}`, { method: "GET" })
 
+      const data = await api(`/reports/${reportType}?${params}`, { method: "GET" })
       setReportData(data)
+
     } catch (error) {
       console.error('Report generation failed:', error)
       alert(`Report failed: ${error.message}`)
@@ -51,61 +52,48 @@ export default function ReportsPage() {
   }
 
   const exportCSV = () => {
-  if (!reportData) return
+    if (!reportData) return
 
-  let csvContent = ''
-  let filename = reportType
+    let csvContent = ''
+    let filename = reportType
 
-  // -----------------------------
-  // QUOTES SUMMARY
-  // -----------------------------
-  if (reportType === 'quotes-summary') {
-    filename = 'quotes_summary'
-    csvContent = 'Status,Count,Percentage\n'
+    if (reportType === 'quotes-summary') {
+      filename = 'quotes_summary'
+      csvContent = 'Status,Count,Percentage\n'
+      reportData.status_breakdown?.forEach(row => {
+        csvContent += `${row.status},${row.count},${row.percentage}%\n`
+      })
+      csvContent += `\nTotal Quotes,${reportData.summary?.total_quotes || 0},100%`
+    }
 
-    reportData.status_breakdown?.forEach(row => {
-      csvContent += `${row.status},${row.count},${row.percentage}%\n`
-    })
+    else if (reportType === 'revenue') {
+      filename = 'revenue_report'
+      csvContent = 'Status,Revenue,Quote Count\n'
+      reportData.revenue_breakdown?.forEach(row => {
+        csvContent += `${row.status},$${(row.total_revenue ?? 0).toFixed(2)},${row.quote_count}\n`
+      })
+      csvContent += `\nGrand Total,$${(reportData.grand_total ?? 0).toFixed(2)}`
+    }
 
-    csvContent += `\nTotal Quotes,${reportData.summary?.total_quotes ?? 0},100%`
+    else if (reportType === 'client-activity') {
+      filename = 'client_activity'
+      csvContent = 'Client,Quotes,Total Quoted,Last Quote Date\n'
+      reportData.clients?.forEach(row => {
+        csvContent += `${row.client_name},${row.quote_count},$${(row.total_quoted ?? 0).toFixed(2)},${row.last_quote_date || 'N/A'}\n`
+      })
+    }
+
+    // FIXED: These lines were outside the function before
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.setAttribute('href', url)
+    link.setAttribute('download', `${filename}_${new Date().toISOString().split('T')[0]}.csv`)
+    link.style.visibility = 'hidden'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
   }
-
-  // -----------------------------
-  // REVENUE REPORT
-  // -----------------------------
-  else if (reportType === 'revenue') {
-    filename = 'revenue_report'
-    csvContent = 'Status,Revenue,Quote Count\n'
-
-    reportData.revenue_breakdown?.forEach(row => {
-      csvContent += `${row.status},$${(row.total_revenue ?? 0).toFixed(2)},${row.quote_count}\n`
-    })
-
-    csvContent += `\nGrand Total,$${(reportData.grand_total ?? 0).toFixed(2)}`
-  }
-
-// -----------------------------
-// CLIENT ACTIVITY
-// -----------------------------
-else if (reportType === 'client-activity') {
-  filename = 'client_activity'
-  csvContent = 'Client,Quotes,Total Quoted,Last Quote Date\n'
-
-  reportData.clients?.forEach(row => {
-    csvContent += `${row.client_name},${row.quote_count},$${(row.total_quoted ?? 0).toFixed(2)},${row.last_quote_date || 'N/A'}\n`
-  })
-}
-
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-  const url = window.URL.createObjectURL(blob)
-  const link = document.createElement('a')
-  link.setAttribute('href', url)
-  link.setAttribute('download', `${filename}_${new Date().toISOString().split('T')[0]}.csv`)
-  link.style.visibility = 'hidden'
-  document.body.appendChild(link)
-  link.click()
-  document.body.removeChild(link)
-}
 
   return (
     <div className='p-6 max-w-7xl mx-auto'>
@@ -130,22 +118,20 @@ else if (reportType === 'client-activity') {
           <input
             type='date'
             value={filters.start_date}
-            onChange={(e) => setFilters({...filters, start_date: e.target.value})}
+            onChange={(e) => setFilters({ ...filters, start_date: e.target.value })}
             className='border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
-            placeholder='Start Date'
           />
 
           <input
             type='date'
             value={filters.end_date}
-            onChange={(e) => setFilters({...filters, end_date: e.target.value})}
+            onChange={(e) => setFilters({ ...filters, end_date: e.target.value })}
             className='border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
-            placeholder='End Date'
           />
 
           <select
             value={filters.client_id}
-            onChange={(e) => setFilters({...filters, client_id: e.target.value})}
+            onChange={(e) => setFilters({ ...filters, client_id: e.target.value })}
             className='border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
           >
             <option value=''>All Clients</option>
@@ -183,6 +169,7 @@ else if (reportType === 'client-activity') {
               {reportType === 'revenue' && 'Revenue Report'}
               {reportType === 'client-activity' && 'Client Activity Report'}
             </h2>
+
             <button
               onClick={exportCSV}
               className='bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 flex items-center gap-2 font-medium transition shadow-md hover:shadow-lg'
@@ -199,6 +186,7 @@ else if (reportType === 'client-activity') {
             </p>
           </div>
 
+          {/* QUOTES SUMMARY */}
           {reportType === 'quotes-summary' && (
             <div>
               <div className='grid grid-cols-2 md:grid-cols-4 gap-4 mb-6'>
@@ -206,6 +194,7 @@ else if (reportType === 'client-activity') {
                   <div className='text-3xl font-bold text-blue-600'>{reportData.summary?.total_quotes || 0}</div>
                   <div className='text-gray-600 mt-1'>Total Quotes</div>
                 </div>
+
                 {reportData.status_breakdown?.map(status => (
                   <div key={status.status} className='bg-white border border-gray-200 p-4 rounded text-center shadow-sm'>
                     <div className='text-xl font-bold text-gray-900'>{status.count}</div>
@@ -219,17 +208,17 @@ else if (reportType === 'client-activity') {
               <table className='w-full border border-gray-200'>
                 <thead className='bg-gray-100'>
                   <tr>
-                    <th className='p-2 border border-gray-200'>Status</th>
-                    <th className='p-2 border border-gray-200'>Count</th>
-                    <th className='p-2 border border-gray-200'>Percentage</th>
+                    <th className='p-2 border'>Status</th>
+                    <th className='p-2 border'>Count</th>
+                    <th className='p-2 border'>Percentage</th>
                   </tr>
                 </thead>
                 <tbody>
                   {reportData.status_breakdown?.map((row, i) => (
                     <tr key={i} className={i % 2 === 0 ? 'bg-gray-50' : ''}>
-                      <td className='p-2 border border-gray-200 text-gray-700'>{row.status}</td>
-                      <td className='p-2 border border-gray-200 text-right text-gray-900 font-medium'>{row.count}</td>
-                      <td className='p-2 border border-gray-200 text-right text-gray-700'>{row.percentage}%</td>
+                      <td className='p-2 border'>{row.status}</td>
+                      <td className='p-2 border text-right'>{row.count}</td>
+                      <td className='p-2 border text-right'>{row.percentage}%</td>
                     </tr>
                   ))}
                 </tbody>
@@ -237,22 +226,25 @@ else if (reportType === 'client-activity') {
             </div>
           )}
 
+          {/* REVENUE REPORT */}
           {reportType === 'revenue' && (
             <div>
               <div className='grid grid-cols-1 md:grid-cols-3 gap-4 mb-6'>
-                <div className='bg-white border border-gray-200 p-4 rounded text-center shadow-sm'>
+                <div className='bg-white border p-4 rounded text-center shadow-sm'>
                   <div className='text-2xl font-bold text-green-600'>
                     ${((reportData.revenue_breakdown?.find(r => r.status === 'Approved')?.total_revenue) ?? 0).toFixed(2)}
                   </div>
                   <div className='text-gray-600 mt-1'>Approved Revenue</div>
                 </div>
-                <div className='bg-white border border-gray-200 p-4 rounded text-center shadow-sm'>
+
+                <div className='bg-white border p-4 rounded text-center shadow-sm'>
                   <div className='text-2xl font-bold text-yellow-600'>
                     ${((reportData.revenue_breakdown?.find(r => r.status === 'Pending (Draft)')?.total_revenue) ?? 0).toFixed(2)}
                   </div>
                   <div className='text-gray-600 mt-1'>Pending Revenue</div>
                 </div>
-                <div className='bg-white border border-gray-200 p-4 rounded text-center shadow-sm'>
+
+                <div className='bg-white border p-4 rounded text-center shadow-sm'>
                   <div className='text-3xl font-bold text-blue-600'>
                     ${reportData.grand_total?.toFixed(2) || '0.00'}
                   </div>
@@ -261,22 +253,20 @@ else if (reportType === 'client-activity') {
               </div>
 
               <h3 className='font-bold mb-2 text-gray-800'>Revenue Breakdown</h3>
-              <table className='w-full border border-gray-200'>
+              <table className='w-full border'>
                 <thead className='bg-gray-100'>
                   <tr>
-                    <th className='p-2 border border-gray-200'>Status</th>
-                    <th className='p-2 border border-gray-200'>Revenue</th>
-                    <th className='p-2 border border-gray-200'>Quote Count</th>
+                    <th className='p-2 border'>Status</th>
+                    <th className='p-2 border'>Revenue</th>
+                    <th className='p-2 border'>Quote Count</th>
                   </tr>
                 </thead>
                 <tbody>
                   {reportData.revenue_breakdown?.map((row, i) => (
                     <tr key={i} className={i % 2 === 0 ? 'bg-gray-50' : ''}>
-                      <td className='p-2 border border-gray-200 text-gray-700'>{row.status}</td>
-                      <td className='p-2 border border-gray-200 text-right font-medium text-gray-900'>
-                        ${(row.total_revenue ?? 0).toFixed(2)}
-                      </td>
-                      <td className='p-2 border border-gray-200 text-right text-gray-700'>{row.quote_count}</td>
+                      <td className='p-2 border'>{row.status}</td>
+                      <td className='p-2 border text-right'>${(row.total_revenue ?? 0).toFixed(2)}</td>
+                      <td className='p-2 border text-right'>{row.quote_count}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -284,69 +274,61 @@ else if (reportType === 'client-activity') {
             </div>
           )}
 
+          {/* CLIENT ACTIVITY */}
           {reportType === 'client-activity' && (
             <div>
               <div className='grid grid-cols-1 md:grid-cols-3 gap-4 mb-6'>
-
-                <div className='bg-white border border-gray-200 p-4 rounded text-center shadow-sm'>
+                <div className='bg-white border p-4 rounded text-center shadow-sm'>
                   <div className='text-3xl font-bold text-blue-600'>
                     {reportData.summary?.total_clients ?? 0}
                   </div>
                   <div className='text-gray-600 mt-1'>Active Clients</div>
                 </div>
 
-                <div className='bg-white border border-gray-200 p-4 rounded text-center shadow-sm'>
+                <div className='bg-white border p-4 rounded text-center shadow-sm'>
                   <div className='text-3xl font-bold text-purple-600'>
                     {reportData.summary?.total_quotes ?? 0}
                   </div>
                   <div className='text-gray-600 mt-1'>Total Quotes</div>
                 </div>
 
-                <div className='bg-white border border-gray-200 p-4 rounded text-center shadow-sm'>
+                <div className='bg-white border p-4 rounded text-center shadow-sm'>
                   <div className='text-2xl font-bold text-green-600'>
                     ${ (reportData.summary?.total_revenue ?? 0).toFixed(2) }
                   </div>
                   <div className='text-gray-600 mt-1'>Total Revenue</div>
                 </div>
-
               </div>
 
               <h3 className='font-bold mb-2 text-gray-800'>Client Activity</h3>
+
               <div className='overflow-x-auto'>
-                <table className='w-full border border-gray-200'>
+                <table className='w-full border'>
                   <thead className='bg-gray-100'>
                     <tr>
-                      <th className='p-2 border border-gray-200'>Client</th>
-                      <th className='p-2 border border-gray-200'>Quotes</th>
-                      <th className='p-2 border border-gray-200'>Total Quoted</th>
-                      <th className='p-2 border border-gray-200'>Last Quote</th>
+                      <th className='p-2 border'>Client</th>
+                      <th className='p-2 border'>Quotes</th>
+                      <th className='p-2 border'>Total Quoted</th>
+                      <th className='p-2 border'>Last Quote</th>
                     </tr>
                   </thead>
+
                   <tbody>
-                  {reportData.clients?.map((row, i) => (
-                    <tr key={i} className={i % 2 === 0 ? 'bg-gray-50' : ''}>
-                      <td className='p-2 border border-gray-200 font-medium text-gray-900'>
-                        {row.client_name}
-                      </td>
+                    {reportData.clients?.map((row, i) => (
+                      <tr key={i} className={i % 2 === 0 ? 'bg-gray-50' : ''}>
+                        <td className='p-2 border font-medium'>{row.client_name}</td>
+                        <td className='p-2 border text-right'>{row.quote_count}</td>
+                        <td className='p-2 border text-right'>${(row.total_quoted ?? 0).toFixed(2)}</td>
+                        <td className='p-2 border'>{row.last_quote_date || 'N/A'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
 
-                      <td className='p-2 border border-gray-200 text-right text-gray-700'>
-                        {row.quote_count}
-                      </td>
-
-                      <td className='p-2 border border-gray-200 text-right font-medium text-gray-900'>
-                        ${ (row.total_quoted ?? 0).toFixed(2) }
-                      </td>
-
-                      <td className='p-2 border border-gray-200 text-gray-700'>
-                        {row.last_quote_date || 'N/A'}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
                 </table>
               </div>
             </div>
           )}
+
         </div>
       )}
     </div>
