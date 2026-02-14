@@ -51,33 +51,51 @@ export default function ReportsPage() {
   }
 
   const exportCSV = () => {
-    if (!reportData) return
-    let csvContent = ''
-    let filename = reportType
+  if (!reportData) return
 
-    if (reportType === 'quotes-summary') {
-      filename = 'quotes_summary'
-      csvContent = 'Status,Count,Percentage\n'
-      reportData.status_breakdown?.forEach(row => {
-        csvContent += `${row.status},${row.count},${row.percentage}%\n`
-      })
-      csvContent += `\nTotal Quotes,${reportData.summary?.total_quotes || 0},100%`
-    } 
-    else if (reportType === 'revenue') {
-      filename = 'revenue_report'
-      csvContent = 'Status,Revenue,Quote Count\n'
-      reportData.revenue_breakdown?.forEach(row => {
-        csvContent += `${row.status},$${(row.total_revenue ?? 0).toFixed(2)},${row.quote_count}\n`
-      })
-      csvContent += `\nGrand Total,$${(reportData.grand_total ?? 0).toFixed(2)}`
-    }
-    else if (reportType === 'client-activity') {
-      filename = 'client_activity'
-      csvContent = 'Client,Quotes,Total Quoted,Last Quote Date\n'
-      reportData.clients?.forEach(row => {
-        csvContent += `${row.client_name},${row.quote_count},$${row.total_quoted.toFixed(2)},${row.last_quote_date || 'N/A'}\n`
-      })
-    }
+  let csvContent = ''
+  let filename = reportType
+
+  // -----------------------------
+  // QUOTES SUMMARY
+  // -----------------------------
+  if (reportType === 'quotes-summary') {
+    filename = 'quotes_summary'
+    csvContent = 'Status,Count,Percentage\n'
+
+    reportData.status_breakdown?.forEach(row => {
+      csvContent += `${row.status},${row.count},${row.percentage}%\n`
+    })
+
+    csvContent += `\nTotal Quotes,${reportData.summary?.total_quotes ?? 0},100%`
+  }
+
+  // -----------------------------
+  // REVENUE REPORT
+  // -----------------------------
+  else if (reportType === 'revenue') {
+    filename = 'revenue_report'
+    csvContent = 'Status,Revenue,Quote Count\n'
+
+    reportData.revenue_breakdown?.forEach(row => {
+      csvContent += `${row.status},$${(row.total_revenue ?? 0).toFixed(2)},${row.quote_count}\n`
+    })
+
+    csvContent += `\nGrand Total,$${(reportData.grand_total ?? 0).toFixed(2)}`
+  }
+
+  // -----------------------------
+  // CLIENT ACTIVITY
+  // -----------------------------
+  else if (reportType === 'client-activity') {
+    filename = 'client_activity'
+    csvContent = 'Client,Quotes,Total Quoted,Last Quote Date\n'
+
+    reportData.clients?.forEach(row => {
+      csvContent += `${row.client_name},${row.quote_count},$${(row.total_quoted ?? 0).toFixed(2)},${row.last_quote_date || 'N/A'}\n`
+    })
+  }
+}
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
     const url = window.URL.createObjectURL(blob)
@@ -270,20 +288,28 @@ export default function ReportsPage() {
           {reportType === 'client-activity' && (
             <div>
               <div className='grid grid-cols-1 md:grid-cols-3 gap-4 mb-6'>
+
                 <div className='bg-white border border-gray-200 p-4 rounded text-center shadow-sm'>
-                  <div className='text-3xl font-bold text-blue-600'>{reportData.summary?.total_clients || 0}</div>
+                  <div className='text-3xl font-bold text-blue-600'>
+                    {reportData.summary?.total_clients ?? 0}
+                  </div>
                   <div className='text-gray-600 mt-1'>Active Clients</div>
                 </div>
+
                 <div className='bg-white border border-gray-200 p-4 rounded text-center shadow-sm'>
-                  <div className='text-3xl font-bold text-purple-600'>{reportData.summary?.total_quotes || 0}</div>
+                  <div className='text-3xl font-bold text-purple-600'>
+                    {reportData.summary?.total_quotes ?? 0}
+                  </div>
                   <div className='text-gray-600 mt-1'>Total Quotes</div>
                 </div>
+
                 <div className='bg-white border border-gray-200 p-4 rounded text-center shadow-sm'>
                   <div className='text-2xl font-bold text-green-600'>
-                    ${(reportData.summary?.total_revenue ?? 0).toFixed(2)}
+                    ${ (reportData.summary?.total_revenue ?? 0).toFixed(2) }
                   </div>
                   <div className='text-gray-600 mt-1'>Total Revenue</div>
                 </div>
+
               </div>
 
               <h3 className='font-bold mb-2 text-gray-800'>Client Activity</h3>
@@ -298,17 +324,26 @@ export default function ReportsPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {reportData.clients?.map((row, i) => (
-                      <tr key={i} className={i % 2 === 0 ? 'bg-gray-50' : ''}>
-                        <td className='p-2 border border-gray-200 font-medium text-gray-900'>{row.client_name}</td>
-                        <td className='p-2 border border-gray-200 text-right text-gray-700'>{row.quote_count}</td>
-                        <td className='p-2 border border-gray-200 text-right font-medium text-gray-900'>
-                          ${row.total_quoted.toFixed(2)}
-                        </td>
-                        <td className='p-2 border border-gray-200 text-gray-700'>{row.last_quote_date || 'N/A'}</td>
-                      </tr>
-                    ))}
-                  </tbody>
+                  {reportData.clients?.map((row, i) => (
+                    <tr key={i} className={i % 2 === 0 ? 'bg-gray-50' : ''}>
+                      <td className='p-2 border border-gray-200 font-medium text-gray-900'>
+                        {row.client_name}
+                      </td>
+
+                      <td className='p-2 border border-gray-200 text-right text-gray-700'>
+                        {row.quote_count}
+                      </td>
+
+                      <td className='p-2 border border-gray-200 text-right font-medium text-gray-900'>
+                        ${ (row.total_quoted ?? 0).toFixed(2) }
+                      </td>
+
+                      <td className='p-2 border border-gray-200 text-gray-700'>
+                        {row.last_quote_date || 'N/A'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
                 </table>
               </div>
             </div>

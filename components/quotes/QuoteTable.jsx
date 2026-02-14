@@ -35,6 +35,7 @@ export default function QuoteTable({
           <th className='p-3 text-right'>Actions</th>
         </tr>
       </thead>
+
       <tbody>
         {quotes.map((quote) => (
           <tr key={quote.quote_id} className='border-t hover:bg-gray-50'>
@@ -42,7 +43,11 @@ export default function QuoteTable({
             <td className='p-3'>{quote.client_name}</td>
             <td className='p-3'>{quote.project_name || '-'}</td>
             <td className='p-3'>{quote.date}</td>
-            <td className='p-3 text-right font-bold'>${quote.total_amount.toFixed(2)}</td>
+
+            <td className='p-3 text-right font-bold'>
+              ${ (quote.total_amount ?? 0).toFixed(2) }
+            </td>
+
             <td className='p-3'>
               <StatusPill status={quote.status} />
               {quote.has_invoice && (
@@ -50,7 +55,8 @@ export default function QuoteTable({
                   Invoice: {quote.invoice_number}
                 </div>
               )}
-            </td> 
+            </td>
+
             <td className='p-3 text-right'>
               <div className='flex items-center gap-2 justify-end'>
                 <PrimaryActionButton
@@ -59,6 +65,7 @@ export default function QuoteTable({
                   onConvert={() => onConvertToInvoice(quote.quote_id)}
                   onViewInvoice={() => onViewInvoice(quote)}
                 />
+
                 <OverflowMenu
                   quote={quote}
                   onPreviewPDF={() => onPreviewPDF(quote.quote_id)}

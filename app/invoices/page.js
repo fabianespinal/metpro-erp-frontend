@@ -9,15 +9,11 @@ export default function InvoicesPage() {
   const [loading, setLoading] = useState(true)
   const [statusFilter, setStatusFilter] = useState('all')
 
-  // Always defined (SSR-safe)
   const filteredInvoices =
     statusFilter === 'all'
       ? invoices
       : invoices.filter(inv => inv.status === statusFilter)
 
-  // --------------------------
-  // fetchInvoices()
-  // --------------------------
   const fetchInvoices = async () => {
     try {
       const token = localStorage.getItem("token")
@@ -85,39 +81,39 @@ export default function InvoicesPage() {
   }
 
   const handleDownloadConduce = async (invoiceId, invoiceNumber) => {
-  try {
-    const token = localStorage.getItem("token")
+    try {
+      const token = localStorage.getItem("token")
 
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/pdf/invoices/${invoiceId}/conduce`,
-      {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/pdf/invoices/${invoiceId}/conduce`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
+
+      if (!response.ok) {
+        throw new Error(`Conduce download failed: ${response.status}`)
       }
-    )
 
-    if (!response.ok) {
-      throw new Error(`Conduce download failed: ${response.status}`)
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `CD-${invoiceNumber}_conduce.pdf`
+      document.body.appendChild(a)
+      a.click()
+
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+    } catch (error) {
+      console.error('Conduce Download Error:', error)
+      alert('Error downloading conduce: ' + error.message)
     }
-
-    const blob = await response.blob()
-    const url = window.URL.createObjectURL(blob)
-
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `CD-${invoiceNumber}_conduce.pdf`
-    document.body.appendChild(a)
-    a.click()
-
-    window.URL.revokeObjectURL(url)
-    document.body.removeChild(a)
-  } catch (error) {
-    console.error('Conduce Download Error:', error)
-    alert('Error downloading conduce: ' + error.message)
   }
-}
 
   const handleUpdateStatus = async (invoiceId, newStatus) => {
     try {
@@ -159,13 +155,11 @@ export default function InvoicesPage() {
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
 
-        {/* HEADER */}
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">💰 Invoices</h1>
           <p className="text-gray-600">View and manage all invoices</p>
         </div>
 
-        {/* TABLE */}
         <div className="bg-white shadow rounded-lg overflow-hidden mt-6">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
@@ -185,7 +179,11 @@ export default function InvoicesPage() {
                   <td className="px-4 py-3 font-medium">{inv.invoice_number}</td>
                   <td className="px-4 py-3">{inv.client_name}</td>
                   <td className="px-4 py-3">{inv.invoice_date?.split("T")[0]}</td>
-                  <td className="px-4 py-3 text-right font-bold">${inv.total_amount.toFixed(2)}</td>
+
+                  <td className="px-4 py-3 text-right font-bold">
+                    ${ (inv.total_amount ?? 0).toFixed(2) }
+                  </td>
+
                   <td className="px-4 py-3 text-center">
                     <StatusPill status={inv.status} />
                   </td>

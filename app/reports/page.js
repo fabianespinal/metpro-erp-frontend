@@ -24,99 +24,101 @@ export default function ReportsPage() {
     }
   }
 
-useEffect(() => {
-  fetchClients()
-}, [])
+  useEffect(() => {
+    fetchClients()
+  }, [])
 
-const fetchClients = async () => {
-  try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/`, {
-      method: 'GET',
-      headers: {
-        ...getAuthHeaders()
+  const fetchClients = async () => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/`, {
+        method: 'GET',
+        headers: { ...getAuthHeaders() }
+      })
+
+      if (res.ok) {
+        const data = await res.json()
+        setClients(Array.isArray(data) ? data : [])
       }
-    })
-
-    if (res.ok) {
-      const data = await res.json()
-      setClients(Array.isArray(data) ? data : [])
+    } catch (error) {
+      console.error('Fetch clients error:', error)
     }
-  } catch (error) {
-    console.error('Fetch clients error:', error)
   }
-}
 
   const runReport = async () => {
-  if (!filters.start_date || !filters.end_date) {
-    alert('Please select both start and end dates')
-    return
-  }
-
-  setLoading(true)
-  try {
-    const params = new URLSearchParams({
-      start_date: filters.start_date,
-      end_date: filters.end_date,
-      ...(filters.client_id && { client_id: filters.client_id })
-    }).toString()
-
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL
-
-    const res = await fetch(
-      `${apiUrl}/reports/${reportType}?${params}`,
-      {
-        method: 'GET',
-        headers: {
-          ...getAuthHeaders()
-        }
-      }
-    )
-
-    if (!res.ok) {
-      const errText = await res.text()
-      throw new Error(`Server error: ${errText || res.status}`)
+    if (!filters.start_date || !filters.end_date) {
+      alert('Please select both start and end dates')
+      return
     }
 
-    setReportData(await res.json())
-  } catch (error) {
-    console.error('Report generation failed:', error)
-    alert(`Report failed: ${error.message}`)
-  } finally {
-    setLoading(false)
+    setLoading(true)
+    try {
+      const params = new URLSearchParams({
+        start_date: filters.start_date,
+        end_date: filters.end_date,
+        ...(filters.client_id && { client_id: filters.client_id })
+      }).toString()
+
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL
+
+      const res = await fetch(
+        `${apiUrl}/reports/${reportType}?${params}`,
+        {
+          method: 'GET',
+          headers: { ...getAuthHeaders() }
+        }
+      )
+
+      if (!res.ok) {
+        const errText = await res.text()
+        throw new Error(`Server error: ${errText || res.status}`)
+      }
+
+      setReportData(await res.json())
+    } catch (error) {
+      console.error('Report generation failed:', error)
+      alert(`Report failed: ${error.message}`)
+    } finally {
+      setLoading(false)
+    }
   }
-}
 
   const exportCSV = () => {
     if (!reportData) return
-    
+
     let csvContent = ''
     let filename = reportType
-    
+
     if (reportType === 'quotes-summary') {
       filename = 'quotes_summary'
       csvContent = 'Status,Count,Percentage\n'
-      reportData.status_breakdown?.forEach(row => { // Added optional chaining
+
+      reportData.status_breakdown?.forEach(row => {
         csvContent += `${row.status},${row.count},${row.percentage}%\n`
       })
-      csvContent += `\nTotal Quotes,${reportData.summary?.total_quotes || 0},100%` // Added null check
-    } 
+
+      csvContent += `\nTotal Quotes,${reportData.summary?.total_quotes ?? 0},100%`
+    }
+
     else if (reportType === 'revenue') {
       filename = 'revenue_report'
       csvContent = 'Status,Revenue,Quote Count\n'
-      reportData.revenue_breakdown?.forEach(row => { // Added optional chaining
+
+      reportData.revenue_breakdown?.forEach(row => {
         csvContent += `${row.status},$${(row.total_revenue ?? 0).toFixed(2)},${row.quote_count}\n`
       })
-      // FIXED: Removed trailing comma causing CSV format issue
-      csvContent += `\nGrand Total,$${reportData.grand_total.toFixed(2)}`
-    } 
+
+      csvContent += `\nGrand Total,$${(reportData.grand_total ?? 0).toFixed(2)}`
+    }
+
     else if (reportType === 'client-activity') {
       filename = 'client_activity'
       csvContent = 'Client,Quotes,Total Quoted,Last Quote Date\n'
-      reportData.clients?.forEach(row => { // Added optional chaining
-        csvContent += `${row.client_name},${row.quote_count},$${row.total_quoted.toFixed(2)},${row.last_quote_date || 'N/A'}\n`
+
+      reportData.clients?.forEach(row => {
+        csvContent += `${row.client_name},${row.quote_count},$${(row.total_quoted ?? 0).toFixed(2)},${row.last_quote_date || 'N/A'}\n`
       })
     }
-    
+
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
     const url = window.URL.createObjectURL(blob)
     const link = document.createElement('a')
@@ -131,7 +133,7 @@ const fetchClients = async () => {
   return (
     <div className='p-8 max-w-7xl mx-auto'>
       <h1 className='text-3xl font-bold mb-8 text-gray-900'>Reports</h1>
-      
+
       {/* Report Type Selector */}
       <div className='bg-white rounded-lg shadow p-6 mb-6 border border-gray-200'>
         <div className='flex flex-col md:flex-row gap-4'>
@@ -147,26 +149,24 @@ const fetchClients = async () => {
             <option value='revenue'>Revenue Report</option>
             <option value='client-activity'>Client Activity</option>
           </select>
-          
+
           <input
             type='date'
             value={filters.start_date}
-            onChange={(e) => setFilters({...filters, start_date: e.target.value})}
+            onChange={(e) => setFilters({ ...filters, start_date: e.target.value })}
             className='border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
-            placeholder='Start Date'
           />
-          
+
           <input
             type='date'
             value={filters.end_date}
-            onChange={(e) => setFilters({...filters, end_date: e.target.value})}
+            onChange={(e) => setFilters({ ...filters, end_date: e.target.value })}
             className='border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
-            placeholder='End Date'
           />
-          
+
           <select
             value={filters.client_id}
-            onChange={(e) => setFilters({...filters, client_id: e.target.value})}
+            onChange={(e) => setFilters({ ...filters, client_id: e.target.value })}
             className='border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
           >
             <option value=''>All Clients</option>
@@ -176,7 +176,7 @@ const fetchClients = async () => {
               </option>
             ))}
           </select>
-          
+
           <button
             onClick={runReport}
             disabled={loading}
@@ -198,12 +198,25 @@ const fetchClients = async () => {
       {/* Report Results */}
       {reportData && (
         <div className='bg-white rounded-lg shadow p-6 border border-gray-200'>
+
+          {/* Filters Applied */}
+          <div className='mb-6 p-4 bg-blue-50 rounded border border-blue-200'>
+            <p className='font-medium text-blue-900'>Filters Applied:</p>
+            <p className='text-sm text-blue-800'>
+              Date Range: {filters.start_date} to {filters.end_date}
+              {filters.client_id &&
+                ` | Client: ${clients.find(c => c.id == filters.client_id)?.company_name}`}
+            </p>
+          </div>
+
+          {/* Report Header */}
           <div className='flex justify-between items-center mb-4'>
             <h2 className='text-2xl font-bold text-gray-900'>
               {reportType === 'quotes-summary' && 'Quotes Summary Report'}
               {reportType === 'revenue' && 'Revenue Report'}
               {reportType === 'client-activity' && 'Client Activity Report'}
             </h2>
+
             <button
               onClick={exportCSV}
               className='bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 flex items-center gap-2 font-medium transition shadow-md hover:shadow-lg'
@@ -211,22 +224,20 @@ const fetchClients = async () => {
               📥 Export CSV
             </button>
           </div>
-          
-          <div className='mb-6 p-4 bg-blue-50 rounded border border-blue-200'>
-            <p className='font-medium text-blue-900'>Filters Applied:</p>
-            <p className='text-sm text-blue-800'>
-              Date Range: {filters.start_date} to {filters.end_date}
-              {filters.client_id && ` | Client: ${clients.find(c => c.id == filters.client_id)?.company_name}`}
-            </p>
-          </div>
-          
+
+          {/* ----------------------------- */}
+          {/* QUOTES SUMMARY */}
+          {/* ----------------------------- */}
           {reportType === 'quotes-summary' && (
             <div>
               <div className='grid grid-cols-2 md:grid-cols-4 gap-4 mb-6'>
                 <div className='bg-white border border-gray-200 p-4 rounded text-center shadow-sm'>
-                  <div className='text-3xl font-bold text-blue-600'>{reportData.summary?.total_quotes || 0}</div>
+                  <div className='text-3xl font-bold text-blue-600'>
+                    {reportData.summary?.total_quotes ?? 0}
+                  </div>
                   <div className='text-gray-600 mt-1'>Total Quotes</div>
                 </div>
+
                 {reportData.status_breakdown?.map(status => (
                   <div key={status.status} className='bg-white border border-gray-200 p-4 rounded text-center shadow-sm'>
                     <div className='text-xl font-bold text-gray-900'>{status.count}</div>
@@ -235,7 +246,7 @@ const fetchClients = async () => {
                   </div>
                 ))}
               </div>
-              
+
               <h3 className='font-bold mb-2 text-gray-800'>Status Breakdown</h3>
               <table className='w-full border border-gray-200'>
                 <thead className='bg-gray-100'>
@@ -257,30 +268,37 @@ const fetchClients = async () => {
               </table>
             </div>
           )}
-          
+
+          {/* ----------------------------- */}
+          {/* REVENUE REPORT */}
+          {/* ----------------------------- */}
           {reportType === 'revenue' && (
             <div>
               <div className='grid grid-cols-1 md:grid-cols-3 gap-4 mb-6'>
+
                 <div className='bg-white border border-gray-200 p-4 rounded text-center shadow-sm'>
                   <div className='text-2xl font-bold text-green-600'>
                     ${((reportData.revenue_breakdown?.find(r => r.status === 'Approved')?.total_revenue) ?? 0).toFixed(2)}
                   </div>
                   <div className='text-gray-600 mt-1'>Approved Revenue</div>
                 </div>
+
                 <div className='bg-white border border-gray-200 p-4 rounded text-center shadow-sm'>
                   <div className='text-2xl font-bold text-yellow-600'>
                     ${((reportData.revenue_breakdown?.find(r => r.status === 'Pending (Draft)')?.total_revenue) ?? 0).toFixed(2)}
                   </div>
                   <div className='text-gray-600 mt-1'>Pending Revenue</div>
                 </div>
+
                 <div className='bg-white border border-gray-200 p-4 rounded text-center shadow-sm'>
                   <div className='text-3xl font-bold text-blue-600'>
-                    ${reportData.grand_total?.toFixed(2) || '0.00'}
+                    ${(reportData.grand_total ?? 0).toFixed(2)}
                   </div>
                   <div className='text-gray-600 mt-1'>Grand Total</div>
                 </div>
+
               </div>
-              
+
               <h3 className='font-bold mb-2 text-gray-800'>Revenue Breakdown</h3>
               <table className='w-full border border-gray-200'>
                 <thead className='bg-gray-100'>
@@ -297,25 +315,36 @@ const fetchClients = async () => {
                       <td className='p-2 border border-gray-200 text-right font-medium text-gray-900'>
                         ${(row.total_revenue ?? 0).toFixed(2)}
                       </td>
-                      <td className='p-2 border border-gray-200 text-right text-gray-700'>{row.quote_count}</td>
+                      <td className='p-2 border border-gray-200 text-right text-gray-700'>
+                        {row.quote_count}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
           )}
-          
+
+          {/* ----------------------------- */}
+          {/* CLIENT ACTIVITY */}
+          {/* ----------------------------- */}
           {reportType === 'client-activity' && (
             <div>
               <div className='grid grid-cols-1 md:grid-cols-3 gap-4 mb-6'>
                 <div className='bg-white border border-gray-200 p-4 rounded text-center shadow-sm'>
-                  <div className='text-3xl font-bold text-blue-600'>{reportData.summary?.total_clients || 0}</div>
+                  <div className='text-3xl font-bold text-blue-600'>
+                    {reportData.summary?.total_clients ?? 0}
+                  </div>
                   <div className='text-gray-600 mt-1'>Active Clients</div>
                 </div>
+
                 <div className='bg-white border border-gray-200 p-4 rounded text-center shadow-sm'>
-                  <div className='text-3xl font-bold text-purple-600'>{reportData.summary?.total_quotes || 0}</div>
+                  <div className='text-3xl font-bold text-purple-600'>
+                    {reportData.summary?.total_quotes ?? 0}
+                  </div>
                   <div className='text-gray-600 mt-1'>Total Quotes</div>
                 </div>
+
                 <div className='bg-white border border-gray-200 p-4 rounded text-center shadow-sm'>
                   <div className='text-2xl font-bold text-green-600'>
                     ${(reportData.summary?.total_revenue ?? 0).toFixed(2)}
@@ -323,7 +352,7 @@ const fetchClients = async () => {
                   <div className='text-gray-600 mt-1'>Total Revenue</div>
                 </div>
               </div>
-              
+
               <h3 className='font-bold mb-2 text-gray-800'>Client Activity</h3>
               <div className='overflow-x-auto'>
                 <table className='w-full border border-gray-200'>
@@ -338,12 +367,18 @@ const fetchClients = async () => {
                   <tbody>
                     {reportData.clients?.map((row, i) => (
                       <tr key={i} className={i % 2 === 0 ? 'bg-gray-50' : ''}>
-                        <td className='p-2 border border-gray-200 font-medium text-gray-900'>{row.client_name}</td>
-                        <td className='p-2 border border-gray-200 text-right text-gray-700'>{row.quote_count}</td>
-                        <td className='p-2 border border-gray-200 text-right font-medium text-gray-900'>
-                          ${row.total_quoted.toFixed(2)}
+                        <td className='p-2 border border-gray-200 font-medium text-gray-900'>
+                          {row.client_name}
                         </td>
-                        <td className='p-2 border border-gray-200 text-gray-700'>{row.last_quote_date || 'N/A'}</td>
+                        <td className='p-2 border border-gray-200 text-right text-gray-700'>
+                          {row.quote_count}
+                        </td>
+                        <td className='p-2 border border-gray-200 text-right font-medium text-gray-900'>
+                          ${(row.total_quoted ?? 0).toFixed(2)}
+                        </td>
+                        <td className='p-2 border border-gray-200 text-gray-700'>
+                          {row.last_quote_date || 'N/A'}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -351,6 +386,7 @@ const fetchClients = async () => {
               </div>
             </div>
           )}
+
         </div>
       )}
     </div>

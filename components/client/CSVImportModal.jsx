@@ -183,13 +183,14 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete }) {
                   id="csv-upload"
                   onChange={handleFileChange}
                 />
+
                 <label htmlFor="csv-upload" className="cursor-pointer block">
                   {file ? (
                     <div>
                       <div className="text-4xl mb-2">✅</div>
                       <p className="font-medium text-green-700">{file.name}</p>
                       <p className="text-sm text-gray-500 mt-1">
-                        {(file.size / 1024).toFixed(2)} KB • Click to change file
+                        { ((file?.size ?? 0) / 1024).toFixed(2) } KB • Click to change file
                       </p>
                     </div>
                   ) : (

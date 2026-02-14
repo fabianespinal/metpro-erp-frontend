@@ -6,13 +6,20 @@ export default function QuoteItemRow({
   onOpenProductModal,
   showRemove = true 
 }) {
-  const lineTotal = ((item.quantity * item.unit_price) - (
-    item.discount_type === 'percentage' 
-      ? (item.quantity * item.unit_price * item.discount_value / 100)
-      : item.discount_type === 'fixed' 
-        ? item.discount_value 
-        : 0
-  )).toFixed(2)
+  const qty = item.quantity ?? 0
+const price = item.unit_price ?? 0
+const discountVal = item.discount_value ?? 0
+
+const base = qty * price
+
+const discount =
+  item.discount_type === 'percentage'
+    ? base * (discountVal / 100)
+    : item.discount_type === 'fixed'
+      ? discountVal
+      : 0
+
+const lineTotal = (base - discount).toFixed(2)
 
   return (
     <div className='mb-4 p-4 border rounded'>

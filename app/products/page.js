@@ -18,7 +18,7 @@ export default function ProductsPage() {
   // Fetch products
   const fetchProducts = async () => {
     try {
-      const data = await api('/products/', { method: 'GET' })   // ⭐ FIXED
+      const data = await api('/products/', { method: 'GET' })
       setProducts(Array.isArray(data) ? data : [])
     } catch (error) {
       console.error('Failed to fetch products:', error)
@@ -32,7 +32,7 @@ export default function ProductsPage() {
     setLoading(true)
 
     try {
-      await api('/products/', {                                // ⭐ FIXED
+      await api('/products/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newProduct)
@@ -54,7 +54,7 @@ export default function ProductsPage() {
     setLoading(true)
 
     try {
-      await api(`/products/${editingProduct.id}/`, {            // ⭐ FIXED
+      await api(`/products/${editingProduct.id}/`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(editingProduct)
@@ -75,7 +75,7 @@ export default function ProductsPage() {
     if (!confirm('Delete this product?')) return
 
     try {
-      await api(`/products/${productId}/`, { method: 'DELETE' }) // ⭐ FIXED
+      await api(`/products/${productId}/`, { method: 'DELETE' })
       await fetchProducts()
       alert('Product deleted!')
     } catch (error) {
@@ -97,7 +97,7 @@ export default function ProductsPage() {
     formData.append('file', csvFile)
 
     try {
-      const data = await api('/products/import-csv/', {         // ⭐ FIXED
+      const data = await api('/products/import-csv/', {
         method: 'POST',
         body: formData
       })
@@ -240,7 +240,11 @@ export default function ProductsPage() {
                 <tr key={product.id} className='border-t hover:bg-gray-50'>
                   <td className='p-3 font-medium'>{product.name}</td>
                   <td className='p-3'>{product.description || '-'}</td>
-                  <td className='p-3 text-right font-bold'>${product.unit_price.toFixed(2)}</td>
+
+                  <td className='p-3 text-right font-bold'>
+                    ${ (product.unit_price ?? 0).toFixed(2) }
+                  </td>
+
                   <td className='p-3 text-right'>
                     <div className='flex justify-end gap-2'>
                       <button

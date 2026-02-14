@@ -38,40 +38,59 @@ export function mergeQuotesWithInvoices(quotes, invoices) {
 }
 
 /**
- * Calculate quote totals
+ * Calculate quote totals (SAFE VERSION)
  */
 export function calculateQuoteTotals(quoteItems, charges) {
-  const items_total = quoteItems.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0)
-  
+  const items_total = quoteItems.reduce((sum, item) => {
+    const qty = Number(item.quantity ?? 0)
+    const price = Number(item.unit_price ?? 0)
+    return sum + qty * price
+  }, 0)
+
   const total_discounts = quoteItems.reduce((sum, item) => {
-    const subtotal = item.quantity * item.unit_price
+    const qty = Number(item.quantity ?? 0)
+    const price = Number(item.unit_price ?? 0)
+    const subtotal = qty * price
+    const discountVal = Number(item.discount_value ?? 0)
+
     if (item.discount_type === 'percentage') {
-      return sum + (subtotal * (item.discount_value / 100))
+      return sum + subtotal * (discountVal / 100)
     } else if (item.discount_type === 'fixed') {
-      return sum + item.discount_value
+      return sum + discountVal
     }
     return sum
   }, 0)
 
   const items_after_discount = items_total - total_discounts
 
-  const supervision = charges.supervision 
-    ? items_after_discount * (charges.supervision_percentage / 100) 
-    : 0
-  const admin = charges.admin 
-    ? items_after_discount * (charges.admin_percentage / 100) 
-    : 0
-  const insurance = charges.insurance 
-    ? items_after_discount * (charges.insurance_percentage / 100) 
-    : 0
-  const transport = charges.transport 
-    ? items_after_discount * (charges.transport_percentage / 100) 
-    : 0
-  const contingency = charges.contingency 
-    ? items_after_discount * (charges.contingency_percentage / 100) 
+  const supervision = charges.supervision
+    ? items_after_discount * (Number(charges.supervision_percentage ?? 0) / 100)
     : 0
 
-  const subtotal_general = items_after_discount + supervision + admin + insurance + transport + contingency
+  const admin = charges.admin
+    ? items_after_discount * (Number(charges.admin_percentage ?? 0) / 100)
+    : 0
+
+  const insurance = charges.insurance
+    ? items_after_discount * (Number(charges.insurance_percentage ?? 0) / 100)
+    : 0
+
+  const transport = charges.transport
+    ? items_after_discount * (Number(charges.transport_percentage ?? 0) / 100)
+    : 0
+
+  const contingency = charges.contingency
+    ? items_after_discount * (Number(charges.contingency_percentage ?? 0) / 100)
+    : 0
+
+  const subtotal_general =
+    items_after_discount +
+    supervision +
+    admin +
+    insurance +
+    transport +
+    contingency
+
   const itbis = subtotal_general * 0.18
   const grand_total = subtotal_general + itbis
 
