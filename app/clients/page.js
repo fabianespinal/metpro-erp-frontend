@@ -259,58 +259,62 @@ export default function ClientsPage() {
       </div>
 
       {/* Clients List */}
-      <div className='bg-white rounded-lg shadow overflow-hidden'>
-        <div className='p-4 border-b font-bold'>Client List ({clients.length})</div>
+<div className='bg-white rounded-lg shadow overflow-hidden'>
+  <div className='p-4 border-b font-bold'>Client List ({clients.length})</div>
 
-        {clients.length === 0 ? (
-          <div className='p-8 text-center text-gray-500'>
-            No clients yet. Add one above or import via CSV!
-          </div>
-        ) : (
-          <table className='w-full'>
-            <thead className='bg-gray-50'>
-              <tr>
-                <th className='p-3 text-left'>Company</th>
-                <th className='p-3 text-left'>Contact</th>
-                <th className='p-3 text-left'>Email</th>
-                <th className='p-3 text-left'>Phone</th>
-                <th className='p-3 text-left'>Tax ID</th>
-                <th className='p-3 text-right'>Actions</th>
-              </tr>
-            </thead>
+  {clients.length === 0 ? (
+    <div className='p-8 text-center text-gray-500'>
+      No clients yet. Add one above or import via CSV!
+    </div>
+  ) : (
+    <table className='w-full'>
+      <thead className='bg-gray-50'>
+        <tr>
+          <th className='p-3 text-left'>Company</th>
+          <th className='p-3 text-left'>Contact</th>
+          <th className='p-3 text-left'>Email</th>
+          <th className='p-3 text-left'>Phone</th>
+          <th className='p-3 text-left'>Address</th>   {/* NEW */}
+          <th className='p-3 text-left'>Notes</th>     {/* NEW */}
+          <th className='p-3 text-left'>Tax ID</th>
+          <th className='p-3 text-right'>Actions</th>
+        </tr>
+      </thead>
 
-            <tbody>
-              {clients.map((client) => (
-                <tr key={client.id} className='border-t hover:bg-gray-50'>
-                  <td className='p-3 font-medium'>{client.company_name}</td>
-                  <td className='p-3'>{client.contact_name || '-'}</td>
-                  <td className='p-3'>{client.email || '-'}</td>
-                  <td className='p-3'>{client.phone || '-'}</td>
-                  <td className='p-3'>{client.tax_id || '-'}</td>
+      <tbody>
+        {clients.map((client) => (
+          <tr key={client.id} className='border-t hover:bg-gray-50'>
+            <td className='p-3 font-medium'>{client.company_name}</td>
+            <td className='p-3'>{client.contact_name || '-'}</td>
+            <td className='p-3'>{client.email || '-'}</td>
+            <td className='p-3'>{client.phone || '-'}</td>
+            <td className='p-3'>{client.address || '-'}</td>   {/* NEW */}
+            <td className='p-3'>{client.notes || '-'}</td>     {/* NEW */}
+            <td className='p-3'>{client.tax_id || '-'}</td>
 
-                  <td className='p-3 text-right'>
-                    <div className='flex justify-end gap-2'>
-                      <button
-                        onClick={() => setEditingClient(client)}
-                        className='text-blue-600 hover:text-blue-800 px-2 py-1 rounded hover:bg-blue-50 transition'
-                      >
-                        Edit
-                      </button>
+            <td className='p-3 text-right'>
+              <div className='flex justify-end gap-2'>
+                <button
+                  onClick={() => setEditingClient(client)}
+                  className='text-blue-600 hover:text-blue-800 px-2 py-1 rounded hover:bg-blue-50 transition'
+                >
+                  Edit
+                </button>
 
-                      <button
-                        onClick={() => handleDeleteClient(client.id)}
-                        className='text-red-600 hover:text-red-800 px-2 py-1 rounded hover:bg-red-50 transition'
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
+                <button
+                  onClick={() => handleDeleteClient(client.id)}
+                  className='text-red-600 hover:text-red-800 px-2 py-1 rounded hover:bg-red-50 transition'
+                >
+                  Delete
+                </button>
+              </div>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  )}
+</div>
 
       <CSVImportModal
         isOpen={importModalOpen}
