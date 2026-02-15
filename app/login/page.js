@@ -42,7 +42,7 @@ export default function LoginPage() {
     e.preventDefault()
     setError('')
 
-    // ⛔ Rate-limit: 1 attempt every 2 seconds
+    // Rate-limit: 1 attempt every 2 seconds
     const now = Date.now()
     if (now - lastAttemptRef.current < 2000) {
       setError("Please wait a moment before trying again.")
@@ -89,7 +89,7 @@ export default function LoginPage() {
 
       if (typeof window !== "undefined" && window.toast) {
         window.toast("Login failed", {
-          title: "❌ Error",
+          title: "Error",
           description: error.message
         })
       }
@@ -106,6 +106,16 @@ export default function LoginPage() {
         onSubmit={handleLogin}
         className="bg-gray-800/60 backdrop-blur-xl p-8 rounded-xl shadow-xl w-full max-w-md border border-gray-700"
       >
+
+        {/* LOGO */}
+        <div className="flex flex-col items-center mb-6">
+          <img
+            src="/logo.png"
+            alt="METPRO Logo"
+            className="h-20 w-auto mb-3 drop-shadow-lg"
+          />
+        </div>
+
         <h1 className="text-3xl font-bold text-white mb-6 text-center">
           Login
         </h1>
