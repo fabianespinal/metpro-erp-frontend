@@ -122,12 +122,12 @@ export default function ClientsPage() {
   return (
     <div className='p-8 max-w-6xl mx-auto'>
       <div className='flex justify-between items-center mb-8'>
-        <h1 className='text-3xl font-bold text-center flex-1'>METPRO ERP - Clients</h1>
+        <h1 className='text-3xl font-bold text-center flex-1'>METPRO ERP - Clientes</h1>
         <button
           onClick={() => setImportModalOpen(true)}
           className='bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 shadow-md hover:shadow-lg transition-shadow'
         >
-          Import CSV
+          Importar CSV
         </button>
       </div>
 
@@ -260,24 +260,24 @@ export default function ClientsPage() {
 
       {/* Clients List */}
 <div className='bg-white rounded-lg shadow overflow-hidden'>
-  <div className='p-4 border-b font-bold'>Client List ({clients.length})</div>
+  <div className='p-4 border-b font-bold'>Lista de Clientes ({clients.length})</div>
 
   {clients.length === 0 ? (
     <div className='p-8 text-center text-gray-500'>
-      No clients yet. Add one above or import via CSV!
+      No hay clientes aún. Agrega uno arriba o importa desde CSV!
     </div>
   ) : (
     <table className='w-full'>
       <thead className='bg-gray-50'>
         <tr>
-          <th className='p-3 text-left'>Company</th>
+          <th className='p-3 text-left'>Compañía</th>
           <th className='p-3 text-left'>Contact</th>
           <th className='p-3 text-left'>Email</th>
-          <th className='p-3 text-left'>Phone</th>
-          <th className='p-3 text-left'>Address</th>   {/* NEW */}
-          <th className='p-3 text-left'>Notes</th>     {/* NEW */}
-          <th className='p-3 text-left'>Tax ID</th>
-          <th className='p-3 text-right'>Actions</th>
+          <th className='p-3 text-left'>Teléfono</th>
+          <th className='p-3 text-left'>Dirección</th>   {/* NEW */}
+          <th className='p-3 text-left'>Notas</th>     {/* NEW */}
+          <th className='p-3 text-left'>RCN</th>
+          <th className='p-3 text-right'>Acciones</th>
         </tr>
       </thead>
 
@@ -298,14 +298,14 @@ export default function ClientsPage() {
                   onClick={() => setEditingClient(client)}
                   className='text-blue-600 hover:text-blue-800 px-2 py-1 rounded hover:bg-blue-50 transition'
                 >
-                  Edit
+                  Editar
                 </button>
 
                 <button
                   onClick={() => handleDeleteClient(client.id)}
                   className='text-red-600 hover:text-red-800 px-2 py-1 rounded hover:bg-red-50 transition'
                 >
-                  Delete
+                  Eliminar
                 </button>
               </div>
             </td>

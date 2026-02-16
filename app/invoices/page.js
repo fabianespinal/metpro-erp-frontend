@@ -145,7 +145,7 @@ export default function InvoicesPage() {
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading invoices...</p>
+          <p className="text-gray-600">Cargando facturas...</p>
         </div>
       </div>
     )
@@ -156,20 +156,20 @@ export default function InvoicesPage() {
       <div className="max-w-7xl mx-auto">
 
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">💰 Invoices</h1>
-          <p className="text-gray-600">View and manage all invoices</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">💰 Facturas</h1>
+          <p className="text-gray-600">Ver y gestionar todas las facturas</p>
         </div>
 
         <div className="bg-white shadow rounded-lg overflow-hidden mt-6">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Invoice #</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Client</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Factura #</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cliente</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha</th>
                 <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Total</th>
-                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Status</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Estado</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Acciones</th>
               </tr>
             </thead>
 
@@ -208,10 +208,10 @@ export default function InvoicesPage() {
                       value={inv.status}
                       onChange={(e) => handleUpdateStatus(inv.id, e.target.value)}
                     >
-                      <option value="Pending">Pending</option>
-                      <option value="Paid">Paid</option>
-                      <option value="Cancelled">Cancelled</option>
-                      <option value="Overdue">Overdue</option>
+                      <option value="Pending">Pendiente</option>
+                      <option value="Paid">Pagado</option>
+                      <option value="Cancelled">Cancelado</option>
+                      <option value="Overdue">Vencido</option>
                     </select>
                   </td>
                 </tr>
