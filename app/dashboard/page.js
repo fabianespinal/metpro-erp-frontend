@@ -13,19 +13,29 @@ export default function DashboardPage() {
   const [recentQuotes, setRecentQuotes] = useState([])
   const [recentInvoices, setRecentInvoices] = useState([])
 
+  // Load username
   useEffect(() => {
     const storedUser = localStorage.getItem('username')
     setUsername(storedUser || 'User')
   }, [])
 
+  // Load dashboard data
   useEffect(() => {
     async function loadDashboardData() {
       try {
         const token = localStorage.getItem('token')
+        const API = process.env.NEXT_PUBLIC_API_URL
+
         const [clientsRes, quotesRes, invoicesRes] = await Promise.all([
-          fetch('/api/clients', { headers: { Authorization: `Bearer ${token}` } }),
-          fetch('/api/quotes', { headers: { Authorization: `Bearer ${token}` } }),
-          fetch('/api/invoices', { headers: { Authorization: `Bearer ${token}` } })
+          fetch(`${API}/clients`, {
+            headers: { Authorization: `Bearer ${token}` }
+          }),
+          fetch(`${API}/quotes`, {
+            headers: { Authorization: `Bearer ${token}` }
+          }),
+          fetch(`${API}/invoices`, {
+            headers: { Authorization: `Bearer ${token}` }
+          })
         ])
 
         const clients = await clientsRes.json()
@@ -34,8 +44,12 @@ export default function DashboardPage() {
 
         // Compute stats
         const activeClients = clients.length
-        const pendingQuotes = quotes.filter(q => q.status !== 'Approved' && q.status !== 'Invoiced').length
-        const openInvoices = invoices.filter(inv => inv.status !== 'Paid').length
+        const pendingQuotes = quotes.filter(
+          q => q.status !== 'Approved' && q.status !== 'Invoiced'
+        ).length
+        const openInvoices = invoices.filter(
+          inv => inv.status !== 'Paid'
+        ).length
 
         // Recent activity
         const lastQuotes = [...quotes]
@@ -51,8 +65,10 @@ export default function DashboardPage() {
           pendingQuotes,
           openInvoices
         })
+
         setRecentQuotes(lastQuotes)
         setRecentInvoices(lastInvoices)
+
       } catch (err) {
         console.error('Dashboard load error:', err)
       }
@@ -68,7 +84,9 @@ export default function DashboardPage() {
       href: '/clients',
       icon: (
         <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+          />
         </svg>
       )
     },
@@ -78,7 +96,9 @@ export default function DashboardPage() {
       href: '/products',
       icon: (
         <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+          />
         </svg>
       )
     },
@@ -88,7 +108,9 @@ export default function DashboardPage() {
       href: '/quotes',
       icon: (
         <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+          />
         </svg>
       )
     },
@@ -98,7 +120,9 @@ export default function DashboardPage() {
       href: '/invoices',
       icon: (
         <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2zM10 8.5a.5.5 0 11-1 0 .5.5 0 011 0zm5 5a.5.5 0 11-1 0 .5.5 0 011 0z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+            d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2zM10 8.5a.5.5 0 11-1 0 .5.5 0 011 0zm5 5a.5.5 0 11-1 0 .5.5 0 011 0z"
+          />
         </svg>
       )
     },
@@ -108,7 +132,9 @@ export default function DashboardPage() {
       href: '/projects',
       icon: (
         <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
+          />
         </svg>
       )
     },
@@ -118,7 +144,9 @@ export default function DashboardPage() {
       href: '/reports',
       icon: (
         <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+          />
         </svg>
       )
     }
@@ -180,6 +208,7 @@ export default function DashboardPage() {
 
       {/* RECENT ACTIVITY */}
       <div className="mt-12 grid grid-cols-1 lg:grid-cols-2 gap-6">
+
         {/* Last 5 Quotes */}
         <div className="bg-gray-800/60 border border-gray-700 rounded-xl p-6 shadow-lg">
           <h2 className="text-xl font-semibold mb-4">Cotizaciones Recientes</h2>
@@ -211,6 +240,7 @@ export default function DashboardPage() {
             ))}
           </ul>
         </div>
+
       </div>
 
     </div>
