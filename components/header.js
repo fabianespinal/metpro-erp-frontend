@@ -43,14 +43,8 @@ export default function Header() {
             </span>
           </Link>
 
-          {/* RIGHT: User + Logout */}
+          {/* RIGHT: Logout */}
           <div className="flex items-center gap-4">
-
-            {username && username !== "undefined" && (
-              <span className="text-sm text-gray-300">
-                Welcome, {username}
-              </span>
-            )}
 
             <button
               onClick={handleLogout}
