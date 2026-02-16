@@ -130,7 +130,6 @@ export default function DashboardPage() {
       {/* HEADER */}
       <header className="flex items-center justify-between mb-10">
         <div className="flex items-center gap-3">
-          <img src="/logo.png" alt="METPRO Logo" className="h-12 w-auto drop-shadow-lg" />
           <h1 className="text-3xl font-bold tracking-wide">Dashboard</h1>
         </div>
 
