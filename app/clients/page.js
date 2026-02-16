@@ -259,7 +259,7 @@ export default function ClientsPage() {
       </div>
 
       {/* Clients List */}
-<div className='bg-white rounded-lg shadow overflow-hidden'>
+<div className='bg-white rounded-lg shadow overflow-x-auto'>
   <div className='p-4 border-b font-bold'>Lista de Clientes ({clients.length})</div>
 
   {clients.length === 0 ? (
