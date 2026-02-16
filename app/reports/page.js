@@ -135,63 +135,71 @@ export default function ReportsPage() {
       <h1 className='text-3xl font-bold mb-8 text-gray-900'>Reports</h1>
 
       {/* Report Type Selector */}
-      <div className='bg-white rounded-lg shadow p-6 mb-6 border border-gray-200'>
-        <div className='flex flex-col md:flex-row md:items-end md:justify-between gap-4'>
-          <select
-            value={reportType}
-            onChange={(e) => {
-              setReportType(e.target.value)
-              setReportData(null)
-            }}
-            className='border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 flex-1'
-          >
-            <option value='quotes-summary'>Quotes Summary</option>
-            <option value='revenue'>Revenue Report</option>
-            <option value='client-activity'>Client Activity</option>
-          </select>
+      <div className="bg-white rounded-lg shadow p-6 mb-6 border border-gray-200">
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
 
-          <input
-            type='date'
-            value={filters.start_date}
-            onChange={(e) => setFilters({ ...filters, start_date: e.target.value })}
-            className='border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
-          />
+          {/* Left side: filters */}
+          <div className="flex flex-col md:flex-row gap-4 flex-wrap">
 
-          <input
-            type='date'
-            value={filters.end_date}
-            onChange={(e) => setFilters({ ...filters, end_date: e.target.value })}
-            className='border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
-          />
+            <select
+              value={reportType}
+              onChange={(e) => {
+                setReportType(e.target.value)
+                setReportData(null)
+              }}
+              className="border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="quotes-summary">Quotes Summary</option>
+              <option value="revenue">Revenue Report</option>
+              <option value="client-activity">Client Activity</option>
+            </select>
 
-          <select
-            value={filters.client_id}
-            onChange={(e) => setFilters({ ...filters, client_id: e.target.value })}
-            className='border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
-          >
-            <option value=''>All Clients</option>
-            {clients.map(client => (
-              <option key={client.id} value={client.id}>
-                {client.company_name}
-              </option>
-            ))}
-          </select>
+            <input
+              type="date"
+              value={filters.start_date}
+              onChange={(e) => setFilters({ ...filters, start_date: e.target.value })}
+              className="border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
 
+            <input
+              type="date"
+              value={filters.end_date}
+              onChange={(e) => setFilters({ ...filters, end_date: e.target.value })}
+              className="border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
+
+            <select
+              value={filters.client_id}
+              onChange={(e) => setFilters({ ...filters, client_id: e.target.value })}
+              className="border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">All Clients</option>
+              {clients.map(client => (
+                <option key={client.id} value={client.id}>
+                  {client.company_name}
+                </option>
+              ))}
+            </select>
+
+          </div>
+
+          {/* Right side: Run Report button */}
           <button
             onClick={runReport}
             disabled={loading}
-            className='bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 disabled:opacity-50 flex items-center justify-center font-medium transition shadow-md hover:shadow-lg'
+            className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 disabled:opacity-50 flex items-center justify-center font-medium transition shadow-md hover:shadow-lg"
           >
             {loading ? (
-              <span className='flex items-center'>
-                <svg className='animate-spin -ml-1 mr-2 h-4 w-4 text-white' xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24'>
-                  <circle className='opacity-25' cx='12' cy='12' r='10' stroke='currentColor' strokeWidth='4'></circle>
-                  <path className='opacity-75' fill='currentColor' d='M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z'></path>
+              <span className="flex items-center">
+                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
                 Running...
               </span>
             ) : 'Run Report'}
           </button>
+
         </div>
       </div>
 
