@@ -39,7 +39,7 @@ export default function Header() {
               }}
             />
             <span className="text-lg font-semibold text-white">
-              METPRO
+              Home
             </span>
           </Link>
 
