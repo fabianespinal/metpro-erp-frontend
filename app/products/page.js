@@ -115,11 +115,11 @@ export default function ProductsPage() {
 
   return (
     <div className='p-8 max-w-6xl mx-auto'>
-      <h1 className='text-3xl font-bold mb-8 text-center'>METPRO ERP - Products</h1>
+      <h1 className='text-3xl font-bold mb-8 text-center'>METPRO ERP - Productos</h1>
 
       {/* Import CSV */}
       <div className='bg-white rounded-lg shadow p-6 mb-8'>
-        <h2 className='text-xl font-semibold mb-4'>Import Products from CSV</h2>
+        <h2 className='text-xl font-semibold mb-4'>Importar Productos desde CSV</h2>
         <form onSubmit={handleCsvImport} className='flex gap-4'>
           <input
             type='file'
@@ -138,7 +138,7 @@ export default function ProductsPage() {
 
         {importResult && (
           <div className='mt-4 p-4 bg-green-50 rounded'>
-            <p>✅ Imported: {importResult.imported} products</p>
+            <p>✅ Importodo: {importResult.imported} productos</p>
             {importResult.skipped > 0 && <p>⚠️ Skipped: {importResult.skipped} products</p>}
           </div>
         )}
@@ -218,20 +218,20 @@ export default function ProductsPage() {
 
       {/* Product List */}
       <div className='bg-white rounded-lg shadow overflow-hidden'>
-        <div className='p-4 border-b font-bold'>Product Catalog ({products.length})</div>
+        <div className='p-4 border-b font-bold'>Catalogo Productos ({products.length})</div>
 
         {products.length === 0 ? (
           <div className='p-8 text-center text-gray-500'>
-            No products yet. Add one above or import from CSV!
+            No hay productos aún. Añade uno arriba o importa desde CSV!
           </div>
         ) : (
           <table className='w-full'>
             <thead className='bg-gray-50'>
               <tr>
-                <th className='p-3 text-left'>Product Name</th>
-                <th className='p-3 text-left'>Description</th>
-                <th className='p-3 text-right'>Unit Price</th>
-                <th className='p-3 text-right'>Actions</th>
+                <th className='p-3 text-left'>Nombre Producto</th>
+                <th className='p-3 text-left'>Descripción</th>
+                <th className='p-3 text-right'>Precio Unitario</th>
+                <th className='p-3 text-right'>Acciones</th>
               </tr>
             </thead>
 
@@ -258,7 +258,7 @@ export default function ProductsPage() {
                         onClick={() => handleDeleteProduct(product.id)}
                         className='text-red-600 hover:text-red-800'
                       >
-                        Delete
+                        Borrar
                       </button>
                     </div>
                   </td>

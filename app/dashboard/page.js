@@ -63,8 +63,8 @@ export default function DashboardPage() {
 
   const modules = [
     {
-      name: 'Clients',
-      description: 'Manage client information and contacts',
+      name: 'Clientes',
+      description: 'Gestionar información y contactos de clientes',
       href: '/clients',
       icon: (
         <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -74,7 +74,7 @@ export default function DashboardPage() {
     },
     {
       name: 'Products',
-      description: 'Manage product catalog and pricing',
+      description: 'Gestionar catálogo y precios de productos',
       href: '/products',
       icon: (
         <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -83,8 +83,8 @@ export default function DashboardPage() {
       )
     },
     {
-      name: 'Quotes',
-      description: 'Create and manage price quotes',
+      name: 'Cotizaciones',
+      description: 'Crear y gestionar cotizaciones de precios',
       href: '/quotes',
       icon: (
         <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -93,8 +93,8 @@ export default function DashboardPage() {
       )
     },
     {
-      name: 'Invoices',
-      description: 'Generate and track invoices',
+      name: 'Facturas',
+      description: 'Generar y rastrear facturas',
       href: '/invoices',
       icon: (
         <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -103,8 +103,8 @@ export default function DashboardPage() {
       )
     },
     {
-      name: 'Projects',
-      description: 'Track projects and milestones',
+      name: 'Proyectos',
+      description: 'Rastrear proyectos y hitos',
       href: '/projects',
       icon: (
         <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -113,8 +113,8 @@ export default function DashboardPage() {
       )
     },
     {
-      name: 'Reports',
-      description: 'View analytics and reports',
+      name: 'Reportes',
+      description: 'Ver análisis y reportes',
       href: '/reports',
       icon: (
         <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -165,15 +165,15 @@ export default function DashboardPage() {
       {/* QUICK STATS */}
       <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-gray-800/60 border border-gray-700 rounded-xl p-6 shadow-lg">
-          <div className="text-sm text-gray-400 mb-1">Active Clients</div>
+          <div className="text-sm text-gray-400 mb-1">Clientes Activos</div>
           <div className="text-3xl font-bold">{stats.clients}</div>
         </div>
         <div className="bg-gray-800/60 border border-gray-700 rounded-xl p-6 shadow-lg">
-          <div className="text-sm text-gray-400 mb-1">Pending Quotes</div>
+          <div className="text-sm text-gray-400 mb-1">Cotizaciones Pendientes</div>
           <div className="text-3xl font-bold">{stats.pendingQuotes}</div>
         </div>
         <div className="bg-gray-800/60 border border-gray-700 rounded-xl p-6 shadow-lg">
-          <div className="text-sm text-gray-400 mb-1">Open Invoices</div>
+          <div className="text-sm text-gray-400 mb-1">Facturas Abiertas</div>
           <div className="text-3xl font-bold">{stats.openInvoices}</div>
         </div>
       </div>
@@ -182,9 +182,9 @@ export default function DashboardPage() {
       <div className="mt-12 grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Last 5 Quotes */}
         <div className="bg-gray-800/60 border border-gray-700 rounded-xl p-6 shadow-lg">
-          <h2 className="text-xl font-semibold mb-4">Recent Quotes</h2>
+          <h2 className="text-xl font-semibold mb-4">Cotizaciones Recientes</h2>
           {recentQuotes.length === 0 && (
-            <p className="text-gray-400 text-sm">No recent quotes</p>
+            <p className="text-gray-400 text-sm">No hay cotizaciones recientes</p>
           )}
           <ul className="space-y-3">
             {recentQuotes.map((q) => (
@@ -198,9 +198,9 @@ export default function DashboardPage() {
 
         {/* Last 5 Invoices */}
         <div className="bg-gray-800/60 border border-gray-700 rounded-xl p-6 shadow-lg">
-          <h2 className="text-xl font-semibold mb-4">Recent Invoices</h2>
+          <h2 className="text-xl font-semibold mb-4">Facturas Recientes</h2>
           {recentInvoices.length === 0 && (
-            <p className="text-gray-400 text-sm">No recent invoices</p>
+            <p className="text-gray-400 text-sm">No hay facturas recientes</p>
           )}
           <ul className="space-y-3">
             {recentInvoices.map((inv) => (
