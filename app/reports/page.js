@@ -136,7 +136,7 @@ export default function ReportsPage() {
 
       {/* Report Type Selector */}
       <div className='bg-white rounded-lg shadow p-6 mb-6 border border-gray-200'>
-        <div className='flex flex-col md:flex-row gap-4'>
+        <div className='flex flex-col md:flex-row md:items-end md:justify-between gap-4'>
           <select
             value={reportType}
             onChange={(e) => {
