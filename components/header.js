@@ -24,7 +24,7 @@ export default function Header() {
   if (!mounted) return null;
 
   return (
-    <header className="bg-white shadow-sm sticky top-0 z-50 border-b border-gray-200">
+    <header className="bg-gradient-to-r from-gray-900 via-gray-800 to-black shadow-lg sticky top-0 z-50 border-b border-gray-700">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
 
@@ -33,35 +33,28 @@ export default function Header() {
             <img
               src="/logo.png"
               alt="METPRO Logo"
-              className="h-8 w-auto object-contain"
+              className="h-10 w-auto object-contain drop-shadow-lg"
               onError={(e) => {
                 e.target.style.display = "none";
               }}
             />
-            <span className="text-lg font-semibold text-gray-800">
+            <span className="text-lg font-semibold text-white">
               METPRO
             </span>
           </Link>
 
-          {/* RIGHT: Home + User + Logout */}
+          {/* RIGHT: User + Logout */}
           <div className="flex items-center gap-4">
 
-            <Link
-              href="/dashboard"
-              className="text-sm font-medium text-gray-700 hover:text-gray-900"
-            >
-              Home
-            </Link>
-
             {username && username !== "undefined" && (
-              <span className="text-sm text-gray-600">
-                {username}
+              <span className="text-sm text-gray-300">
+                Welcome, {username}
               </span>
             )}
 
             <button
               onClick={handleLogout}
-              className="text-sm font-medium text-red-600 hover:text-red-700"
+              className="text-sm font-medium text-red-400 hover:text-red-300 transition-colors"
             >
               Logout
             </button>

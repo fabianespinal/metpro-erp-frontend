@@ -136,7 +136,7 @@ export default function DashboardPage() {
 
         <div className="text-right opacity-80 text-sm">
           <p className="font-semibold">Welcome, {username}</p>
-          <p className="text-gray-400">METPRO ERP System</p>
+          <p className="text-gray-400">Metpro ERP System</p>
         </div>
       </header>
 
