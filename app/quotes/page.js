@@ -23,14 +23,14 @@ import {
 export default function QuotesPage() {
   const token = useToken()
   const quoteForm = useQuoteForm()
-  
+
   const [clients, setClients] = useState([])
   const [quotes, setQuotes] = useState([])
   const [invoices, setInvoices] = useState([])
   const [products, setProducts] = useState([])
   const [statusFilter, setStatusFilter] = useState('all')
   const [loading, setLoading] = useState(false)
-  
+
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, quoteId: null, quoteStatus: null })
   const [editModal, setEditModal] = useState({ isOpen: false, quote: null })
   const [previewModal, setPreviewModal] = useState({ isOpen: false, quoteId: null, pdfUrl: null })
@@ -87,6 +87,7 @@ export default function QuotesPage() {
     e.preventDefault()
     setLoading(true)
     try {
+      // getFormData() now includes payment_terms and valid_until
       const formData = quoteForm.getFormData()
       const data = await api("/quotes/", {
         method: "POST",
@@ -148,13 +149,6 @@ export default function QuotesPage() {
       a.click()
       window.URL.revokeObjectURL(url)
       document.body.removeChild(a)
-      
-      if (window.toast) {
-        window.toast('Conduce Generated!', {
-          title: '✅ Success',
-          description: `Delivery note for ${quote.invoice_number} downloaded`
-        })
-      }
     } catch (error) {
       console.error('Conduce Error:', error)
       alert('Error generating conduce: ' + error.message)
@@ -165,7 +159,7 @@ export default function QuotesPage() {
     if (!confirm("Duplicate this quote?")) return
     try {
       const data = await duplicateQuote(quoteId, token)
-      alert(`✅ Quote duplicated! New ID: ${data.quote_id}`)
+      alert(`Quote duplicated! New ID: ${data.quote_id}`)
       fetchQuotes()
       fetchInvoices()
     } catch (error) {
@@ -174,22 +168,15 @@ export default function QuotesPage() {
   }
 
   async function handleConvertToInvoice(quoteId) {
-    if (!confirm(`Convert quote ${quoteId} to invoice?\nThis will change the ID from COT- to INV- prefix and cannot be undone.`)) return
+    if (!confirm(`Convert quote ${quoteId} to invoice?\nThis cannot be undone.`)) return
     try {
       const data = await convertToInvoice(quoteId, token)
-      alert(`✅ SUCCESS!\nQuote converted to invoice:\nNEW ID: ${data.invoice_id}`)
+      alert(`SUCCESS!\nQuote converted to invoice:\nNEW ID: ${data.invoice_id}`)
       fetchQuotes()
       fetchInvoices()
-      
-      if (window.toast) {
-        window.toast('Converted to Invoice!', {
-          title: '✅ Success',
-          description: `Quote ${quoteId} is now invoice ${data.invoice_id}`
-        })
-      }
     } catch (error) {
       console.error('Conversion Error:', error)
-      alert(`❌ Conversion failed:\n${error.message}`)
+      alert(`Conversion failed:\n${error.message}`)
     }
   }
 
@@ -197,13 +184,6 @@ export default function QuotesPage() {
     try {
       await updateQuoteStatus(quoteId, token, newStatus)
       fetchQuotes()
-      
-      if (window.toast) {
-        window.toast('Status updated!', {
-          title: '✅ Success',
-          description: `Quote ${quoteId} status changed to ${newStatus}`
-        })
-      }
     } catch (error) {
       alert('Error updating status: ' + error.message)
     }
@@ -214,13 +194,6 @@ export default function QuotesPage() {
       await deleteQuote(quoteId, token)
       setQuotes(prevQuotes => prevQuotes.filter(q => q.quote_id !== quoteId))
       setInvoices(prevInvoices => prevInvoices.filter(inv => inv.quote_id !== quoteId))
-      
-      if (window.toast) {
-        window.toast('Quote deleted!', {
-          title: '✅ Success',
-          description: `Quote ${quoteId} has been permanently deleted.`
-        })
-      }
     } catch (error) {
       console.error('Delete Quote Error:', error)
       alert(`Error deleting quote: ${error.message}`)
@@ -236,19 +209,14 @@ export default function QuotesPage() {
 
   async function handleSaveEdit(quoteId, updatedData) {
     try {
+      // client_id is not a valid field for PUT — strip it
       const { client_id, ...updatePayload } = updatedData
       await api(`/quotes/${quoteId}`, {
         method: "PUT",
         body: JSON.stringify(updatePayload)
+        // updatePayload now includes payment_terms and valid_until from EditQuoteModal
       })
       fetchQuotes()
-
-      if (window.toast) {
-        window.toast("Quote updated!", {
-          title: "✅ Success",
-          description: `Quote ${quoteId} has been updated.`
-        })
-      }
     } catch (error) {
       console.error("Edit Quote Error:", error)
       alert("Error updating quote: " + error.message)
@@ -289,7 +257,7 @@ export default function QuotesPage() {
   return (
     <div className="w-full px-4 lg:px-8 py-6">
       <h1 className='text-2xl font-bold mb-6'>METPRO ERP - Quotes</h1>
-      
+
       <QuoteForm
         clients={clients}
         selectedClient={quoteForm.selectedClient}
@@ -305,6 +273,10 @@ export default function QuotesPage() {
         totals={quoteForm.totals}
         notes={quoteForm.notes}
         setNotes={quoteForm.setNotes}
+        paymentTerms={quoteForm.paymentTerms}
+        setPaymentTerms={quoteForm.setPaymentTerms}
+        validUntil={quoteForm.validUntil}
+        setValidUntil={quoteForm.setValidUntil}
         onSubmit={handleCreateQuote}
         loading={loading}
         onOpenProductModal={handleOpenProductModal}
@@ -325,7 +297,7 @@ export default function QuotesPage() {
             <option value='Cancelled'>Cancelled</option>
           </select>
         </div>
-        
+
         {safeQuotes.length === 0 ? (
           <div className='p-8 text-center text-gray-500'>
             No quotes yet. Create one above!
@@ -357,7 +329,7 @@ export default function QuotesPage() {
         quoteId={previewModal.quoteId}
         pdfUrl={previewModal.pdfUrl}
       />
-      
+
       <DeleteQuoteModal
         isOpen={deleteModal.isOpen}
         onClose={() => setDeleteModal({ isOpen: false, quoteId: null, quoteStatus: null })}
@@ -365,7 +337,7 @@ export default function QuotesPage() {
         quoteId={deleteModal.quoteId}
         quoteStatus={deleteModal.quoteStatus}
       />
-      
+
       <EditQuoteModal
         isOpen={editModal.isOpen}
         onClose={() => setEditModal({ isOpen: false, quote: null })}
@@ -373,7 +345,7 @@ export default function QuotesPage() {
         onSave={handleSaveEdit}
         clients={clients}
       />
-      
+
       <ProductSelectionModal
         isOpen={productModal.isOpen}
         onClose={() => setProductModal({ isOpen: false, itemIndex: null })}

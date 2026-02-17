@@ -8,6 +8,8 @@ export function useQuoteForm() {
   ])
   const [projectName, setProjectName] = useState('')
   const [notes, setNotes] = useState('')
+  const [paymentTerms, setPaymentTerms] = useState('')
+  const [validUntil, setValidUntil] = useState('')
   const [charges, setCharges] = useState(DEFAULT_CHARGES)
   const [totals, setTotals] = useState(null)
 
@@ -17,12 +19,12 @@ export function useQuoteForm() {
   }, [quoteItems, charges])
 
   const handleAddItem = () => {
-    setQuoteItems([...quoteItems, { 
-      product_name: '', 
-      quantity: 1, 
-      unit_price: 0, 
-      discount_type: 'none', 
-      discount_value: 0 
+    setQuoteItems([...quoteItems, {
+      product_name: '',
+      quantity: 1,
+      unit_price: 0,
+      discount_type: 'none',
+      discount_value: 0
     }])
   }
 
@@ -52,6 +54,8 @@ export function useQuoteForm() {
     setQuoteItems([{ product_name: '', quantity: 1, unit_price: 0, discount_type: 'none', discount_value: 0 }])
     setProjectName('')
     setNotes('')
+    setPaymentTerms('')
+    setValidUntil('')
     setCharges(DEFAULT_CHARGES)
   }
 
@@ -67,8 +71,10 @@ export function useQuoteForm() {
       client_id: selectedClient.id,
       project_name: projectName,
       notes: notes,
+      payment_terms: paymentTerms || null,
+      valid_until: validUntil || null,
       included_charges: charges,
-      items: quoteItems
+      items: quoteItems,
     }
   }
 
@@ -78,16 +84,20 @@ export function useQuoteForm() {
     quoteItems,
     projectName,
     notes,
+    paymentTerms,
+    validUntil,
     charges,
     totals,
-    
+
     // Setters
     setSelectedClient,
     setQuoteItems,
     setProjectName,
     setNotes,
+    setPaymentTerms,
+    setValidUntil,
     setCharges,
-    
+
     // Handlers
     handleAddItem,
     handleRemoveItem,

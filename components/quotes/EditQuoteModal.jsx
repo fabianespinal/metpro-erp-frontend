@@ -5,6 +5,8 @@ export default function EditQuoteModal({ isOpen, onClose, quote, onSave, clients
     client_id: '',
     project_name: '',
     notes: '',
+    payment_terms: '',
+    valid_until: '',
     status: 'Draft',
   })
 
@@ -14,6 +16,9 @@ export default function EditQuoteModal({ isOpen, onClose, quote, onSave, clients
         client_id: quote.client_id || '',
         project_name: quote.project_name || '',
         notes: quote.notes || '',
+        payment_terms: quote.payment_terms || '',
+        // valid_until comes back from the API as "YYYY-MM-DD" — the date input needs exactly that format
+        valid_until: quote.valid_until ? quote.valid_until.slice(0, 10) : '',
         status: quote.status || 'Draft',
       })
     }
@@ -24,7 +29,13 @@ export default function EditQuoteModal({ isOpen, onClose, quote, onSave, clients
   const handleSubmit = async (e) => {
     e.preventDefault()
     try {
-      await onSave(quote.quote_id, formData)
+      // Strip empty strings back to null so the backend receives clean data
+      const payload = {
+        ...formData,
+        payment_terms: formData.payment_terms || null,
+        valid_until: formData.valid_until || null,
+      }
+      await onSave(quote.quote_id, payload)
       onClose()
     } catch (error) {
       console.error('Error saving quote:', error)
@@ -94,8 +105,30 @@ export default function EditQuoteModal({ isOpen, onClose, quote, onSave, clients
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               className='w-full border border-gray-300 rounded-lg p-2'
-              rows='4'
-              placeholder='Additional notes or terms'
+              rows='3'
+              placeholder='Additional notes'
+            />
+          </div>
+
+          {/* ── New fields ── */}
+          <div>
+            <label className='block text-sm font-medium mb-2'>Términos de Pago</label>
+            <textarea
+              value={formData.payment_terms}
+              onChange={(e) => setFormData({ ...formData, payment_terms: e.target.value })}
+              className='w-full border border-gray-300 rounded-lg p-2'
+              rows='3'
+              placeholder='Ej: 50% anticipo, 50% contra entrega'
+            />
+          </div>
+
+          <div>
+            <label className='block text-sm font-medium mb-2'>Válida Hasta</label>
+            <input
+              type='date'
+              value={formData.valid_until}
+              onChange={(e) => setFormData({ ...formData, valid_until: e.target.value })}
+              className='w-full border border-gray-300 rounded-lg p-2'
             />
           </div>
 
