@@ -49,26 +49,26 @@ export default function ProductsPage() {
   }
 
   // Update product
-  const handleUpdateProduct = async (e) => {
-    e.preventDefault()
-    setLoading(true)
+const handleUpdateProduct = async (e) => {
+  e.preventDefault()
+  setLoading(true)
 
-    try {
-      await api(`/products/${editingProduct.id}/`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(editingProduct)
-      })
+  try {
+    await api(`/products/${editingProduct.id}`, {   // <-- FIXED: removed trailing slash
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(editingProduct)
+    })
 
-      await fetchProducts()
-      setEditingProduct(null)
-      alert('Product updated successfully!')
-    } catch (error) {
-      alert('Error: ' + error.message)
-    } finally {
-      setLoading(false)
-    }
+    await fetchProducts()
+    setEditingProduct(null)
+    alert('Product updated successfully!')
+  } catch (error) {
+    alert('Error: ' + error.message)
+  } finally {
+    setLoading(false)
   }
+}
 
   // Delete product
   const handleDeleteProduct = async (productId) => {
