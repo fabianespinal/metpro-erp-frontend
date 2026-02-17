@@ -38,7 +38,7 @@ export default function Header() {
                 e.target.style.display = "none";
               }}
             />
-            <span className="text-lg font-semibold text-white">
+            <span className="text-sm font-semibold text-white">
               Home
             </span>
           </Link>
