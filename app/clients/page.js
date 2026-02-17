@@ -120,7 +120,7 @@ export default function ClientsPage() {
   }
 
   return (
-    <div className='p-8 max-w-6xl mx-auto'>
+    <div className="w-full px-4 lg:px-8 py-8">
       <div className='flex justify-between items-center mb-8'>
         <h1 className='text-3xl font-bold text-center flex-1'>METPRO ERP - Clientes</h1>
         <button
