@@ -17,6 +17,13 @@ export default function QuoteForm({
   totals,
   notes,
   setNotes,
+
+  // NEW FIELDS
+  paymentTerms,
+  setPaymentTerms,
+  validUntil,
+  setValidUntil,
+
   onSubmit,
   loading,
   onOpenProductModal
@@ -25,6 +32,7 @@ export default function QuoteForm({
     <div className='bg-white rounded-lg shadow p-6 mb-8'>
       <h2 className='text-xl font-semibold mb-4'>Create New Quote</h2>
       
+      {/* CLIENT SELECT */}
       <div className='mb-4'>
         <label className='block text-sm font-medium mb-2'>Select Client *</label>
         <select
@@ -42,6 +50,7 @@ export default function QuoteForm({
         </select>
       </div>
 
+      {/* PROJECT NAME */}
       <div className='mb-4'>
         <label className='block text-sm font-medium mb-2'>Project Name (optional)</label>
         <input
@@ -53,6 +62,30 @@ export default function QuoteForm({
         />
       </div>
 
+      {/* NEW FIELD: PAYMENT TERMS */}
+      <div className='mb-4'>
+        <label className='block text-sm font-medium mb-2'>Términos de Pago</label>
+        <textarea
+          value={paymentTerms}
+          onChange={(e) => setPaymentTerms(e.target.value)}
+          className='w-full border p-2 rounded'
+          rows='2'
+          placeholder='Ej: 50% anticipo, 50% contra entrega'
+        />
+      </div>
+
+      {/* NEW FIELD: VALID UNTIL */}
+      <div className='mb-4'>
+        <label className='block text-sm font-medium mb-2'>Válida Hasta</label>
+        <input
+          type='date'
+          value={validUntil}
+          onChange={(e) => setValidUntil(e.target.value)}
+          className='w-full border p-2 rounded'
+        />
+      </div>
+
+      {/* QUOTE ITEMS */}
       <div className='mb-4'>
         <label className='block text-sm font-medium mb-2'>Quote Items *</label>
         {quoteItems.map((item, index) => (
@@ -76,10 +109,13 @@ export default function QuoteForm({
         </button>
       </div>
 
+      {/* SURCHARGES */}
       <SurchargeControls charges={charges} setCharges={setCharges} />
 
+      {/* TOTALS */}
       <QuoteTotalsDisplay totals={totals} charges={charges} />
 
+      {/* NOTES */}
       <div className='mb-4 mt-4'>
         <label className='block text-sm font-medium mb-2'>Notes (optional)</label>
         <textarea
@@ -91,6 +127,7 @@ export default function QuoteForm({
         />
       </div>
 
+      {/* SUBMIT BUTTON */}
       <button
         onClick={onSubmit}
         disabled={loading}
