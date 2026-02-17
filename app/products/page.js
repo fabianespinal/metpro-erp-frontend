@@ -114,7 +114,7 @@ const handleUpdateProduct = async (e) => {
   }
 
   return (
-    <div className='p-8 max-w-6xl mx-auto'>
+    <div className="w-full px-4 lg:px-8 py-8">
       <h1 className='text-3xl font-bold mb-8 text-center'>METPRO ERP - Productos</h1>
 
       {/* Import CSV */}

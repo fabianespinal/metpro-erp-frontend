@@ -397,7 +397,7 @@ export default function ProjectsPage() {
   // RENDER
   // ============================================================
   return (
-    <div className='p-6 max-w-7xl mx-auto'>
+    <div className="w-full px-4 lg:px-8 py-6">
       <h1 className='text-2xl font-bold mb-6'>Projects</h1>
 
       {/* ============================================================
