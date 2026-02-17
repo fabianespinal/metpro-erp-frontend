@@ -132,7 +132,7 @@ export default function ReportsPage() {
 
   return (
     <div className="w-full px-4 lg:px-8 py-8">
-      <h1 className='text-3xl font-bold mb-8 text-gray-900'>Reports</h1>
+      <h1 className='text-3xl font-bold mb-8 text-gray-900'>Reportes</h1>
 
       {/* Report Type Selector */}
       <div className="bg-white rounded-lg shadow p-6 mb-6 border border-gray-200">

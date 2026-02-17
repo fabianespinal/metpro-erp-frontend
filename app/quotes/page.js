@@ -256,7 +256,7 @@ export default function QuotesPage() {
 
   return (
     <div className="w-full px-4 lg:px-8 py-6">
-      <h1 className='text-2xl font-bold mb-6'>METPRO ERP - Quotes</h1>
+      <h1 className='text-2xl font-bold mb-6'>Cotizar</h1>
 
       <QuoteForm
         clients={clients}

@@ -398,7 +398,7 @@ export default function ProjectsPage() {
   // ============================================================
   return (
     <div className="w-full px-4 lg:px-8 py-6">
-      <h1 className='text-2xl font-bold mb-6'>Projects</h1>
+      <h1 className='text-2xl font-bold mb-6'>Gestion Proyectos</h1>
 
       {/* ============================================================
            FILTER DROPDOWN (BACKEND-SAFE VALUES)
