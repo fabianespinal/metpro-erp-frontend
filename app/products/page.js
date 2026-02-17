@@ -115,7 +115,7 @@ const handleUpdateProduct = async (e) => {
 
   return (
     <div className="w-full px-4 lg:px-8 py-8">
-      <h1 className='text-3xl font-bold mb-8 text-center'>Productos</h1>
+      <h1 className='text-3xl font-bold mb-8 text-left'>Productos</h1>
 
       {/* Import CSV */}
       <div className='bg-white rounded-lg shadow p-6 mb-8'>

@@ -122,7 +122,7 @@ export default function ClientsPage() {
   return (
     <div className="w-full px-4 lg:px-8 py-8">
       <div className='flex justify-between items-center mb-8'>
-        <h1 className='text-3xl font-bold text-center flex-1'>METPRO ERP - Clientes</h1>
+        <h1 className='text-3xl font-bold text-left flex-1'>Clientes</h1>
         <button
           onClick={() => setImportModalOpen(true)}
           className='bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 shadow-md hover:shadow-lg transition-shadow'
