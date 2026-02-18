@@ -16,11 +16,14 @@ export default function RecordPaymentModal({
   onClose,
   onSuccess,
 }: Props) {
-  const [form, setForm] = useState({
-    amount: "",
-    method: "",
-    notes: "",
-  });
+  const today = new Date().toISOString().split("T")[0];
+
+const [form, setForm] = useState({
+  amount: "",
+  method: "",
+  notes: "",
+  payment_date: today,  // ← added
+});
 
   const [loading, setLoading] = useState(false);
 
@@ -39,11 +42,12 @@ export default function RecordPaymentModal({
         amount: Number(form.amount),
         method: form.method,
         notes: form.notes,
+        payment_date: form.payment_date,  // ← added
       });
 
       setLoading(false);
-      onSuccess(); // refresh invoice
-      onClose();   // close modal
+      onSuccess();
+      onClose();
     } catch (err) {
       console.error("Payment error:", err);
       setLoading(false);
@@ -77,6 +81,18 @@ export default function RecordPaymentModal({
               onChange={handleChange}
               className="border p-2 rounded w-full"
               placeholder="Cash, Transfer, Card"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block mb-1 font-medium">Payment Date</label>
+            <input
+              type="date"
+              name="payment_date"
+              value={form.payment_date}
+              onChange={handleChange}
+              className="border p-2 rounded w-full"
               required
             />
           </div>
