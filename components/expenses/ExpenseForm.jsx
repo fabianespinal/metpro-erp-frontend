@@ -34,11 +34,13 @@ export default function ExpenseForm({ clients, onSubmit, loading }) {
             name="client_id"
             value={form.client_id}
             onChange={handleChange}
-            className="border p-2 rounded w-full"
+            className="border p-2 rounded w-full text-black bg-white"
           >
             <option value="">-- Select Client --</option>
             {clients.map(c => (
-              <option key={c.id} value={c.id}>{c.name}</option>
+              <option key={c.id} value={c.id}>
+                {c.company_name}
+              </option>
             ))}
           </select>
         </div>
