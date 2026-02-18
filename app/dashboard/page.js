@@ -8,10 +8,16 @@ export default function DashboardPage() {
   const [stats, setStats] = useState({
     clients: 0,
     pendingQuotes: 0,
-    openInvoices: 0
+    openInvoices: 0,
+    totalExpenses: 0,
+    monthlyExpenses: 0,
+    revenue: 0,
+    profit: 0
   })
+
   const [recentQuotes, setRecentQuotes] = useState([])
   const [recentInvoices, setRecentInvoices] = useState([])
+  const [recentExpenses, setRecentExpenses] = useState([])
 
   // Load username
   useEffect(() => {
@@ -26,30 +32,39 @@ export default function DashboardPage() {
         const token = localStorage.getItem('token')
         const API = process.env.NEXT_PUBLIC_API_URL
 
-        const [clientsRes, quotesRes, invoicesRes] = await Promise.all([
-          fetch(`${API}/clients`, {
-            headers: { Authorization: `Bearer ${token}` }
-          }),
-          fetch(`${API}/quotes`, {
-            headers: { Authorization: `Bearer ${token}` }
-          }),
-          fetch(`${API}/invoices`, {
-            headers: { Authorization: `Bearer ${token}` }
-          })
+        const [clientsRes, quotesRes, invoicesRes, expensesRes] = await Promise.all([
+          fetch(`${API}/clients`, { headers: { Authorization: `Bearer ${token}` } }),
+          fetch(`${API}/quotes`, { headers: { Authorization: `Bearer ${token}` } }),
+          fetch(`${API}/invoices`, { headers: { Authorization: `Bearer ${token}` } }),
+          fetch(`${API}/expenses`, { headers: { Authorization: `Bearer ${token}` } })
         ])
 
         const clients = await clientsRes.json()
         const quotes = await quotesRes.json()
         const invoices = await invoicesRes.json()
+        const expenses = await expensesRes.json()
 
         // Compute stats
         const activeClients = clients.length
         const pendingQuotes = quotes.filter(
           q => q.status !== 'Approved' && q.status !== 'Invoiced'
         ).length
-        const openInvoices = invoices.filter(
-          inv => inv.status !== 'Paid'
-        ).length
+        const openInvoices = invoices.filter(inv => inv.status !== 'Paid').length
+
+        // Expenses totals
+        const totalExpenses = expenses.reduce((sum, e) => sum + Number(e.amount), 0)
+
+        const currentMonth = new Date().toISOString().slice(0, 7)
+        const monthlyExpenses = expenses
+          .filter(e => e.date.startsWith(currentMonth))
+          .reduce((sum, e) => sum + Number(e.amount), 0)
+
+        // Revenue (paid invoices)
+        const revenue = invoices
+          .filter(inv => inv.status === 'Paid')
+          .reduce((sum, inv) => sum + Number(inv.total_amount || 0), 0)
+
+        const profit = revenue - totalExpenses
 
         // Recent activity
         const lastQuotes = [...quotes]
@@ -60,14 +75,23 @@ export default function DashboardPage() {
           .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
           .slice(0, 5)
 
+        const lastExpenses = [...expenses]
+          .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+          .slice(0, 5)
+
         setStats({
           clients: activeClients,
           pendingQuotes,
-          openInvoices
+          openInvoices,
+          totalExpenses,
+          monthlyExpenses,
+          revenue,
+          profit
         })
 
         setRecentQuotes(lastQuotes)
         setRecentInvoices(lastInvoices)
+        setRecentExpenses(lastExpenses)
 
       } catch (err) {
         console.error('Dashboard load error:', err)
@@ -139,6 +163,18 @@ export default function DashboardPage() {
       )
     },
     {
+      name: 'Expenses',
+      description: 'Registrar y analizar gastos operativos',
+      href: '/expenses',
+      icon: (
+        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+            d="M12 8c-1.657 0-3 1.343-3 3h6c0-1.657-1.343-3-3-3zm0 0V5m0 6v6m0 0h3m-3 0H9"
+          />
+        </svg>
+      )
+    },
+    {
       name: 'Reportes',
       description: 'Ver análisis y reportes',
       href: '/reports',
@@ -151,6 +187,9 @@ export default function DashboardPage() {
       )
     }
   ]
+
+  // Debug log (moved to proper location)
+  console.log("DASHBOARD MODULES:", modules)
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white p-8">
@@ -191,23 +230,54 @@ export default function DashboardPage() {
       </div>
 
       {/* QUICK STATS */}
-      <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="mt-12 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+
         <div className="bg-gray-800/60 border border-gray-700 rounded-xl p-6 shadow-lg">
           <div className="text-sm text-gray-400 mb-1">Clientes Activos</div>
           <div className="text-3xl font-bold">{stats.clients}</div>
         </div>
+
         <div className="bg-gray-800/60 border border-gray-700 rounded-xl p-6 shadow-lg">
           <div className="text-sm text-gray-400 mb-1">Cotizaciones Pendientes</div>
           <div className="text-3xl font-bold">{stats.pendingQuotes}</div>
         </div>
+
         <div className="bg-gray-800/60 border border-gray-700 rounded-xl p-6 shadow-lg">
           <div className="text-sm text-gray-400 mb-1">Facturas Abiertas</div>
           <div className="text-3xl font-bold">{stats.openInvoices}</div>
         </div>
+
+        <div className="bg-gray-800/60 border border-gray-700 rounded-xl p-6 shadow-lg">
+          <div className="text-sm text-gray-400 mb-1">Gastos Totales</div>
+          <div className="text-3xl font-bold">${stats.totalExpenses.toFixed(2)}</div>
+        </div>
+
+      </div>
+
+      {/* FINANCIAL OVERVIEW */}
+      <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+
+        <div className="bg-gray-800/60 border border-gray-700 rounded-xl p-6 shadow-lg">
+          <div className="text-sm text-gray-400 mb-1">Ingresos (Facturas Pagadas)</div>
+          <div className="text-3xl font-bold text-green-400">${stats.revenue.toFixed(2)}</div>
+        </div>
+
+        <div className="bg-gray-800/60 border border-gray-700 rounded-xl p-6 shadow-lg">
+          <div className="text-sm text-gray-400 mb-1">Gastos del Mes</div>
+          <div className="text-3xl font-bold text-yellow-400">${stats.monthlyExpenses.toFixed(2)}</div>
+        </div>
+
+        <div className="bg-gray-800/60 border border-gray-700 rounded-xl p-6 shadow-lg">
+          <div className="text-sm text-gray-400 mb-1">Ganancia Neta</div>
+          <div className={`text-3xl font-bold ${stats.profit >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+            ${stats.profit.toFixed(2)}
+          </div>
+        </div>
+
       </div>
 
       {/* RECENT ACTIVITY */}
-      <div className="mt-12 grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="mt-12 grid grid-cols-1 lg:grid-cols-3 gap-6">
 
         {/* Last 5 Quotes */}
         <div className="bg-gray-800/60 border border-gray-700 rounded-xl p-6 shadow-lg">
@@ -236,6 +306,22 @@ export default function DashboardPage() {
               <li key={inv.id} className="flex justify-between text-sm">
                 <span className="text-gray-300">#{inv.invoice_number} — {inv.client_name}</span>
                 <span className="text-gray-500">{new Date(inv.created_at).toLocaleDateString()}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Last 5 Expenses */}
+        <div className="bg-gray-800/60 border border-gray-700 rounded-xl p-6 shadow-lg">
+          <h2 className="text-xl font-semibold mb-4">Gastos Recientes</h2>
+          {recentExpenses.length === 0 && (
+            <p className="text-gray-400 text-sm">No hay gastos recientes</p>
+          )}
+          <ul className="space-y-3">
+            {recentExpenses.map((exp) => (
+              <li key={exp.expense_id} className="flex justify-between text-sm">
+                <span className="text-gray-300">{exp.category} — ${Number(exp.amount).toFixed(2)}</span>
+                <span className="text-gray-500">{new Date(exp.created_at).toLocaleDateString()}</span>
               </li>
             ))}
           </ul>
