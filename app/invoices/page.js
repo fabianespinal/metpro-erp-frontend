@@ -3,11 +3,15 @@
 import { useState, useEffect } from 'react'
 import { api } from "@/lib/api"
 import StatusPill from '@/components/ui/StatusPill'
+import RecordPaymentModal from '@/components/invoices/RecordPaymentModal'
 
 export default function InvoicesPage() {
   const [invoices, setInvoices] = useState([])
   const [loading, setLoading] = useState(true)
   const [statusFilter, setStatusFilter] = useState('all')
+
+  const [paymentOpen, setPaymentOpen] = useState(false)
+  const [selectedInvoiceId, setSelectedInvoiceId] = useState(null)
 
   const filteredInvoices =
     statusFilter === 'all'
@@ -140,6 +144,11 @@ export default function InvoicesPage() {
     }
   }
 
+  const openPaymentModal = (invoiceId) => {
+    setSelectedInvoiceId(invoiceId)
+    setPaymentOpen(true)
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -168,6 +177,8 @@ export default function InvoicesPage() {
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cliente</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha</th>
                 <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Total</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Pagado</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Pendiente</th>
                 <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Estado</th>
                 <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Acciones</th>
               </tr>
@@ -182,6 +193,14 @@ export default function InvoicesPage() {
 
                   <td className="px-4 py-3 text-right font-bold">
                     ${ (inv.total_amount ?? 0).toFixed(2) }
+                  </td>
+
+                  <td className="px-4 py-3 text-right">
+                    ${ (inv.amount_paid ?? 0).toFixed(2) }
+                  </td>
+
+                  <td className="px-4 py-3 text-right">
+                    ${ (inv.amount_due ?? ((inv.total_amount ?? 0) - (inv.amount_paid ?? 0))).toFixed(2) }
                   </td>
 
                   <td className="px-4 py-3 text-center">
@@ -203,6 +222,13 @@ export default function InvoicesPage() {
                       Conduce
                     </button>
 
+                    <button
+                      onClick={() => openPaymentModal(inv.id)}
+                      className="text-purple-600 hover:underline"
+                    >
+                      Pago
+                    </button>
+
                     <select
                       className="border rounded px-2 py-1 text-sm"
                       value={inv.status}
@@ -221,6 +247,15 @@ export default function InvoicesPage() {
         </div>
 
       </div>
+
+      {selectedInvoiceId && (
+        <RecordPaymentModal
+          invoiceId={selectedInvoiceId}
+          open={paymentOpen}
+          onClose={() => setPaymentOpen(false)}
+          onSuccess={fetchInvoices}
+        />
+      )}
     </div>
   )
 }
