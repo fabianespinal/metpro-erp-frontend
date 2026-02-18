@@ -6,11 +6,31 @@ import { fetchInvoiceWithPayments } from "@/lib/invoiceApi";
 import RecordPaymentModal from "@/components/invoices/RecordPaymentModal";
 import StatusPill from "@/components/ui/StatusPill";
 
+interface Payment {
+  id: number;
+  amount: number;
+  method: string;
+  notes: string | null;
+  payment_date: string;
+}
+
+interface Invoice {
+  id: number;
+  invoice_number: string;
+  client_name: string;
+  invoice_date: string;
+  status: string;
+  total_amount: number;
+  amount_paid: number;
+  amount_due: number;
+  payments: Payment[];
+}
+
 export default function InvoiceDetailPage() {
   const { id } = useParams();
   const invoiceId = Number(id);
 
-  const [invoice, setInvoice] = useState(null);
+  const [invoice, setInvoice] = useState<Invoice | null>(null);
   const [loading, setLoading] = useState(true);
 
   const [paymentOpen, setPaymentOpen] = useState(false);
@@ -18,7 +38,7 @@ export default function InvoiceDetailPage() {
   const loadInvoice = async () => {
     try {
       const data = await fetchInvoiceWithPayments(invoiceId);
-      setInvoice(data);
+      setInvoice(data as Invoice);
     } catch (err) {
       console.error("Error loading invoice:", err);
     } finally {
