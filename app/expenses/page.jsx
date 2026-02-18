@@ -21,19 +21,38 @@ export default function ExpensesPage() {
 
   async function loadClients() {
     try {
-      const data = await api("/clients/", { method: "GET" });
+      const token = localStorage.getItem("token");
+
+      const data = await api("/clients/", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + token
+        }
+      });
+
       setClients(Array.isArray(data) ? data : []);
-    } catch {
+    } catch (err) {
+      console.error("Error loading clients:", err);
       setClients([]);
     }
   }
 
   async function loadExpenses() {
     try {
-      const data = await fetchExpenses();
+      const token = localStorage.getItem("token");
+
+      const data = await fetchExpenses({
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + token
+        }
+      });
+
       setExpenses(Array.isArray(data) ? data : []);
       setFiltered(Array.isArray(data) ? data : []);
-    } catch {
+    } catch (err) {
+      console.error("Error loading expenses:", err);
       setExpenses([]);
       setFiltered([]);
     }
@@ -68,7 +87,15 @@ export default function ExpensesPage() {
   async function handleCreateExpense(formData) {
     setLoading(true);
     try {
-      await createExpense(formData);
+      const token = localStorage.getItem("token");
+
+      await createExpense(formData, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + token
+        }
+      });
+
       loadExpenses();
       alert("Expense added successfully!");
     } catch (e) {
@@ -80,8 +107,17 @@ export default function ExpensesPage() {
 
   async function handleDeleteExpense(id) {
     if (!confirm("Delete this expense?")) return;
+
     try {
-      await deleteExpense(id);
+      const token = localStorage.getItem("token");
+
+      await deleteExpense(id, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + token
+        }
+      });
+
       loadExpenses();
     } catch (e) {
       alert("Error deleting expense: " + e.message);
