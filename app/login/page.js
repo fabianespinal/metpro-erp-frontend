@@ -16,33 +16,23 @@ export default function LoginPage() {
   const router = useRouter()
   const lastAttemptRef = useRef(0)
 
-  // Auto-fill username if remembered
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const savedUser = localStorage.getItem("remember_username")
-      if (savedUser) {
-        setUsername(savedUser)
-        setRememberMe(true)
-      }
+    const saved = localStorage.getItem("remember_username")
+    if (saved) {
+      setUsername(saved)
+      setRememberMe(true)
     }
   }, [])
 
-  // Redirect if already logged in
   useEffect(() => {
-    const token = typeof window !== "undefined"
-      ? localStorage.getItem('token')
-      : null
-
-    if (token) {
-      router.push('/dashboard')
-    }
+    const token = localStorage.getItem("token")
+    if (token) router.push('/dashboard')
   }, [router])
 
   const handleLogin = async (e) => {
     e.preventDefault()
     setError('')
 
-    // Rate-limit: 1 attempt every 2 seconds
     const now = Date.now()
     if (now - lastAttemptRef.current < 2000) {
       setError("Please wait a moment before trying again.")
@@ -53,44 +43,37 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
-      const data = await api("/auth/login", {
-        method: "POST",
-        body: JSON.stringify({
-          username: username.trim(),
-          password: password.trim()
-        })
+      const data = await api.post("/auth/login", {
+        username: username.trim(),
+        password: password.trim(),
       })
 
-      if (typeof window !== "undefined") {
-        localStorage.setItem("token", data.access_token)
+      localStorage.setItem("token", data.access_token)
 
-        // Save username only if "Remember me" is checked
-        if (rememberMe) {
-          localStorage.setItem("remember_username", username.trim())
-        } else {
-          localStorage.removeItem("remember_username")
-        }
+      if (rememberMe) {
+        localStorage.setItem("remember_username", username.trim())
+      } else {
+        localStorage.removeItem("remember_username")
       }
 
-      // Toast (if available globally)
-      if (typeof window !== "undefined" && window.toast) {
+      if (window.toast) {
         window.toast("Login successful!", {
           title: "Welcome back",
-          description: `Logged in as ${username}`
+          description: `Logged in as ${username}`,
         })
       }
 
       router.push("/dashboard")
       return
 
-    } catch (error) {
-      console.error("Login error:", error)
-      setError(error.message)
+    } catch (err) {
+      console.error("Login error:", err)
+      setError(err.message)
 
-      if (typeof window !== "undefined" && window.toast) {
+      if (window.toast) {
         window.toast("Login failed", {
           title: "Error",
-          description: error.message
+          description: err.message,
         })
       }
 
@@ -101,13 +84,10 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black flex items-center justify-center px-4 relative">
-
       <form
         onSubmit={handleLogin}
         className="bg-gray-800/60 backdrop-blur-xl p-8 rounded-xl shadow-xl w-full max-w-md border border-gray-700"
       >
-
-        {/* LOGO */}
         <div className="flex flex-col items-center mb-6">
           <img
             src="/logo.png"
@@ -126,7 +106,6 @@ export default function LoginPage() {
           </div>
         )}
 
-        {/* Username */}
         <label className="block text-gray-300 text-sm mb-1">Username</label>
         <input
           type="text"
@@ -136,7 +115,6 @@ export default function LoginPage() {
           required
         />
 
-        {/* Password */}
         <label className="block text-gray-300 text-sm mb-1">Password</label>
         <div className="relative mb-4">
           <input
@@ -155,7 +133,6 @@ export default function LoginPage() {
           </button>
         </div>
 
-        {/* Remember Me */}
         <label className="flex items-center gap-2 text-gray-300 text-sm mb-4">
           <input
             type="checkbox"
@@ -165,7 +142,6 @@ export default function LoginPage() {
           Remember me
         </label>
 
-        {/* Login Button */}
         <button
           type="submit"
           disabled={loading}
