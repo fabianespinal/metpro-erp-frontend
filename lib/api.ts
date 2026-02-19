@@ -1,6 +1,6 @@
 "use client";
 
-async function request(endpoint: string, options: RequestInit = {}) {
+export async function api(endpoint: string, options: RequestInit = {}) {
   const rawBase = process.env.NEXT_PUBLIC_API_URL;
   if (!rawBase) throw new Error("Backend URL missing");
 
@@ -37,22 +37,21 @@ async function request(endpoint: string, options: RequestInit = {}) {
   return res.json().catch(() => null);
 }
 
-export const api = {
-  get: (endpoint: string) =>
-    request(endpoint, { method: "GET" }),
+// Keep these helpers so invoiceApi.ts and others don't break
+api.get = (endpoint: string) =>
+  api(endpoint, { method: "GET" });
 
-  post: (endpoint: string, data?: any) =>
-    request(endpoint, {
-      method: "POST",
-      body: data instanceof FormData ? data : JSON.stringify(data),
-    }),
+api.post = (endpoint: string, data?: any) =>
+  api(endpoint, {
+    method: "POST",
+    body: data instanceof FormData ? data : JSON.stringify(data),
+  });
 
-  put: (endpoint: string, data?: any) =>
-    request(endpoint, {
-      method: "PUT",
-      body: data instanceof FormData ? data : JSON.stringify(data),
-    }),
+api.put = (endpoint: string, data?: any) =>
+  api(endpoint, {
+    method: "PUT",
+    body: data instanceof FormData ? data : JSON.stringify(data),
+  });
 
-  delete: (endpoint: string) =>
-    request(endpoint, { method: "DELETE" }),
-};
+api.delete = (endpoint: string) =>
+  api(endpoint, { method: "DELETE" });
