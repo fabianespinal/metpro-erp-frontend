@@ -1,8 +1,8 @@
-'use client'
+'use client';
+
 import { useState, useEffect } from "react";
 import ExpenseForm from "@/components/expenses/ExpenseForm";
 import ExpensesTable from "@/components/expenses/ExpensesTable";
-import { fetchExpenses, createExpense, deleteExpense } from "@/components/expenses/expenseApi";
 import { api } from "@/lib/api";
 import ExpensesFilters from "@/components/expenses/ExpensesFilters";
 import ExpensesSummary from "@/components/expenses/ExpensesSummary";
@@ -19,18 +19,12 @@ export default function ExpensesPage() {
     loadExpenses();
   }, []);
 
+  // -----------------------------
+  // LOAD CLIENTS
+  // -----------------------------
   async function loadClients() {
     try {
-      const token = localStorage.getItem("token");
-
-      const data = await api("/clients/", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "Bearer " + token
-        }
-      });
-
+      const data = await api.get("/clients");
       setClients(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error("Error loading clients:", err);
@@ -38,17 +32,12 @@ export default function ExpensesPage() {
     }
   }
 
+  // -----------------------------
+  // LOAD EXPENSES
+  // -----------------------------
   async function loadExpenses() {
     try {
-      const token = localStorage.getItem("token");
-
-      const data = await fetchExpenses({
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "Bearer " + token
-        }
-      });
-
+      const data = await api.get("/expenses");
       setExpenses(Array.isArray(data) ? data : []);
       setFiltered(Array.isArray(data) ? data : []);
     } catch (err) {
@@ -58,11 +47,16 @@ export default function ExpensesPage() {
     }
   }
 
+  // -----------------------------
+  // FILTER LOGIC
+  // -----------------------------
   function applyFilters(filters) {
     let result = [...expenses];
 
     if (filters.category) {
-      result = result.filter(e => e.category.toLowerCase() === filters.category.toLowerCase());
+      result = result.filter(
+        e => e.category.toLowerCase() === filters.category.toLowerCase()
+      );
     }
 
     if (filters.dateFrom) {
@@ -74,29 +68,28 @@ export default function ExpensesPage() {
     }
 
     if (filters.projectId) {
-      result = result.filter(e => (e.project_id || "").toLowerCase() === filters.projectId.toLowerCase());
+      result = result.filter(
+        e => (e.project_id || "").toLowerCase() === filters.projectId.toLowerCase()
+      );
     }
 
     if (filters.quoteId) {
-      result = result.filter(e => (e.quote_id || "").toLowerCase() === filters.quoteId.toLowerCase());
+      result = result.filter(
+        e => (e.quote_id || "").toLowerCase() === filters.quoteId.toLowerCase()
+      );
     }
 
     setFiltered(result);
   }
 
+  // -----------------------------
+  // CREATE EXPENSE
+  // -----------------------------
   async function handleCreateExpense(formData) {
     setLoading(true);
     try {
-      const token = localStorage.getItem("token");
-
-      await createExpense(formData, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "Bearer " + token
-        }
-      });
-
-      loadExpenses();
+      await api.post("/expenses", formData);
+      await loadExpenses();
       alert("Expense added successfully!");
     } catch (e) {
       alert("Error creating expense: " + e.message);
@@ -105,32 +98,31 @@ export default function ExpensesPage() {
     }
   }
 
+  // -----------------------------
+  // DELETE EXPENSE
+  // -----------------------------
   async function handleDeleteExpense(id) {
     if (!confirm("Delete this expense?")) return;
 
     try {
-      const token = localStorage.getItem("token");
-
-      await deleteExpense(id, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "Bearer " + token
-        }
-      });
-
-      loadExpenses();
+      await api.delete(`/expenses/${id}`);
+      await loadExpenses();
     } catch (e) {
       alert("Error deleting expense: " + e.message);
     }
   }
 
+  // -----------------------------
+  // EXPORT CSV
+  // -----------------------------
   function exportExpensesCSV(expensesToExport) {
     if (!expensesToExport || expensesToExport.length === 0) {
       alert("No expenses to export");
       return;
     }
 
-    let csv = "Date,Client ID,Category,Description,Amount,Payment Method,Project ID,Quote ID\n";
+    let csv =
+      "Date,Client ID,Category,Description,Amount,Payment Method,Project ID,Quote ID\n";
 
     expensesToExport.forEach(exp => {
       csv += [

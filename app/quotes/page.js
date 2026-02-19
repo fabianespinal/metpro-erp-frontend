@@ -44,14 +44,14 @@ export default function QuotesPage() {
   }, [])
 
   async function fetchClients() {
-    try {
-      const data = await api("/clients/", { method: "GET" })
-      setClients(Array.isArray(data) ? data : [])
-    } catch (error) {
-      console.error('Failed to fetch clients:', error)
-      setClients([])
-    }
+  try {
+    const data = await api.get("/clients");
+    setClients(Array.isArray(data) ? data : []);
+  } catch (error) {
+    console.error("Failed to fetch clients:", error);
+    setClients([]);
   }
+}
 
   async function fetchQuotes() {
     try {
