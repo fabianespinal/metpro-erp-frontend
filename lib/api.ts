@@ -1,43 +1,35 @@
 "use client";
 
-export async function api(
-  endpoint: string,
-  options: RequestInit = {}
-): Promise<unknown> {
+async function request(endpoint: string, options: RequestInit = {}) {
   const rawBase = process.env.NEXT_PUBLIC_API_URL;
   if (!rawBase) throw new Error("Backend URL missing");
 
   const BASE_URL = rawBase.replace(/\/+$/, "");
 
-  // Always get token
   const token =
     typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
-  // Merge headers correctly
   const incomingHeaders = (options.headers as Record<string, string>) || {};
 
   const headers: Record<string, string> = {
     ...incomingHeaders,
   };
 
-  // Attach token
   if (token) {
     headers["Authorization"] = `Bearer ${token}`;
   }
 
-  // Only set JSON content-type if not FormData
   const isFormData = options.body instanceof FormData;
   if (!isFormData && !incomingHeaders["Content-Type"]) {
     headers["Content-Type"] = "application/json";
   }
 
-  // IMPORTANT: options must be spread BEFORE headers
   const res = await fetch(`${BASE_URL}${endpoint}`, {
     method: options.method || "GET",
     body: options.body || null,
     cache: "no-store",
     mode: "cors",
-    headers, // headers LAST so nothing overwrites them
+    headers,
   });
 
   if (!res.ok) {
@@ -47,3 +39,23 @@ export async function api(
 
   return res.json().catch(() => null);
 }
+
+export const api = {
+  get: (endpoint: string) =>
+    request(endpoint, { method: "GET" }),
+
+  post: (endpoint: string, data?: any) =>
+    request(endpoint, {
+      method: "POST",
+      body: data instanceof FormData ? data : JSON.stringify(data),
+    }),
+
+  put: (endpoint: string, data?: any) =>
+    request(endpoint, {
+      method: "PUT",
+      body: data instanceof FormData ? data : JSON.stringify(data),
+    }),
+
+  delete: (endpoint: string) =>
+    request(endpoint, { method: "DELETE" }),
+};
