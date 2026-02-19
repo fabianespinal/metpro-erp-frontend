@@ -2,7 +2,6 @@
 
 import { useParams } from "next/navigation";
 import { useState } from "react";
-import { useContacts } from "../../../hooks/useContacts";
 import ContactsList from "../../../components/contacts/ContactsList";
 import ContactModal from "../../../components/contacts/ContactModal";
 
