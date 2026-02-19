@@ -1,4 +1,4 @@
-'use client'
+"use client";
 export const dynamic = "force-dynamic";
 
 import { useState, useEffect } from 'react'
@@ -36,19 +36,19 @@ export default function ClientsPage() {
   }, [])
 
   const fetchClients = async () => {
-    try {
-      const data = await api('/clients/', { method: 'GET' })
-      setClients(Array.isArray(data) ? data : [])
-    } catch (error) {
-      console.error("Failed to fetch clients:", error)
-      setClients([])
-      if (error.message.includes('401') || error.message.includes('unauthorized')) {
-        alert("Session expired. Please login again.")
-      } else {
-        alert("Error loading clients. Please try again.")
-      }
+  try {
+    const data = await api.get("/clients");
+    setClients(Array.isArray(data) ? data : []);
+  } catch (error) {
+    console.error("Failed to fetch clients:", error);
+    setClients([]);
+    if (error.message.includes("401") || error.message.includes("unauthorized")) {
+      alert("Session expired. Please login again.");
+    } else {
+      alert("Error loading clients. Please try again.");
     }
   }
+};
 
   const handleCreateClient = async (e) => {
     e.preventDefault()
