@@ -1,164 +1,133 @@
-import SurchargeControls from './SurchargeControls'
-import QuoteItemRow from './QuoteItemRow'
-import QuoteTotalsDisplay from './QuoteTotalsDisplay'
+import { useState, useEffect } from 'react'
+import { DEFAULT_CHARGES, calculateQuoteTotals } from './quoteUtils'
+import { api } from '@/lib/api'
 
-export default function QuoteForm({ 
-  clients,
-  selectedClient,
-  setSelectedClient,
-  selectedContact,
-  setSelectedContact,
-  contacts,
-  projectName,
-  setProjectName,
-  quoteItems,
-  handleAddItem,
-  handleRemoveItem,
-  handleItemChange,
-  charges,
-  setCharges,
-  totals,
-  notes,
-  setNotes,
-  paymentTerms,
-  setPaymentTerms,
-  validUntil,
-  setValidUntil,
-  onSubmit,
-  loading,
-  onOpenProductModal
-}) {
-  return (
-    <div className='bg-white rounded-lg shadow p-6 mb-8'>
-      <h2 className='text-xl font-semibold mb-4'>Create New Quote</h2>
-      
-      {/* COMPANY SELECT */}
-      <div className='mb-4'>
-        <label className='block text-sm font-medium mb-2'>Select Company *</label>
-        <select
-          value={selectedClient ? selectedClient.id : ''}
-          onChange={(e) => setSelectedClient(clients.find(c => c.id == e.target.value) || null)}
-          className='w-full border p-2 rounded'
-          required
-        >
-          <option value=''>-- Select Company --</option>
-          {clients.map(client => (
-            <option key={client.id} value={client.id}>
-              {client.company_name}
-            </option>
-          ))}
-        </select>
-      </div>
+export function useQuoteForm() {
+  const [selectedClient, setSelectedClient] = useState(null)
+  const [selectedContact, setSelectedContact] = useState(null)
+  const [contacts, setContacts] = useState([])
+  const [quoteItems, setQuoteItems] = useState([
+    { product_name: '', quantity: 1, unit_price: 0, discount_type: 'none', discount_value: 0 }
+  ])
+  const [projectName, setProjectName] = useState('')
+  const [notes, setNotes] = useState('')
+  const [paymentTerms, setPaymentTerms] = useState('')
+  const [validUntil, setValidUntil] = useState('')
+  const [charges, setCharges] = useState(DEFAULT_CHARGES)
+  const [totals, setTotals] = useState(null)
 
-      {/* CONTACT SELECT — only shows if company is selected */}
-      {selectedClient && (
-        <div className='mb-4'>
-          <label className='block text-sm font-medium mb-2'>Select Contact (optional)</label>
-          {contacts.length === 0 ? (
-            <p className='text-sm text-gray-500 border p-2 rounded bg-gray-50'>
-              No contacts found for this company.{' '}
-              <a href={`/clients/${selectedClient.id}/contacts`} className='text-blue-600 underline'>
-                Add one here
-              </a>
-            </p>
-          ) : (
-            <select
-              value={selectedContact ? selectedContact.id : ''}
-              onChange={(e) => setSelectedContact(contacts.find(c => c.id == e.target.value) || null)}
-              className='w-full border p-2 rounded'
-            >
-              <option value=''>-- No specific contact --</option>
-              {contacts.map(contact => (
-                <option key={contact.id} value={contact.id}>
-                  {contact.name}{contact.email ? ` — ${contact.email}` : ''}{contact.phone ? ` — ${contact.phone}` : ''}
-                </option>
-              ))}
-            </select>
-          )}
-        </div>
-      )}
+  useEffect(() => {
+    const newTotals = calculateQuoteTotals(quoteItems, charges)
+    setTotals(newTotals)
+  }, [quoteItems, charges])
 
-      {/* PROJECT NAME */}
-      <div className='mb-4'>
-        <label className='block text-sm font-medium mb-2'>Project Name (optional)</label>
-        <input
-          type='text'
-          value={projectName}
-          onChange={(e) => setProjectName(e.target.value)}
-          className='w-full border p-2 rounded'
-          placeholder='Enter project name'
-        />
-      </div>
+  useEffect(() => {
+    if (!selectedClient) {
+      setContacts([])
+      setSelectedContact(null)
+      return
+    }
+    async function loadContacts() {
+      try {
+        const data = await api.get(`/contacts/company/${selectedClient.id}`)
+        setContacts(Array.isArray(data) ? data : [])
+        setSelectedContact(null)
+      } catch (err) {
+        console.error('Error loading contacts:', err)
+        setContacts([])
+      }
+    }
+    loadContacts()
+  }, [selectedClient])
 
-      {/* PAYMENT TERMS */}
-      <div className='mb-4'>
-        <label className='block text-sm font-medium mb-2'>Términos de Pago</label>
-        <textarea
-          value={paymentTerms}
-          onChange={(e) => setPaymentTerms(e.target.value)}
-          className='w-full border p-2 rounded'
-          rows='2'
-          placeholder='Ej: 50% anticipo, 50% contra entrega'
-        />
-      </div>
+  const handleAddItem = () => {
+    setQuoteItems([...quoteItems, {
+      product_name: '',
+      quantity: 1,
+      unit_price: 0,
+      discount_type: 'none',
+      discount_value: 0
+    }])
+  }
 
-      {/* VALID UNTIL */}
-      <div className='mb-4'>
-        <label className='block text-sm font-medium mb-2'>Válida Hasta</label>
-        <input
-          type='date'
-          value={validUntil}
-          onChange={(e) => setValidUntil(e.target.value)}
-          className='w-full border p-2 rounded'
-        />
-      </div>
+  const handleRemoveItem = (index) => {
+    const newItems = [...quoteItems]
+    newItems.splice(index, 1)
+    setQuoteItems(newItems)
+  }
 
-      {/* QUOTE ITEMS */}
-      <div className='mb-4'>
-        <label className='block text-sm font-medium mb-2'>Quote Items *</label>
-        {quoteItems.map((item, index) => (
-          <QuoteItemRow
-            key={index}
-            item={item}
-            index={index}
-            onRemove={handleRemoveItem}
-            onChange={handleItemChange}
-            onOpenProductModal={onOpenProductModal}
-            showRemove={quoteItems.length > 1}
-          />
-        ))}
-        
-        <button
-          type='button'
-          onClick={handleAddItem}
-          className='w-full bg-blue-100 text-blue-700 py-2 rounded hover:bg-blue-200'
-        >
-          + Add Item
-        </button>
-      </div>
+  const handleItemChange = (index, field, value) => {
+    const newItems = [...quoteItems]
+    newItems[index][field] = value
+    setQuoteItems(newItems)
+  }
 
-      <SurchargeControls charges={charges} setCharges={setCharges} />
-      <QuoteTotalsDisplay totals={totals} charges={charges} />
+  const selectProduct = (product, itemIndex) => {
+    if (itemIndex !== null) {
+      const newItems = [...quoteItems]
+      newItems[itemIndex].product_name = product.name
+      newItems[itemIndex].unit_price = parseFloat(product.unit_price) || 0
+      setQuoteItems(newItems)
+    }
+  }
 
-      {/* NOTES */}
-      <div className='mb-4 mt-4'>
-        <label className='block text-sm font-medium mb-2'>Notes (optional)</label>
-        <textarea
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-          className='w-full border p-2 rounded'
-          rows='3'
-          placeholder='Any additional notes or terms'
-        />
-      </div>
+  const resetForm = () => {
+    setSelectedClient(null)
+    setSelectedContact(null)
+    setContacts([])
+    setQuoteItems([{ product_name: '', quantity: 1, unit_price: 0, discount_type: 'none', discount_value: 0 }])
+    setProjectName('')
+    setNotes('')
+    setPaymentTerms('')
+    setValidUntil('')
+    setCharges(DEFAULT_CHARGES)
+  }
 
-      <button
-        onClick={onSubmit}
-        disabled={loading}
-        className='w-full bg-blue-600 text-white py-3 rounded hover:bg-blue-700 disabled:bg-gray-400'
-      >
-        {loading ? 'Creating...' : 'Create Quote'}
-      </button>
-    </div>
-  )
+  const getFormData = () => {
+    if (!selectedClient) {
+      throw new Error('Please select a client')
+    }
+    if (quoteItems.length === 0 || !quoteItems[0].product_name) {
+      throw new Error('Please add at least one product')
+    }
+    return {
+      client_id: selectedClient.id,
+      contact_id: selectedContact ? selectedContact.id : null,
+      project_name: projectName,
+      notes: notes,
+      payment_terms: paymentTerms || null,
+      valid_until: validUntil || null,
+      included_charges: charges,
+      items: quoteItems,
+    }
+  }
+
+  return {
+    selectedClient,
+    selectedContact,
+    contacts,
+    quoteItems,
+    projectName,
+    notes,
+    paymentTerms,
+    validUntil,
+    charges,
+    totals,
+
+    setSelectedClient,
+    setSelectedContact,
+    setQuoteItems,
+    setProjectName,
+    setNotes,
+    setPaymentTerms,
+    setValidUntil,
+    setCharges,
+
+    handleAddItem,
+    handleRemoveItem,
+    handleItemChange,
+    selectProduct,
+    resetForm,
+    getFormData,
+  }
 }

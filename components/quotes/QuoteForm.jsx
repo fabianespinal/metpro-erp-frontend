@@ -6,6 +6,9 @@ export default function QuoteForm({
   clients,
   selectedClient,
   setSelectedClient,
+  selectedContact,
+  setSelectedContact,
+  contacts,
   projectName,
   setProjectName,
   quoteItems,
@@ -17,13 +20,10 @@ export default function QuoteForm({
   totals,
   notes,
   setNotes,
-
-  // NEW FIELDS
   paymentTerms,
   setPaymentTerms,
   validUntil,
   setValidUntil,
-
   onSubmit,
   loading,
   onOpenProductModal
@@ -32,12 +32,12 @@ export default function QuoteForm({
     <div className='bg-white rounded-lg shadow p-6 mb-8'>
       <h2 className='text-xl font-semibold mb-4'>Create New Quote</h2>
       
-      {/* CLIENT SELECT */}
+      {/* COMPANY SELECT */}
       <div className='mb-4'>
         <label className='block text-sm font-medium mb-2'>Select Client *</label>
         <select
           value={selectedClient ? selectedClient.id : ''}
-          onChange={(e) => setSelectedClient(clients.find(c => c.id == e.target.value))}
+          onChange={(e) => setSelectedClient(clients.find(c => c.id == e.target.value) || null)}
           className='w-full border p-2 rounded'
           required
         >
@@ -49,6 +49,34 @@ export default function QuoteForm({
           ))}
         </select>
       </div>
+
+      {/* CONTACT SELECT — only shows after company is picked */}
+      {selectedClient && (
+        <div className='mb-4'>
+          <label className='block text-sm font-medium mb-2'>Select Contact (optional)</label>
+          {contacts.length === 0 ? (
+            <p className='text-sm text-gray-500 border p-2 rounded bg-gray-50'>
+              No contacts found for this company.{' '}
+              <a href={`/clients/${selectedClient.id}/contacts`} className='text-blue-600 underline'>
+                Add one here
+              </a>
+            </p>
+          ) : (
+            <select
+              value={selectedContact ? selectedContact.id : ''}
+              onChange={(e) => setSelectedContact(contacts.find(c => c.id == e.target.value) || null)}
+              className='w-full border p-2 rounded'
+            >
+              <option value=''>-- No specific contact --</option>
+              {contacts.map(contact => (
+                <option key={contact.id} value={contact.id}>
+                  {contact.name}{contact.email ? ` — ${contact.email}` : ''}{contact.phone ? ` — ${contact.phone}` : ''}
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
+      )}
 
       {/* PROJECT NAME */}
       <div className='mb-4'>
@@ -62,7 +90,7 @@ export default function QuoteForm({
         />
       </div>
 
-      {/* NEW FIELD: PAYMENT TERMS */}
+      {/* PAYMENT TERMS */}
       <div className='mb-4'>
         <label className='block text-sm font-medium mb-2'>Términos de Pago</label>
         <textarea
@@ -74,7 +102,7 @@ export default function QuoteForm({
         />
       </div>
 
-      {/* NEW FIELD: VALID UNTIL */}
+      {/* VALID UNTIL */}
       <div className='mb-4'>
         <label className='block text-sm font-medium mb-2'>Válida Hasta</label>
         <input
