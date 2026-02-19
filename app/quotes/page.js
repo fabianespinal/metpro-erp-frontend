@@ -262,6 +262,9 @@ export default function QuotesPage() {
         clients={clients}
         selectedClient={quoteForm.selectedClient}
         setSelectedClient={quoteForm.setSelectedClient}
+        selectedContact={quoteForm.selectedContact}
+        setSelectedContact={quoteForm.setSelectedContact}
+        contacts={quoteForm.contacts}
         projectName={quoteForm.projectName}
         setProjectName={quoteForm.setProjectName}
         quoteItems={quoteForm.quoteItems}
