@@ -56,10 +56,11 @@ export default function QuoteForm({
           <label className='block text-sm font-medium mb-2'>Select Contact (optional)</label>
           {contacts.length === 0 ? (
             <p className='text-sm text-gray-500 border p-2 rounded bg-gray-50'>
-              No contacts found for this company.{' '}
-              <a href={`/clients/${selectedClient.id}/contacts`} className='text-blue-600 underline'>
-                Add one here
+              No contacts found for this company. Add contacts from the{' '}
+              <a href='/clients' className='text-blue-600 underline'>
+                Clients page
               </a>
+              .
             </p>
           ) : (
             <select
