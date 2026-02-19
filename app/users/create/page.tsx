@@ -15,14 +15,8 @@ export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-
-    api("/users", {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
+    api
+      .get("/users")
       .then((data) => setUsers(data as User[]))
       .catch((err) => console.error("Fetch users error:", err));
   }, []);

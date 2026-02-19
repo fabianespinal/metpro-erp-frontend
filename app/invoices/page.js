@@ -1,152 +1,124 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { api } from "@/lib/api"
-import StatusPill from '@/components/ui/StatusPill'
-import RecordPaymentModal from '@/components/invoices/RecordPaymentModal'
+import { useState, useEffect } from "react";
+import { api } from "@/lib/api";
+import StatusPill from "@/components/ui/StatusPill";
+import RecordPaymentModal from "@/components/invoices/RecordPaymentModal";
 
 export default function InvoicesPage() {
-  const [invoices, setInvoices] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [statusFilter, setStatusFilter] = useState('all')
+  const [invoices, setInvoices] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [statusFilter, setStatusFilter] = useState("all");
 
-  const [paymentOpen, setPaymentOpen] = useState(false)
-  const [selectedInvoiceId, setSelectedInvoiceId] = useState(null)
+  const [paymentOpen, setPaymentOpen] = useState(false);
+  const [selectedInvoiceId, setSelectedInvoiceId] = useState(null);
 
   const filteredInvoices =
-    statusFilter === 'all'
+    statusFilter === "all"
       ? invoices
-      : invoices.filter(inv => inv.status === statusFilter)
+      : invoices.filter((inv) => inv.status === statusFilter);
 
-  const fetchInvoices = async () => {
+  async function fetchInvoices() {
     try {
-      const token = localStorage.getItem("token")
-
-      if (!token) {
-        console.error("No token found")
-        setInvoices([])
-        setLoading(false)
-        return
-      }
-
-      const data = await api("/invoices/", {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-
-      setInvoices(Array.isArray(data) ? data : [])
+      const data = await api.get("/invoices/");
+      setInvoices(Array.isArray(data) ? data : []);
     } catch (error) {
-      console.error('Failed to fetch invoices:', error)
-      setInvoices([])
+      console.error("Failed to fetch invoices:", error);
+      setInvoices([]);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
 
   useEffect(() => {
-    fetchInvoices()
-  }, [])
+    fetchInvoices();
+  }, []);
 
-  const handleDownloadPDF = async (invoiceId, invoiceNumber) => {
+  async function handleDownloadPDF(invoiceId, invoiceNumber) {
     try {
-      const token = localStorage.getItem("token")
+      const token = localStorage.getItem("token");
 
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/pdf/invoices/${invoiceId}`,
         {
           method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         }
-      )
+      );
 
-      if (!response.ok) {
-        throw new Error(`PDF download failed: ${response.status}`)
-      }
+      if (!response.ok) throw new Error(`PDF download failed: ${response.status}`);
 
-      const blob = await response.blob()
-      const url = window.URL.createObjectURL(blob)
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
 
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `${invoiceNumber}_factura.pdf`
-      document.body.appendChild(a)
-      a.click()
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${invoiceNumber}_factura.pdf`;
+      document.body.appendChild(a);
+      a.click();
 
-      window.URL.revokeObjectURL(url)
-      document.body.removeChild(a)
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
     } catch (error) {
-      console.error('PDF Download Error:', error)
-      alert('Error downloading PDF: ' + error.message)
+      console.error("PDF Download Error:", error);
+      alert("Error downloading PDF: " + error.message);
     }
   }
 
-  const handleDownloadConduce = async (invoiceId, invoiceNumber) => {
+  async function handleDownloadConduce(invoiceId, invoiceNumber) {
     try {
-      const token = localStorage.getItem("token")
+      const token = localStorage.getItem("token");
 
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/pdf/invoices/${invoiceId}/conduce`,
         {
           method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         }
-      )
+      );
 
-      if (!response.ok) {
-        throw new Error(`Conduce download failed: ${response.status}`)
-      }
+      if (!response.ok)
+        throw new Error(`Conduce download failed: ${response.status}`);
 
-      const blob = await response.blob()
-      const url = window.URL.createObjectURL(blob)
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
 
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `CD-${invoiceNumber}_conduce.pdf`
-      document.body.appendChild(a)
-      a.click()
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `CD-${invoiceNumber}_conduce.pdf`;
+      document.body.appendChild(a);
+      a.click();
 
-      window.URL.revokeObjectURL(url)
-      document.body.removeChild(a)
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
     } catch (error) {
-      console.error('Conduce Download Error:', error)
-      alert('Error downloading conduce: ' + error.message)
+      console.error("Conduce Download Error:", error);
+      alert("Error downloading conduce: " + error.message);
     }
   }
 
-  const handleUpdateStatus = async (invoiceId, newStatus) => {
+  async function handleUpdateStatus(invoiceId, newStatus) {
     try {
-      const token = localStorage.getItem("token")
+      await api.put(`/invoices/${invoiceId}/status`, {
+        status: newStatus,
+      });
 
-      await api(`/invoices/${invoiceId}/status`, {
-        method: "PATCH",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ status: newStatus }),
-      })
-
-      fetchInvoices()
+      fetchInvoices();
 
       if (window.toast) {
-        window.toast('Status updated!', {
-          title: '✅ Success',
+        window.toast("Status updated!", {
+          title: "✅ Success",
           description: `Invoice status changed to ${newStatus}`,
-        })
+        });
       }
     } catch (error) {
-      alert('Error updating status: ' + error.message)
+      alert("Error updating status: " + error.message);
     }
   }
 
-  const openPaymentModal = (invoiceId) => {
-    setSelectedInvoiceId(invoiceId)
-    setPaymentOpen(true)
+  function openPaymentModal(invoiceId) {
+    setSelectedInvoiceId(invoiceId);
+    setPaymentOpen(true);
   }
 
   if (loading) {
@@ -157,13 +129,12 @@ export default function InvoicesPage() {
           <p className="text-gray-600">Cargando facturas...</p>
         </div>
       </div>
-    )
+    );
   }
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="w-full px-4 lg:px-8">
-
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">💰 Facturas</h1>
           <p className="text-gray-600">Ver y gestionar todas las facturas</p>
@@ -192,15 +163,18 @@ export default function InvoicesPage() {
                   <td className="px-4 py-3">{inv.invoice_date?.split("T")[0]}</td>
 
                   <td className="px-4 py-3 text-right font-bold">
-                    ${ (inv.total_amount ?? 0).toFixed(2) }
+                    ${(inv.total_amount ?? 0).toFixed(2)}
                   </td>
 
                   <td className="px-4 py-3 text-right">
-                    ${ (inv.amount_paid ?? 0).toFixed(2) }
+                    ${(inv.amount_paid ?? 0).toFixed(2)}
                   </td>
 
                   <td className="px-4 py-3 text-right">
-                    ${ (inv.amount_due ?? ((inv.total_amount ?? 0) - (inv.amount_paid ?? 0))).toFixed(2) }
+                    ${(
+                      inv.amount_due ??
+                      (inv.total_amount ?? 0) - (inv.amount_paid ?? 0)
+                    ).toFixed(2)}
                   </td>
 
                   <td className="px-4 py-3 text-center">
@@ -245,7 +219,6 @@ export default function InvoicesPage() {
             </tbody>
           </table>
         </div>
-
       </div>
 
       {selectedInvoiceId && (
@@ -257,5 +230,5 @@ export default function InvoicesPage() {
         />
       )}
     </div>
-  )
+  );
 }
