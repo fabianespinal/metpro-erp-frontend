@@ -8,7 +8,6 @@ type User = {
   username: string;
   email: string;
   role: string;
-  is_active: boolean;
 };
 
 export default function UsersPage() {
@@ -17,7 +16,7 @@ export default function UsersPage() {
   useEffect(() => {
     api
       .get("/users")
-      .then((data) => setUsers(data as User[]))
+      .then((data) => setUsers(Array.isArray(data) ? data : []))
       .catch((err) => console.error("Fetch users error:", err));
   }, []);
 
