@@ -13,11 +13,8 @@ async function request(endpoint: string, options: RequestInit = {}) {
 
   const headers: Record<string, string> = {
     ...incomingHeaders,
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
-
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
-  }
 
   const isFormData = options.body instanceof FormData;
   if (!isFormData && !incomingHeaders["Content-Type"]) {
@@ -25,11 +22,11 @@ async function request(endpoint: string, options: RequestInit = {}) {
   }
 
   const res = await fetch(`${BASE_URL}${endpoint}`, {
+    ...options,
     method: options.method || "GET",
-    body: options.body || null,
+    headers,
     cache: "no-store",
     mode: "cors",
-    headers,
   });
 
   if (!res.ok) {
