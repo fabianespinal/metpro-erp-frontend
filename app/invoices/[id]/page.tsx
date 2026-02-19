@@ -32,7 +32,6 @@ export default function InvoiceDetailPage() {
 
   const [invoice, setInvoice] = useState<Invoice | null>(null);
   const [loading, setLoading] = useState(true);
-
   const [paymentOpen, setPaymentOpen] = useState(false);
 
   const loadInvoice = async () => {
@@ -57,6 +56,8 @@ export default function InvoiceDetailPage() {
       </div>
     );
   }
+
+  const payments = invoice.payments ?? [];
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -92,21 +93,21 @@ export default function InvoiceDetailPage() {
             <div>
               <p className="text-gray-600">Total</p>
               <p className="font-bold text-lg">
-                ${invoice.total_amount.toFixed(2)}
+                ${(invoice.total_amount ?? 0).toFixed(2)}
               </p>
             </div>
 
             <div>
               <p className="text-gray-600">Pagado</p>
               <p className="font-bold text-lg text-green-600">
-                ${invoice.amount_paid.toFixed(2)}
+                ${(invoice.amount_paid ?? 0).toFixed(2)}
               </p>
             </div>
 
             <div>
               <p className="text-gray-600">Pendiente</p>
               <p className="font-bold text-lg text-red-600">
-                ${invoice.amount_due.toFixed(2)}
+                ${(invoice.amount_due ?? 0).toFixed(2)}
               </p>
             </div>
           </div>
@@ -122,7 +123,7 @@ export default function InvoiceDetailPage() {
         <div>
           <h2 className="text-xl font-semibold mb-3">Historial de Pagos</h2>
 
-          {invoice.payments.length === 0 ? (
+          {payments.length === 0 ? (
             <p className="text-gray-500">No hay pagos registrados.</p>
           ) : (
             <table className="min-w-full divide-y divide-gray-200 bg-white">
@@ -132,7 +133,7 @@ export default function InvoiceDetailPage() {
                     Fecha
                   </th>
                   <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                    Método
+                    Metodo
                   </th>
                   <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">
                     Monto
@@ -144,14 +145,14 @@ export default function InvoiceDetailPage() {
               </thead>
 
               <tbody className="divide-y divide-gray-200">
-                {invoice.payments.map((p) => (
+                {payments.map((p) => (
                   <tr key={p.id}>
                     <td className="px-4 py-2">
                       {p.payment_date?.split("T")[0]}
                     </td>
                     <td className="px-4 py-2">{p.method}</td>
                     <td className="px-4 py-2 text-right font-medium">
-                      ${p.amount.toFixed(2)}
+                      ${(p.amount ?? 0).toFixed(2)}
                     </td>
                     <td className="px-4 py-2">{p.notes || "-"}</td>
                   </tr>

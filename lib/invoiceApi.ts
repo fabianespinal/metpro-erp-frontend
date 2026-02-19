@@ -32,7 +32,12 @@ export async function deleteInvoice(id: number) {
 
 export async function createPayment(
   invoiceId: number,
-  data: unknown
+  data: {
+    amount: number;
+    method: string;
+    notes?: string;
+    payment_date: string;
+  }
 ) {
   return api(`/invoices/${invoiceId}/payments`, {
     method: "POST",
@@ -47,7 +52,13 @@ export async function fetchInvoicePayments(invoiceId: number) {
 }
 
 export async function fetchInvoiceWithPayments(invoiceId: number) {
-  return api(`/invoices/${invoiceId}`, {
-    method: "GET",
-  });
+  const [invoice, payments] = await Promise.all([
+    api(`/invoices/${invoiceId}`, { method: "GET" }),
+    api(`/invoices/${invoiceId}/payments`, { method: "GET" }).catch(() => []),
+  ]);
+
+  return {
+    ...invoice,
+    payments: Array.isArray(payments) ? payments : [],
+  };
 }
