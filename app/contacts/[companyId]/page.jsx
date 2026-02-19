@@ -18,7 +18,7 @@ export default function ContactsPage() {
     async function loadContacts() {
       try {
         const res = await api.get(`/contacts/company/${companyId}`);
-        setContacts(res.data);
+        setContacts(Array.isArray(res) ? res : []);
       } catch (err) {
         console.error("Error loading contacts:", err);
       } finally {
@@ -30,16 +30,16 @@ export default function ContactsPage() {
   }, [companyId]);
 
   async function handleCreate(data) {
-    const res = await api.post("/contacts/", {
+    const newContact = await api.post("/contacts/", {
       ...data,
       company_id: Number(companyId),
     });
-    setContacts([...contacts, res.data]);
+    setContacts([...contacts, newContact]);
   }
 
   async function handleUpdate(id, data) {
-    const res = await api.put(`/contacts/${id}`, data);
-    setContacts(contacts.map((c) => (c.id === id ? res.data : c)));
+    const updated = await api.put(`/contacts/${id}`, data);
+    setContacts(contacts.map((c) => (c.id === id ? updated : c)));
   }
 
   async function handleDelete(id) {
