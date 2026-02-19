@@ -58,7 +58,7 @@ export async function fetchInvoiceWithPayments(invoiceId: number) {
   ]);
 
   return {
-    ...invoice,
+    ...(invoice as Record<string, unknown>),
     payments: Array.isArray(payments) ? payments : [],
   };
 }
