@@ -1,4 +1,8 @@
+import { useRouter } from "next/navigation";
+
 export default function ContactsList({ contacts, onEdit, onDelete }) {
+  const router = useRouter();
+
   if (!contacts || contacts.length === 0) {
     return <p className="text-gray-500">No hay contactos registrados.</p>;
   }
@@ -22,7 +26,14 @@ export default function ContactsList({ contacts, onEdit, onDelete }) {
               <td className="p-3">{c.email}</td>
               <td className="p-3">{c.phone}</td>
 
-              <td className="p-3 flex gap-2">
+              <td className="p-3 flex gap-2 flex-wrap">
+                <button
+                  className="px-3 py-1 bg-blue-600 text-white rounded"
+                  onClick={() => router.push(`/quotes?contactId=${c.id}&companyId=${c.company_id}`)}
+                >
+                  Use in Quote
+                </button>
+
                 <button
                   className="px-3 py-1 bg-yellow-500 text-white rounded"
                   onClick={() => onEdit(c)}

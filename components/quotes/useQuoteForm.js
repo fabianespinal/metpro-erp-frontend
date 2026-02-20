@@ -17,28 +17,24 @@ export function useQuoteForm() {
   const [totals, setTotals] = useState(null)
 
   useEffect(() => {
-    const newTotals = calculateQuoteTotals(quoteItems, charges)
-    setTotals(newTotals)
-  }, [quoteItems, charges])
+  if (!selectedClient?.id) return
 
-  useEffect(() => {
-    if (!selectedClient) {
-      setContacts([])
-      setSelectedContact(null)
-      return
-    }
-    async function loadContacts() {
-      try {
-        const data = await api.get(`/contacts/company/${selectedClient.id}`)
+  let cancelled = false
+
+  api.get(`/contacts/company/${selectedClient.id}`)
+    .then(data => {
+      if (!cancelled) {
         setContacts(Array.isArray(data) ? data : [])
         setSelectedContact(null)
-      } catch (err) {
-        console.error('Error loading contacts:', err)
-        setContacts([])
       }
-    }
-    loadContacts()
-  }, [selectedClient])
+    })
+    .catch(err => {
+      console.error('Error loading contacts:', err)
+      if (!cancelled) setContacts([])
+    })
+
+  return () => { cancelled = true }
+}, [selectedClient?.id])
 
   const handleAddItem = () => {
     setQuoteItems([...quoteItems, {
