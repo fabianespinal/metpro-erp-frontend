@@ -5,11 +5,13 @@ import { api, sendInvoiceToClient } from "@/lib/api";
 import StatusPill from "@/components/ui/StatusPill";
 import RecordPaymentModal from "@/components/invoices/RecordPaymentModal";
 import SendToClientButton from "@/components/SendToClientButton";
+import SentBadge from "@/components/SentBadge";
 
 export default function InvoicesPage() {
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("all");
+  const [sentMap, setSentMap] = useState({});
 
   const [paymentOpen, setPaymentOpen] = useState(false);
   const [selectedInvoiceId, setSelectedInvoiceId] = useState(null);
@@ -183,6 +185,12 @@ export default function InvoicesPage() {
                   </td>
 
                   <td className="px-4 py-3 text-right space-x-2">
+                    {sentMap[inv.invoice_id] && <SentBadge />}
+                    <SendToClientButton
+                      id={inv.invoice_id}
+                      type="invoice"
+                      onSent={() => setSentMap(prev => ({ ...prev, [inv.invoice_id]: true }))}
+                    />
                     <button
                       onClick={() => handleDownloadPDF(inv.id, inv.invoice_number)}
                       className="text-blue-600 hover:underline"

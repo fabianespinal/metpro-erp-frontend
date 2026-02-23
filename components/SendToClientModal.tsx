@@ -9,16 +9,12 @@ export default function SendToClientModal({
   onClose,
   id,
   type,
-  clientEmail,
-  publicUrl,
   onSent,
 }: {
   open: boolean;
   onClose: () => void;
   id: number;
   type: "quote" | "invoice";
-  clientEmail: string;
-  publicUrl: string;
   onSent?: () => void;
 }) {
   const [loading, setLoading] = useState(false);
@@ -53,14 +49,6 @@ export default function SendToClientModal({
         <h2 className="text-xl font-semibold mb-4 text-center">
           Enviar {type === "quote" ? "Cotización" : "Factura"}
         </h2>
-
-        <p className="text-sm text-gray-600 mb-2">
-          <strong>Cliente:</strong> {clientEmail}
-        </p>
-
-        <p className="text-sm text-gray-600 mb-4">
-          <strong>Enlace público:</strong> {publicUrl}
-        </p>
 
         <p className="text-gray-700 mb-6">
           ¿Desea enviar este documento al cliente? Se adjuntará el PDF y se

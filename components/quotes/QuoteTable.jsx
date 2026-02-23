@@ -1,6 +1,8 @@
 import StatusPill from '@/components/ui/StatusPill'
 import PrimaryActionButton from './PrimaryActionButton'
 import OverflowMenu from './OverflowMenu'
+import SentBadge from '@/components/SentBadge'
+import SendToClientButton from '@/components/SendToClientButton'
 
 export default function QuoteTable({ 
   quotes,
@@ -12,7 +14,9 @@ export default function QuoteTable({
   onDelete,
   onApprove,
   onConvertToInvoice,
-  onViewInvoice
+  onViewInvoice,
+  sentMap,
+  setSentMap
 }) {
   if (quotes.length === 0) {
     return (
@@ -59,6 +63,12 @@ export default function QuoteTable({
 
             <td className='p-3 text-right'>
               <div className='flex items-center gap-2 justify-end'>
+                {sentMap[quote.quote_id] && <SentBadge />}
+                <SendToClientButton
+                  id={quote.quote_id}
+                  type="quote"
+                  onSent={() => setSentMap(prev => ({ ...prev, [quote.quote_id]: true }))}
+                />
                 <PrimaryActionButton
                   quote={quote}
                   onApprove={() => onApprove(quote.quote_id)}
@@ -85,3 +95,4 @@ export default function QuoteTable({
     </table>
   )
 }
+
