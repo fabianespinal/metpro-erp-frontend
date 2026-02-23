@@ -37,7 +37,7 @@ export async function api(endpoint: string, options: RequestInit = {}) {
   return res.json().catch(() => null);
 }
 
-// Keep these helpers so invoiceApi.ts and others don't break
+// Convenience helpers
 api.get = (endpoint: string) =>
   api(endpoint, { method: "GET" });
 
@@ -55,3 +55,20 @@ api.put = (endpoint: string, data?: any) =>
 
 api.delete = (endpoint: string) =>
   api(endpoint, { method: "DELETE" });
+
+
+// ------------------------------------------------------
+// SEND TO CLIENT (Quotes + Invoices)
+// ------------------------------------------------------
+
+export async function sendQuoteToClient(quoteId: number) {
+  return api(`/quotes/${quoteId}/send`, {
+    method: "POST",
+  });
+}
+
+export async function sendInvoiceToClient(invoiceId: number) {
+  return api(`/invoices/${invoiceId}/send`, {
+    method: "POST",
+  });
+}

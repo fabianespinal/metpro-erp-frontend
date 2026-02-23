@@ -10,6 +10,8 @@ import QuoteTable from '@/components/quotes/QuoteTable'
 import { useToken } from '@/components/quotes/useToken'
 import { useQuoteForm } from '@/components/quotes/useQuoteForm'
 import { mergeQuotesWithInvoices, filterQuotesByStatus } from '@/components/quotes/quoteUtils'
+import SentBadge from "@/components/SentBadge";
+import SendToClientButton from "@/components/SendToClientButton";
 import {
   previewPDF,
   downloadPDF,
@@ -35,6 +37,7 @@ export default function QuotesPage() {
   const [editModal, setEditModal] = useState({ isOpen: false, quote: null })
   const [previewModal, setPreviewModal] = useState({ isOpen: false, quoteId: null, pdfUrl: null })
   const [productModal, setProductModal] = useState({ isOpen: false, itemIndex: null })
+  const [sentMap, setSentMap] = useState<Record<number, boolean>>({});
 
   useEffect(() => {
     fetchClients()
@@ -255,106 +258,111 @@ export default function QuotesPage() {
   const filteredQuotes = filterQuotesByStatus(safeQuotes, statusFilter)
 
   return (
-    <div className="w-full px-4 lg:px-8 py-6">
-      <h1 className='text-2xl font-bold mb-6'>Cotizar</h1>
+  <div className="w-full px-4 lg:px-8 py-6">
+    <h1 className="text-2xl font-bold mb-6">Cotizar</h1>
 
-      <QuoteForm
-        clients={clients}
-        selectedClient={quoteForm.selectedClient}
-        setSelectedClient={quoteForm.setSelectedClient}
-        selectedContact={quoteForm.selectedContact}
-        setSelectedContact={quoteForm.setSelectedContact}
-        contacts={quoteForm.contacts}
-        projectName={quoteForm.projectName}
-        setProjectName={quoteForm.setProjectName}
-        quoteItems={quoteForm.quoteItems}
-        handleAddItem={quoteForm.handleAddItem}
-        handleRemoveItem={quoteForm.handleRemoveItem}
-        handleItemChange={quoteForm.handleItemChange}
-        charges={quoteForm.charges}
-        setCharges={quoteForm.setCharges}
-        totals={quoteForm.totals}
-        notes={quoteForm.notes}
-        setNotes={quoteForm.setNotes}
-        paymentTerms={quoteForm.paymentTerms}
-        setPaymentTerms={quoteForm.setPaymentTerms}
-        validUntil={quoteForm.validUntil}
-        setValidUntil={quoteForm.setValidUntil}
-        onSubmit={handleCreateQuote}
-        loading={loading}
-        onOpenProductModal={handleOpenProductModal}
-      />
+    <QuoteForm
+      clients={clients}
+      selectedClient={quoteForm.selectedClient}
+      setSelectedClient={quoteForm.setSelectedClient}
+      selectedContact={quoteForm.selectedContact}
+      setSelectedContact={quoteForm.setSelectedContact}
+      contacts={quoteForm.contacts}
+      projectName={quoteForm.projectName}
+      setProjectName={quoteForm.setProjectName}
+      quoteItems={quoteForm.quoteItems}
+      handleAddItem={quoteForm.handleAddItem}
+      handleRemoveItem={quoteForm.handleRemoveItem}
+      handleItemChange={quoteForm.handleItemChange}
+      charges={quoteForm.charges}
+      setCharges={quoteForm.setCharges}
+      totals={quoteForm.totals}
+      notes={quoteForm.notes}
+      setNotes={quoteForm.setNotes}
+      paymentTerms={quoteForm.paymentTerms}
+      setPaymentTerms={quoteForm.setPaymentTerms}
+      validUntil={quoteForm.validUntil}
+      setValidUntil={quoteForm.setValidUntil}
+      onSubmit={handleCreateQuote}
+      loading={loading}
+      onOpenProductModal={handleOpenProductModal}
+    />
 
-      <div className='bg-white rounded-lg shadow p-6'>
-        <div className='flex justify-between items-center mb-6'>
-          <h2 className='text-xl font-semibold'>Existing Quotes</h2>
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className='border p-2 rounded'
-          >
-            <option value='all'>All Statuses</option>
-            <option value='Draft'>Draft</option>
-            <option value='Approved'>Approved</option>
-            <option value='Invoiced'>Invoiced</option>
-            <option value='Cancelled'>Cancelled</option>
-          </select>
-        </div>
+    <div className="bg-white rounded-lg shadow p-6">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-xl font-semibold">Existing Quotes</h2>
 
-        {safeQuotes.length === 0 ? (
-          <div className='p-8 text-center text-gray-500'>
-            No quotes yet. Create one above!
-          </div>
-        ) : (
-          <QuoteTable
-            quotes={filteredQuotes}
-            onPreviewPDF={handlePreviewPDF}
-            onDownloadPDF={handleDownloadPDF}
-            onGenerateConduce={handleGenerateConduce}
-            onDuplicate={handleDuplicateQuote}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            onApprove={(id) => handleUpdateStatus(id, 'Approved')}
-            onConvertToInvoice={handleConvertToInvoice}
-            onViewInvoice={handleViewInvoice}
-          />
-        )}
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="border p-2 rounded"
+        >
+          <option value="all">All Statuses</option>
+          <option value="Draft">Draft</option>
+          <option value="Approved">Approved</option>
+          <option value="Invoiced">Invoiced</option>
+          <option value="Cancelled">Cancelled</option>
+        </select>
       </div>
 
-      <PDFPreviewModal
-        isOpen={previewModal.isOpen}
-        onClose={() => {
-          if (previewModal.pdfUrl && previewModal.pdfUrl.startsWith('blob:')) {
-            window.URL.revokeObjectURL(previewModal.pdfUrl)
-          }
-          setPreviewModal({ isOpen: false, quoteId: null, pdfUrl: null })
-        }}
-        quoteId={previewModal.quoteId}
-        pdfUrl={previewModal.pdfUrl}
-      />
-
-      <DeleteQuoteModal
-        isOpen={deleteModal.isOpen}
-        onClose={() => setDeleteModal({ isOpen: false, quoteId: null, quoteStatus: null })}
-        onConfirm={handleConfirmDelete}
-        quoteId={deleteModal.quoteId}
-        quoteStatus={deleteModal.quoteStatus}
-      />
-
-      <EditQuoteModal
-        isOpen={editModal.isOpen}
-        onClose={() => setEditModal({ isOpen: false, quote: null })}
-        quote={editModal.quote}
-        onSave={handleSaveEdit}
-        clients={clients}
-      />
-
-      <ProductSelectionModal
-        isOpen={productModal.isOpen}
-        onClose={() => setProductModal({ isOpen: false, itemIndex: null })}
-        onSelect={handleSelectProduct}
-        products={products}
-      />
+      {safeQuotes.length === 0 ? (
+        <div className="p-8 text-center text-gray-500">
+          No quotes yet. Create one above!
+        </div>
+      ) : (
+        <QuoteTable
+          quotes={filteredQuotes}
+          onPreviewPDF={handlePreviewPDF}
+          onDownloadPDF={handleDownloadPDF}
+          onGenerateConduce={handleGenerateConduce}
+          onDuplicate={handleDuplicateQuote}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          onApprove={(id) => handleUpdateStatus(id, "Approved")}
+          onConvertToInvoice={handleConvertToInvoice}
+          onViewInvoice={handleViewInvoice}
+          sentMap={sentMap}
+          setSentMap={setSentMap}
+        />
+      )}
     </div>
-  )
+
+    <PDFPreviewModal
+      isOpen={previewModal.isOpen}
+      onClose={() => {
+        if (previewModal.pdfUrl && previewModal.pdfUrl.startsWith("blob:")) {
+          window.URL.revokeObjectURL(previewModal.pdfUrl);
+        }
+        setPreviewModal({ isOpen: false, quoteId: null, pdfUrl: null });
+      }}
+      quoteId={previewModal.quoteId}
+      pdfUrl={previewModal.pdfUrl}
+    />
+
+    <DeleteQuoteModal
+      isOpen={deleteModal.isOpen}
+      onClose={() =>
+        setDeleteModal({ isOpen: false, quoteId: null, quoteStatus: null })
+      }
+      onConfirm={handleConfirmDelete}
+      quoteId={deleteModal.quoteId}
+      quoteStatus={deleteModal.quoteStatus}
+    />
+
+    <EditQuoteModal
+      isOpen={editModal.isOpen}
+      onClose={() => setEditModal({ isOpen: false, quote: null })}
+      quote={editModal.quote}
+      onSave={handleSaveEdit}
+      clients={clients}
+    />
+
+    <ProductSelectionModal
+      isOpen={productModal.isOpen}
+      onClose={() => setProductModal({ isOpen: false, itemIndex: null })}
+      onSelect={handleSelectProduct}
+      products={products}
+    />
+  </div>
+);
 }
