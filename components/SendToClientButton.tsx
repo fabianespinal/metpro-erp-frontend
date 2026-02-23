@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import SendToClientModal from "@/components/SendToClientModal";
 
 export default function SendToClientButton({
@@ -16,12 +17,9 @@ export default function SendToClientButton({
 
   return (
     <>
-      <button
-        onClick={() => setModalOpen(true)}
-        className="px-4 py-2 rounded text-white bg-blue-600 hover:bg-blue-700"
-      >
+      <Button onClick={() => setModalOpen(true)}>
         Enviar al Cliente
-      </button>
+      </Button>
 
       <SendToClientModal
         open={modalOpen}
