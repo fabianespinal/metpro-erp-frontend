@@ -37,7 +37,7 @@ export default function QuotesPage() {
   const [editModal, setEditModal] = useState({ isOpen: false, quote: null })
   const [previewModal, setPreviewModal] = useState({ isOpen: false, quoteId: null, pdfUrl: null })
   const [productModal, setProductModal] = useState({ isOpen: false, itemIndex: null })
-  const [sentMap, setSentMap] = useState<Record<number, boolean>>({});
+  const [sentMap, setSentMap] = useState({});
 
   useEffect(() => {
     fetchClients()
