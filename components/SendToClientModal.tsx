@@ -52,8 +52,8 @@ export default function SendToClientModal({
         </h2>
 
         <p className="text-gray-700 mb-6">
-          ¿Desea enviar este documento al cliente? Se adjuntará el PDF y se
-          incluirá el enlace público.
+          ¿Desea enviar este documento al cliente? 
+          Se adjuntará el PDF y se incluirá el enlace público.
         </p>
 
         <div className="flex justify-end gap-3">
