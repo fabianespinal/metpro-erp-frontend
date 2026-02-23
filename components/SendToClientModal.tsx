@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { sendQuoteToClient, sendInvoiceToClient } from "@/lib/api";
 import toast from "react-hot-toast";
+import { Button } from "@/components/ui/button";
 
 export default function SendToClientModal({
   open,
@@ -56,23 +57,20 @@ export default function SendToClientModal({
         </p>
 
         <div className="flex justify-end gap-3">
-          <button
+          <Button
+            variant="outline"
             onClick={onClose}
-            className="px-4 py-2 rounded border border-gray-300 text-gray-700 hover:bg-gray-100"
             disabled={loading}
           >
             Cancelar
-          </button>
+          </Button>
 
-          <button
+          <Button
             onClick={handleSend}
             disabled={loading}
-            className={`px-4 py-2 rounded text-white ${
-              loading ? "bg-gray-400" : "bg-blue-600 hover:bg-blue-700"
-            }`}
           >
             {loading ? "Enviando..." : "Enviar"}
-          </button>
+          </Button>
         </div>
       </div>
     </div>
