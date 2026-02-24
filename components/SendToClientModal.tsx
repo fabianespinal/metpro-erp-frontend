@@ -22,6 +22,28 @@ export default function SendToClientModal({
 
   if (!open) return null;
 
+  // 🔥 Prevent undefined ID from causing 422 errors
+  if (!id || Number.isNaN(id)) {
+    console.error("SendToClientModal received invalid ID:", id);
+    return (
+      <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+          <h2 className="text-xl font-semibold mb-4 text-center">
+            Invalid Document
+          </h2>
+          <p className="text-gray-700 mb-6">
+            This document cannot be sent because its ID is missing or invalid.
+          </p>
+          <div className="flex justify-end">
+            <Button variant="outline" onClick={onClose}>
+              Close
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const handleSend = async () => {
     setLoading(true);
 
@@ -39,7 +61,6 @@ export default function SendToClientModal({
     } catch (err: any) {
       console.error("Send-to-client error:", err);
 
-      // Extract backend error message safely
       const backendMessage =
         err?.response?.data?.detail ||
         err?.response?.data?.message ||
