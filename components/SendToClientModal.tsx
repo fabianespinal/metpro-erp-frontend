@@ -37,8 +37,16 @@ export default function SendToClientModal({
       if (onSent) onSent();
       onClose();
     } catch (err: any) {
-      console.error(err);
-      toast.error(err?.message || "Error al enviar. Intente nuevamente.");
+      console.error("Send-to-client error:", err);
+
+      // Extract backend error message safely
+      const backendMessage =
+        err?.response?.data?.detail ||
+        err?.response?.data?.message ||
+        err?.message ||
+        "Error al enviar. Intente nuevamente.";
+
+      toast.error(backendMessage);
     } finally {
       setLoading(false);
     }
@@ -52,23 +60,16 @@ export default function SendToClientModal({
         </h2>
 
         <p className="text-gray-700 mb-6">
-          ¿Desea enviar este documento al cliente? 
+          ¿Desea enviar este documento al cliente?
           Se adjuntará el PDF y se incluirá el enlace público.
         </p>
 
         <div className="flex justify-end gap-3">
-          <Button
-            variant="outline"
-            onClick={onClose}
-            disabled={loading}
-          >
+          <Button variant="outline" onClick={onClose} disabled={loading}>
             Cancelar
           </Button>
 
-          <Button
-            onClick={handleSend}
-            disabled={loading}
-          >
+          <Button onClick={handleSend} disabled={loading}>
             {loading ? "Enviando..." : "Enviar"}
           </Button>
         </div>
