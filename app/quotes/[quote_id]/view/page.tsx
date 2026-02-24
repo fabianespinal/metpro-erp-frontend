@@ -139,7 +139,8 @@ export default function QuotePublicView() {
       {/* Header */}
       <div style={styles.header}>
         <div>
-          <div style={styles.companyName}>Parque Industrial Disdo</div>
+          <div style={styles.companyName}>Metpro SRL</div>
+          <div style={styles.companyInfo}>Parque Industrial Disdo</div>
           <div style={styles.companyInfo}>Calle Central No. 1, Hato Nuevo Palave</div>
           <div style={styles.companyInfo}>Tel: (829) 439-8476 | RNC: 131-71683-2</div>
         </div>
@@ -280,18 +281,6 @@ export default function QuotePublicView() {
           <p style={styles.notes}>{quote.notes}</p>
         </div>
       )}
-
-      {/* Download PDF */}
-      <div style={styles.actions}>
-        <a
-          href={`${API_URL}/quotes/${quoteId}/pdf`}
-          target="_blank"
-          rel="noopener noreferrer"
-          style={styles.downloadBtn}
-        >
-          Descargar PDF
-        </a>
-      </div>
 
       <div style={styles.footer}>
         Generado por METPRO · metprord.com
