@@ -2,8 +2,12 @@
 
 import { useEffect, useState } from "react";
 
-export default function InvoicePublicView({ invoiceId }) {
-  const [invoice, setInvoice] = useState(null);
+interface InvoicePublicViewProps {
+  invoiceId: string;
+}
+
+export default function InvoicePublicView({ invoiceId }: InvoicePublicViewProps) {
+  const [invoice, setInvoice] = useState<any>(null);
 
   useEffect(() => {
     fetch(`https://api.metprord.com/public/invoices/${invoiceId}`)
@@ -18,7 +22,6 @@ export default function InvoicePublicView({ invoiceId }) {
       <h1>Factura #{invoice.invoice_number}</h1>
       <p>Cliente: {invoice.client_name}</p>
       <p>Total: {invoice.total_amount}</p>
-      {/* Add more fields as needed */}
     </div>
   );
 }

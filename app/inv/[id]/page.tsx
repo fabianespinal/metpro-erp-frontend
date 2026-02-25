@@ -1,5 +1,11 @@
 import InvoicePublicView from "@/components/InvoicePublicView";
 
-export default function PublicInvoicePage({ params }) {
+interface PageProps {
+  params: {
+    id: string;
+  };
+}
+
+export default function PublicInvoicePage({ params }: PageProps) {
   return <InvoicePublicView invoiceId={params.id} />;
 }
