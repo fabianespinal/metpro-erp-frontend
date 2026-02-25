@@ -10,7 +10,7 @@ export default function InvoicePublicView({ invoiceId }: InvoicePublicViewProps)
   const [invoice, setInvoice] = useState<any>(null);
 
   useEffect(() => {
-    fetch(`https://api.metprord.com/public/invoices/${invoiceId}`)
+    fetch(`https://api.metprord.com/invoices/${invoiceId}/public`)
       .then(res => res.json())
       .then(data => setInvoice(data));
   }, [invoiceId]);
