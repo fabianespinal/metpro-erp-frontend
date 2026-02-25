@@ -185,11 +185,11 @@ export default function InvoicesPage() {
                   </td>
 
                   <td className="px-4 py-3 text-right space-x-2">
-                    {sentMap[inv.invoice_id] && <SentBadge />}
+                    {sentMap[inv.id] && <SentBadge />}
                     <SendToClientButton
-                      id={inv.invoice_id}
+                      id={inv.id}
                       type="invoice"
-                      onSent={() => setSentMap(prev => ({ ...prev, [inv.invoice_id]: true }))}
+                      onSent={() => setSentMap(prev => ({ ...prev, [inv.id]: true }))}
                     />
                     <button
                       onClick={() => handleDownloadPDF(inv.id, inv.invoice_number)}
