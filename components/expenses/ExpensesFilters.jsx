@@ -1,4 +1,5 @@
-'use client'
+'use client';
+
 import { useState } from "react";
 
 export default function ExpensesFilters({ onFilter }) {
@@ -6,8 +7,8 @@ export default function ExpensesFilters({ onFilter }) {
     category: "",
     dateFrom: "",
     dateTo: "",
-    projectId: "",
-    quoteId: ""
+    project_id: "",
+    quote_id: ""
   });
 
   function handleChange(e) {
@@ -20,23 +21,25 @@ export default function ExpensesFilters({ onFilter }) {
 
   return (
     <div className="bg-white shadow rounded-lg p-6 mb-6">
-      <h2 className="text-xl font-semibold mb-4">Filters</h2>
+      <h2 className="text-xl font-semibold mb-4">Filtros</h2>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
+        {/* Categoría */}
         <div>
-          <label className="block mb-1 font-medium">Category</label>
+          <label className="block mb-1 font-medium">Categoría</label>
           <input
             name="category"
             value={filters.category}
             onChange={handleChange}
             className="border p-2 rounded w-full"
-            placeholder="Fuel, Tools, Repairs..."
+            placeholder="Combustible, Herramientas, Reparaciones..."
           />
         </div>
 
+        {/* Fecha Desde */}
         <div>
-          <label className="block mb-1 font-medium">Date From</label>
+          <label className="block mb-1 font-medium">Fecha Desde</label>
           <input
             type="date"
             name="dateFrom"
@@ -46,8 +49,9 @@ export default function ExpensesFilters({ onFilter }) {
           />
         </div>
 
+        {/* Fecha Hasta */}
         <div>
-          <label className="block mb-1 font-medium">Date To</label>
+          <label className="block mb-1 font-medium">Fecha Hasta</label>
           <input
             type="date"
             name="dateTo"
@@ -57,25 +61,27 @@ export default function ExpensesFilters({ onFilter }) {
           />
         </div>
 
+        {/* Proyecto (solo referencia, módulo independiente) */}
         <div>
-          <label className="block mb-1 font-medium">Project ID</label>
+          <label className="block mb-1 font-medium">Proyecto (referencia opcional)</label>
           <input
-            name="projectId"
-            value={filters.projectId}
+            name="project_id"
+            value={filters.project_id}
             onChange={handleChange}
             className="border p-2 rounded w-full"
-            placeholder="Optional"
+            placeholder="Texto o ID opcional"
           />
         </div>
 
+        {/* Cotización (solo referencia, módulo independiente) */}
         <div>
-          <label className="block mb-1 font-medium">Quote ID</label>
+          <label className="block mb-1 font-medium">Cotización (referencia opcional)</label>
           <input
-            name="quoteId"
-            value={filters.quoteId}
+            name="quote_id"
+            value={filters.quote_id}
             onChange={handleChange}
             className="border p-2 rounded w-full"
-            placeholder="Optional"
+            placeholder="Texto o ID opcional"
           />
         </div>
 
@@ -85,7 +91,7 @@ export default function ExpensesFilters({ onFilter }) {
         onClick={apply}
         className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
       >
-        Apply Filters
+        Aplicar Filtros
       </button>
     </div>
   );

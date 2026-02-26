@@ -1,10 +1,12 @@
-'use client'
+'use client';
+
 import { useState } from "react";
 
 export default function ExpenseForm({ clients, onSubmit, loading }) {
   const [form, setForm] = useState({
     date: "",
     category: "",
+    client_name: "",
     description: "",
     amount: "",
     payment_method: "",
@@ -22,12 +24,17 @@ export default function ExpenseForm({ clients, onSubmit, loading }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white shadow rounded-lg p-6 mb-6">
-      <h2 className="text-xl font-bold mb-4">Add Expense</h2>
+    <form
+      onSubmit={handleSubmit}
+      className="bg-white shadow rounded-lg p-6 mb-6"
+    >
+      <h2 className="text-xl font-bold mb-4">Agregar Gasto</h2>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
+        {/* Fecha */}
         <div>
-          <label className="block mb-1 font-medium">Date</label>
+          <label className="block mb-1 font-medium">Fecha</label>
           <input
             type="date"
             name="date"
@@ -38,12 +45,13 @@ export default function ExpenseForm({ clients, onSubmit, loading }) {
           />
         </div>
 
+        {/* Categoría */}
         <div>
-          <label className="block mb-1 font-medium">Category</label>
+          <label className="block mb-1 font-medium">Categoría</label>
           <input
             type="text"
             name="category"
-            placeholder="Fuel, Tools, Repairs..."
+            placeholder="Combustible, Herramientas, Reparaciones..."
             value={form.category}
             onChange={handleChange}
             className="border p-2 rounded w-full"
@@ -51,20 +59,22 @@ export default function ExpenseForm({ clients, onSubmit, loading }) {
           />
         </div>
 
+        {/* Cliente (solo referencia) */}
         <div>
           <label className="block mb-1 font-medium">Cliente</label>
           <input
             type="text"
-            name="cliente"
-            placeholder="nombre cliente..."
-            value={form.cliente}
+            name="client_name"
+            placeholder="Nombre del cliente..."
+            value={form.client_name}
             onChange={handleChange}
             className="border p-2 rounded w-full"
           />
         </div>
 
+        {/* Monto */}
         <div>
-          <label className="block mb-1 font-medium">Amount ($)</label>
+          <label className="block mb-1 font-medium">Monto ($)</label>
           <input
             type="number"
             name="amount"
@@ -75,20 +85,22 @@ export default function ExpenseForm({ clients, onSubmit, loading }) {
           />
         </div>
 
+        {/* Método de pago */}
         <div>
-          <label className="block mb-1 font-medium">Payment Method</label>
+          <label className="block mb-1 font-medium">Método de Pago</label>
           <input
             type="text"
             name="payment_method"
-            placeholder="Cash, Transfer, Card"
+            placeholder="Efectivo, Transferencia, Tarjeta..."
             value={form.payment_method}
             onChange={handleChange}
             className="border p-2 rounded w-full"
           />
         </div>
 
+        {/* Proyecto (opcional) */}
         <div>
-          <label className="block mb-1 font-medium">Project ID (optional)</label>
+          <label className="block mb-1 font-medium">Proyecto (opcional)</label>
           <input
             type="text"
             name="project_id"
@@ -98,14 +110,27 @@ export default function ExpenseForm({ clients, onSubmit, loading }) {
           />
         </div>
 
+        {/* Cotización (opcional) */}
         <div>
-          <label className="block mb-1 font-medium">Quote ID (optional)</label>
+          <label className="block mb-1 font-medium">Cotización (opcional)</label>
           <input
             type="text"
             name="quote_id"
             value={form.quote_id}
             onChange={handleChange}
             className="border p-2 rounded w-full"
+          />
+        </div>
+
+        {/* Descripción */}
+        <div className="md:col-span-2">
+          <label className="block mb-1 font-medium">Descripción</label>
+          <textarea
+            name="description"
+            placeholder="Detalles del gasto..."
+            value={form.description}
+            onChange={handleChange}
+            className="border p-2 rounded w-full h-24"
           />
         </div>
 
@@ -117,7 +142,7 @@ export default function ExpenseForm({ clients, onSubmit, loading }) {
           disabled={loading}
           className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
         >
-          {loading ? "Saving..." : "Add Expense"}
+          {loading ? "Guardando..." : "Agregar Gasto"}
         </button>
       </div>
     </form>
