@@ -52,12 +52,12 @@ export default function ExpenseForm({ clients, onSubmit, loading }) {
         </div>
 
         <div>
-          <label className="block mb-1 font-medium">Description</label>
+          <label className="block mb-1 font-medium">Cliente</label>
           <input
             type="text"
-            name="description"
-            placeholder="Details..."
-            value={form.description}
+            name="cliente"
+            placeholder="nombre cliente..."
+            value={form.cliente}
             onChange={handleChange}
             className="border p-2 rounded w-full"
           />
