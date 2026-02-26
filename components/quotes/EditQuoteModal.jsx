@@ -1,20 +1,6 @@
 import { useState, useEffect } from 'react'
 import { api } from '@/lib/api'
 
-interface Item {
-  product_name: string
-  quantity: number
-  unit_price: number
-  discount_type: string
-  discount_value: number
-}
-
-interface Product {
-  id: number
-  name: string
-  price: number
-}
-
 export default function EditQuoteModal({ isOpen, onClose, quote, onSave, clients }) {
   const [formData, setFormData] = useState({
     client_id: '',
@@ -25,8 +11,8 @@ export default function EditQuoteModal({ isOpen, onClose, quote, onSave, clients
     status: 'Draft',
   })
 
-  const [items, setItems] = useState<Item[]>([])
-  const [products, setProducts] = useState<Product[]>([])
+  const [items, setItems] = useState([])
+  const [products, setProducts] = useState([])
 
   useEffect(() => {
     if (quote) {
@@ -39,7 +25,7 @@ export default function EditQuoteModal({ isOpen, onClose, quote, onSave, clients
         status: quote.status || 'Draft',
       })
       setItems(
-        (quote.items || []).map((i: any) => ({
+        (quote.items || []).map((i) => ({
           product_name: i.product_name || '',
           quantity: Number(i.quantity) || 1,
           unit_price: Number(i.unit_price) || 0,
@@ -51,7 +37,7 @@ export default function EditQuoteModal({ isOpen, onClose, quote, onSave, clients
   }, [quote])
 
   useEffect(() => {
-    api.get('/products/').then((data: any) => {
+    api.get('/products/').then((data) => {
       setProducts(Array.isArray(data) ? data : [])
     }).catch(() => {})
   }, [])
@@ -62,17 +48,17 @@ export default function EditQuoteModal({ isOpen, onClose, quote, onSave, clients
     setItems([...items, { product_name: '', quantity: 1, unit_price: 0, discount_type: 'none', discount_value: 0 }])
   }
 
-  function removeItem(index: number) {
+  function removeItem(index) {
     setItems(items.filter((_, i) => i !== index))
   }
 
-  function updateItem(index: number, field: string, value: any) {
+  function updateItem(index, field, value) {
     const updated = [...items]
     updated[index] = { ...updated[index], [field]: value }
     setItems(updated)
   }
 
-  function selectProduct(index: number, productName: string) {
+  function selectProduct(index, productName) {
     const product = products.find(p => p.name === productName)
     const updated = [...items]
     updated[index] = {
@@ -83,14 +69,14 @@ export default function EditQuoteModal({ isOpen, onClose, quote, onSave, clients
     setItems(updated)
   }
 
-  function lineTotal(item: Item) {
+  function lineTotal(item) {
     const subtotal = item.quantity * item.unit_price
     if (item.discount_type === 'percentage') return subtotal * (1 - item.discount_value / 100)
     if (item.discount_type === 'fixed') return subtotal - item.discount_value
     return subtotal
   }
 
-  const handleSubmit = async (e: any) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     try {
       const payload = {
@@ -132,7 +118,7 @@ export default function EditQuoteModal({ isOpen, onClose, quote, onSave, clients
               required
             >
               <option value=''>-- Select Client --</option>
-              {clients.map((client: any) => (
+              {clients.map((client) => (
                 <option key={client.id} value={client.id}>
                   {client.company_name} - {client.contact_name || 'No contact'}
                 </option>
@@ -287,7 +273,7 @@ export default function EditQuoteModal({ isOpen, onClose, quote, onSave, clients
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               className='w-full border border-gray-300 rounded-lg p-2'
-              rows={3}
+              rows='3'
               placeholder='Additional notes'
             />
           </div>
@@ -299,7 +285,7 @@ export default function EditQuoteModal({ isOpen, onClose, quote, onSave, clients
               value={formData.payment_terms}
               onChange={(e) => setFormData({ ...formData, payment_terms: e.target.value })}
               className='w-full border border-gray-300 rounded-lg p-2'
-              rows={3}
+              rows='3'
               placeholder='Ej: 50% anticipo, 50% contra entrega'
             />
           </div>
@@ -335,3 +321,4 @@ export default function EditQuoteModal({ isOpen, onClose, quote, onSave, clients
     </div>
   )
 }
+
