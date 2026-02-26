@@ -3,7 +3,6 @@ import { useState } from "react";
 
 export default function ExpenseForm({ clients, onSubmit, loading }) {
   const [form, setForm] = useState({
-    client_id: "",
     date: "",
     category: "",
     description: "",
@@ -24,26 +23,8 @@ export default function ExpenseForm({ clients, onSubmit, loading }) {
 
   return (
     <form onSubmit={handleSubmit} className="bg-white shadow rounded-lg p-6 mb-6">
-      <h2 className="text-xl font-semibold mb-4">Add Expense</h2>
-
+      <h2 className="text-xl font-bold mb-4">Add Expense</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-        <div>
-          <label className="block mb-1 font-medium">Client</label>
-          <select
-            name="client_id"
-            value={form.client_id}
-            onChange={handleChange}
-            className="border p-2 rounded w-full text-black bg-white"
-          >
-            <option value="">-- Select Client --</option>
-            {clients.map(c => (
-              <option key={c.id} value={c.id}>
-                {c.company_name}
-              </option>
-            ))}
-          </select>
-        </div>
 
         <div>
           <label className="block mb-1 font-medium">Date</label>
@@ -53,6 +34,7 @@ export default function ExpenseForm({ clients, onSubmit, loading }) {
             value={form.date}
             onChange={handleChange}
             className="border p-2 rounded w-full"
+            required
           />
         </div>
 
@@ -63,6 +45,19 @@ export default function ExpenseForm({ clients, onSubmit, loading }) {
             name="category"
             placeholder="Fuel, Tools, Repairs..."
             value={form.category}
+            onChange={handleChange}
+            className="border p-2 rounded w-full"
+            required
+          />
+        </div>
+
+        <div>
+          <label className="block mb-1 font-medium">Description</label>
+          <input
+            type="text"
+            name="description"
+            placeholder="Details..."
+            value={form.description}
             onChange={handleChange}
             className="border p-2 rounded w-full"
           />
@@ -76,6 +71,7 @@ export default function ExpenseForm({ clients, onSubmit, loading }) {
             value={form.amount}
             onChange={handleChange}
             className="border p-2 rounded w-full"
+            required
           />
         </div>
 
