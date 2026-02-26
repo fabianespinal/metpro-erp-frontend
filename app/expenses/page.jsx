@@ -103,7 +103,7 @@ export default function ExpensesPage() {
     }
 
     try {
-      await api.post("/expenses", formData);
+      await api.post("/expenses/", formData);
       await loadExpenses();
       alert("Expense added successfully!");
     } catch (e) {
