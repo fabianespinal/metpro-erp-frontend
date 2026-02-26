@@ -87,6 +87,21 @@ export default function ExpensesPage() {
   // -----------------------------
   async function handleCreateExpense(formData) {
     setLoading(true);
+
+    // REMOVE client_id if present
+    if ("client_id" in formData) {
+      delete formData.client_id;
+    }
+
+    // Convert quote_id and project_id to strings (DB expects TEXT)
+    if (formData.quote_id !== undefined && formData.quote_id !== null) {
+      formData.quote_id = String(formData.quote_id);
+    }
+
+    if (formData.project_id !== undefined && formData.project_id !== null) {
+      formData.project_id = String(formData.project_id);
+    }
+
     try {
       await api.post("/expenses", formData);
       await loadExpenses();
@@ -122,12 +137,11 @@ export default function ExpensesPage() {
     }
 
     let csv =
-      "Date,Client ID,Category,Description,Amount,Payment Method,Project ID,Quote ID\n";
+      "Date,Category,Description,Amount,Payment Method,Project ID,Quote ID\n";
 
     expensesToExport.forEach(exp => {
       csv += [
         exp.date,
-        exp.client_id ?? "",
         exp.category,
         exp.description ? `"${exp.description.replace(/"/g, '""')}"` : "",
         exp.amount,
