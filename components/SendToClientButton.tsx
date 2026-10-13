@@ -9,7 +9,7 @@ export default function SendToClientButton({
   type,
   onSent,
 }: {
-  id: number;
+  id: number | string;
   type: "quote" | "invoice";
   onSent?: () => void;
 }) {

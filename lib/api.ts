@@ -31,7 +31,18 @@ export async function api(endpoint: string, options: RequestInit = {}) {
 
   if (!res.ok) {
     const text = await res.text().catch(() => "");
-    throw new Error(`API error ${res.status}: ${text}`);
+    let message = `API error ${res.status}`;
+    try {
+      const body = JSON.parse(text);
+      if (body && body.detail) {
+        message = typeof body.detail === "string" ? body.detail : JSON.stringify(body.detail);
+      }
+    } catch {
+      if (text) message = `API error ${res.status}: ${text}`;
+    }
+    const err = new Error(message) as Error & { status?: number };
+    err.status = res.status;
+    throw err;
   }
 
   return res.json().catch(() => null);
@@ -61,7 +72,7 @@ api.delete = (endpoint: string) =>
 // SEND TO CLIENT (Quotes + Invoices)
 // ------------------------------------------------------
 
-export async function sendQuoteToClient(quoteId: number) {
+export async function sendQuoteToClient(quoteId: string | number) {
   return api(`/quotes/${quoteId}/send`, {
     method: "POST",
   });

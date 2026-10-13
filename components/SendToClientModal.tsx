@@ -14,7 +14,7 @@ export default function SendToClientModal({
 }: {
   open: boolean;
   onClose: () => void;
-  id: number;
+  id: number | string;
   type: "quote" | "invoice";
   onSent?: () => void;
 }) {
@@ -23,7 +23,7 @@ export default function SendToClientModal({
   if (!open) return null;
 
   // 🔥 Prevent undefined ID from causing 422 errors
-  if (!id || Number.isNaN(id)) {
+  if (id === null || id === undefined || id === "" || id === 0) {
     console.error("SendToClientModal received invalid ID:", id);
     return (
       <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
@@ -62,8 +62,6 @@ export default function SendToClientModal({
       console.error("Send-to-client error:", err);
 
       const backendMessage =
-        err?.response?.data?.detail ||
-        err?.response?.data?.message ||
         err?.message ||
         "Error al enviar. Intente nuevamente.";
 
