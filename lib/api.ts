@@ -78,7 +78,7 @@ export async function sendQuoteToClient(quoteId: string | number) {
   });
 }
 
-export async function sendInvoiceToClient(invoiceId: number) {
+export async function sendInvoiceToClient(invoiceId: string | number) {
   return api(`/invoices/${invoiceId}/send`, {
     method: "POST",
   });
