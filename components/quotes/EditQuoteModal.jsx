@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 
 export default function EditQuoteModal({ isOpen, onClose, quote, onSave, clients }) {
+  const [saveError, setSaveError] = useState('')
   const [formData, setFormData] = useState({
     client_id: '',
     project_name: '',
@@ -28,6 +29,7 @@ export default function EditQuoteModal({ isOpen, onClose, quote, onSave, clients
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    setSaveError('')
     try {
       // Strip empty strings back to null so the backend receives clean data
       const payload = {
@@ -39,6 +41,7 @@ export default function EditQuoteModal({ isOpen, onClose, quote, onSave, clients
       onClose()
     } catch (error) {
       console.error('Error saving quote:', error)
+      setSaveError(error?.message || 'Error saving quote. Try again.')
     }
   }
 
@@ -131,6 +134,10 @@ export default function EditQuoteModal({ isOpen, onClose, quote, onSave, clients
               className='w-full border border-gray-300 rounded-lg p-2'
             />
           </div>
+
+          {saveError && (
+            <p className='text-red-600 text-sm' role='alert'>{saveError}</p>
+          )}
 
           <div className='flex gap-3 justify-end pt-4 border-t'>
             <button
