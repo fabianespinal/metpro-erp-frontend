@@ -3,6 +3,7 @@ import { unwrapEnvelope } from "@/lib/api"
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { PageHeader } from '@/components/ui/page-header'
 
 export default function DashboardPage() {
   const [username, setUsername] = useState('')
@@ -189,23 +190,15 @@ export default function DashboardPage() {
     }
   ]
 
-  // Debug log (moved to proper location)
-  console.log("DASHBOARD MODULES:", modules)
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white p-8">
+    <div className="text-ink">
 
       {/* HEADER */}
-      <header className="flex items-center justify-between mb-10">
-        <div className="flex items-center gap-3">
-          <h1 className="text-3xl font-bold tracking-wide">Dashboard</h1>
-        </div>
-
-        <div className="text-right opacity-80 text-sm">
-          <p className="font-semibold">Welcome, {username}</p>
-          <p className="text-gray-400">Metpro ERP System</p>
-        </div>
-      </header>
+      <PageHeader
+        title="Dashboard"
+        subtitle="Metpro ERP System"
+        actions={<span className="text-sm font-medium text-ink">Welcome, {username}</span>}
+      />
 
       {/* MODULE GRID */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -214,16 +207,15 @@ export default function DashboardPage() {
             key={module.name}
             href={module.href}
             className="
-              bg-gray-800/60 border border-gray-700 rounded-xl p-6
-              hover:bg-gray-700/60 hover:scale-[1.02] transition-all duration-200
-              shadow-lg hover:shadow-xl cursor-pointer
+              bg-surface border border-line rounded-xl p-6 shadow-card
+              hover:border-accent transition-colors duration-200 cursor-pointer
             "
           >
             <div className="flex items-start gap-4">
-              <div className="text-gray-300">{module.icon}</div>
+              <div className="text-accent">{module.icon}</div>
               <div>
-                <h3 className="text-lg font-semibold mb-1">{module.name}</h3>
-                <p className="text-sm text-gray-400">{module.description}</p>
+                <h3 className="text-lg font-semibold mb-1 text-ink">{module.name}</h3>
+                <p className="text-sm text-muted">{module.description}</p>
               </div>
             </div>
           </Link>
@@ -233,23 +225,23 @@ export default function DashboardPage() {
       {/* QUICK STATS */}
       <div className="mt-12 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
 
-        <div className="bg-gray-800/60 border border-gray-700 rounded-xl p-6 shadow-lg">
-          <div className="text-sm text-gray-400 mb-1">Clientes Activos</div>
-          <div className="text-3xl font-bold">{stats.clients}</div>
+        <div className="bg-surface border border-line rounded-xl p-6 shadow-card">
+          <div className="text-sm text-muted mb-1">Clientes Activos</div>
+          <div className="text-3xl font-bold text-ink">{stats.clients}</div>
         </div>
 
-        <div className="bg-gray-800/60 border border-gray-700 rounded-xl p-6 shadow-lg">
-          <div className="text-sm text-gray-400 mb-1">Cotizaciones Pendientes</div>
-          <div className="text-3xl font-bold">{stats.pendingQuotes}</div>
+        <div className="bg-surface border border-line rounded-xl p-6 shadow-card">
+          <div className="text-sm text-muted mb-1">Cotizaciones Pendientes</div>
+          <div className="text-3xl font-bold text-ink">{stats.pendingQuotes}</div>
         </div>
 
-        <div className="bg-gray-800/60 border border-gray-700 rounded-xl p-6 shadow-lg">
-          <div className="text-sm text-gray-400 mb-1">Facturas Abiertas</div>
-          <div className="text-3xl font-bold">{stats.openInvoices}</div>
+        <div className="bg-surface border border-line rounded-xl p-6 shadow-card">
+          <div className="text-sm text-muted mb-1">Facturas Abiertas</div>
+          <div className="text-3xl font-bold text-ink">{stats.openInvoices}</div>
         </div>
 
-        <div className="bg-gray-800/60 border border-gray-700 rounded-xl p-6 shadow-lg">
-          <div className="text-sm text-gray-400 mb-1">Gastos Totales</div>
+        <div className="bg-surface border border-line rounded-xl p-6 shadow-card">
+          <div className="text-sm text-muted mb-1">Gastos Totales</div>
           <div className="text-3xl font-bold">${stats.totalExpenses.toFixed(2)}</div>
         </div>
 
@@ -258,19 +250,19 @@ export default function DashboardPage() {
       {/* FINANCIAL OVERVIEW */}
       <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
 
-        <div className="bg-gray-800/60 border border-gray-700 rounded-xl p-6 shadow-lg">
-          <div className="text-sm text-gray-400 mb-1">Ingresos (Facturas Pagadas)</div>
-          <div className="text-3xl font-bold text-green-400">${stats.revenue.toFixed(2)}</div>
+        <div className="bg-surface border border-line rounded-xl p-6 shadow-card">
+          <div className="text-sm text-muted mb-1">Ingresos (Facturas Pagadas)</div>
+          <div className="text-3xl font-bold text-emerald-600">${stats.revenue.toFixed(2)}</div>
         </div>
 
-        <div className="bg-gray-800/60 border border-gray-700 rounded-xl p-6 shadow-lg">
-          <div className="text-sm text-gray-400 mb-1">Gastos del Mes</div>
-          <div className="text-3xl font-bold text-yellow-400">${stats.monthlyExpenses.toFixed(2)}</div>
+        <div className="bg-surface border border-line rounded-xl p-6 shadow-card">
+          <div className="text-sm text-muted mb-1">Gastos del Mes</div>
+          <div className="text-3xl font-bold text-amber-600">${stats.monthlyExpenses.toFixed(2)}</div>
         </div>
 
-        <div className="bg-gray-800/60 border border-gray-700 rounded-xl p-6 shadow-lg">
-          <div className="text-sm text-gray-400 mb-1">Ganancia Neta</div>
-          <div className={`text-3xl font-bold ${stats.profit >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+        <div className="bg-surface border border-line rounded-xl p-6 shadow-card">
+          <div className="text-sm text-muted mb-1">Ganancia Neta</div>
+          <div className={`text-3xl font-bold ${stats.profit >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
             ${stats.profit.toFixed(2)}
           </div>
         </div>
@@ -281,48 +273,48 @@ export default function DashboardPage() {
       <div className="mt-12 grid grid-cols-1 lg:grid-cols-3 gap-6">
 
         {/* Last 5 Quotes */}
-        <div className="bg-gray-800/60 border border-gray-700 rounded-xl p-6 shadow-lg">
-          <h2 className="text-xl font-semibold mb-4">Cotizaciones Recientes</h2>
+        <div className="bg-surface border border-line rounded-xl p-6 shadow-card">
+          <h2 className="text-lg font-semibold mb-4 text-ink">Cotizaciones Recientes</h2>
           {recentQuotes.length === 0 && (
-            <p className="text-gray-400 text-sm">No hay cotizaciones recientes</p>
+            <p className="text-muted text-sm">No hay cotizaciones recientes</p>
           )}
           <ul className="space-y-3">
             {recentQuotes.map((q) => (
               <li key={q.id} className="flex justify-between text-sm">
-                <span className="text-gray-300">#{q.id} — {q.client_name}</span>
-                <span className="text-gray-500">{new Date(q.created_at).toLocaleDateString()}</span>
+                <span className="text-ink">#{q.id} — {q.client_name}</span>
+                <span className="text-muted">{new Date(q.created_at).toLocaleDateString()}</span>
               </li>
             ))}
           </ul>
         </div>
 
         {/* Last 5 Invoices */}
-        <div className="bg-gray-800/60 border border-gray-700 rounded-xl p-6 shadow-lg">
-          <h2 className="text-xl font-semibold mb-4">Facturas Recientes</h2>
+        <div className="bg-surface border border-line rounded-xl p-6 shadow-card">
+          <h2 className="text-lg font-semibold mb-4 text-ink">Facturas Recientes</h2>
           {recentInvoices.length === 0 && (
-            <p className="text-gray-400 text-sm">No hay facturas recientes</p>
+            <p className="text-muted text-sm">No hay facturas recientes</p>
           )}
           <ul className="space-y-3">
             {recentInvoices.map((inv) => (
               <li key={inv.id} className="flex justify-between text-sm">
-                <span className="text-gray-300">#{inv.invoice_number} — {inv.client_name}</span>
-                <span className="text-gray-500">{new Date(inv.created_at).toLocaleDateString()}</span>
+                <span className="text-ink">#{inv.invoice_number} — {inv.client_name}</span>
+                <span className="text-muted">{new Date(inv.created_at).toLocaleDateString()}</span>
               </li>
             ))}
           </ul>
         </div>
 
         {/* Last 5 Expenses */}
-        <div className="bg-gray-800/60 border border-gray-700 rounded-xl p-6 shadow-lg">
-          <h2 className="text-xl font-semibold mb-4">Gastos Recientes</h2>
+        <div className="bg-surface border border-line rounded-xl p-6 shadow-card">
+          <h2 className="text-lg font-semibold mb-4 text-ink">Gastos Recientes</h2>
           {recentExpenses.length === 0 && (
-            <p className="text-gray-400 text-sm">No hay gastos recientes</p>
+            <p className="text-muted text-sm">No hay gastos recientes</p>
           )}
           <ul className="space-y-3">
             {recentExpenses.map((exp) => (
               <li key={exp.expense_id} className="flex justify-between text-sm">
-                <span className="text-gray-300">{exp.category} — ${Number(exp.amount).toFixed(2)}</span>
-                <span className="text-gray-500">{new Date(exp.created_at).toLocaleDateString()}</span>
+                <span className="text-ink">{exp.category} — ${Number(exp.amount).toFixed(2)}</span>
+                <span className="text-muted">{new Date(exp.created_at).toLocaleDateString()}</span>
               </li>
             ))}
           </ul>
