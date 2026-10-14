@@ -5,8 +5,10 @@ import { useState, useEffect } from 'react'
 import Link from "next/link";
 import { api } from '@/lib/api'
 import CSVImportModal from '@/components/client/CSVImportModal'
+import { useCurrentRole } from '@/lib/currentRole'
 
 export default function ClientsPage() {
+  const { isAdmin } = useCurrentRole()
   const [clients, setClients] = useState([])
   const [newClient, setNewClient] = useState({
     company_name: '',
@@ -302,12 +304,14 @@ export default function ClientsPage() {
                         Editar
                       </button>
 
-                      <button
-                        onClick={() => handleDeleteClient(client.id)}
-                        className='text-red-600 hover:text-red-800 px-2 py-1 rounded hover:bg-red-50 transition'
-                      >
-                        Eliminar
-                      </button>
+                      {isAdmin && (
+                        <button
+                          onClick={() => handleDeleteClient(client.id)}
+                          className='text-red-600 hover:text-red-800 px-2 py-1 rounded hover:bg-red-50 transition'
+                        >
+                          Eliminar
+                        </button>
+                      )}
 
                       {/* NEW: Manage Contacts */}
                       <Link

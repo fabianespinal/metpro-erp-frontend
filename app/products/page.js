@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import { api } from "@/lib/api"
+import { useCurrentRole } from "@/lib/currentRole"
 
 export default function ProductsPage() {
+  const { isAdmin } = useCurrentRole()
   const [products, setProducts] = useState([])
   const [newProduct, setNewProduct] = useState({ name: '', description: '', unit_price: 0 })
   const [editingProduct, setEditingProduct] = useState(null)
@@ -254,12 +256,14 @@ const handleUpdateProduct = async (e) => {
                         Edit
                       </button>
 
-                      <button
-                        onClick={() => handleDeleteProduct(product.id)}
-                        className='text-red-600 hover:text-red-800'
-                      >
-                        Borrar
-                      </button>
+                      {isAdmin && (
+                        <button
+                          onClick={() => handleDeleteProduct(product.id)}
+                          className='text-red-600 hover:text-red-800'
+                        >
+                          Borrar
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>

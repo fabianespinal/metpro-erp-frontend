@@ -1,4 +1,5 @@
 import { api } from "@/lib/api";
+import { fetchCurrentRole, isAdminRole } from "@/lib/currentRole";
 
 export async function fetchInvoice(id: number) {
   return api.get(`/invoices/${id}`);
@@ -17,6 +18,11 @@ export async function updateInvoice(id: number, data: unknown) {
 }
 
 export async function deleteInvoice(id: number) {
+  // UI guard only. The backend enforces admin on DELETE /invoices/{id}.
+  const role = await fetchCurrentRole();
+  if (!isAdminRole(role)) {
+    throw Object.assign(new Error("Insufficient permissions"), { status: 403 });
+  }
   return api.delete(`/invoices/${id}`);
 }
 
