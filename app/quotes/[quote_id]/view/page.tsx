@@ -28,7 +28,7 @@ interface Quote {
   contact_email: string;
   contact_phone: string;
   items: QuoteItem[];
-  included_charges: any;
+  included_charges: IncludedCharges;
 }
 
 function fmt(n: number) {
@@ -38,7 +38,20 @@ function fmt(n: number) {
   }).format(n);
 }
 
-function calcTotals(items: QuoteItem[], charges: any) {
+type IncludedCharges = {
+  supervision?: boolean;
+  supervision_percentage?: number;
+  admin?: boolean;
+  admin_percentage?: number;
+  insurance?: boolean;
+  insurance_percentage?: number;
+  transport?: boolean;
+  transport_percentage?: number;
+  contingency?: boolean;
+  contingency_percentage?: number;
+} | null;
+
+function calcTotals(items: QuoteItem[], charges: IncludedCharges) {
   const itemsTotal = items.reduce(
     (sum, i) => sum + i.quantity * i.unit_price,
     0

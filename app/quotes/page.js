@@ -211,7 +211,8 @@ export default function QuotesPage() {
   async function handleSaveEdit(quoteId, updatedData) {
     try {
       // client_id is not a valid field for PUT — strip it
-      const { client_id, ...updatePayload } = updatedData
+      const updatePayload = { ...updatedData }
+      delete updatePayload.client_id
       await api(`/quotes/${quoteId}`, {
         method: "PUT",
         body: JSON.stringify(updatePayload)
