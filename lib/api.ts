@@ -52,13 +52,13 @@ export async function api(endpoint: string, options: RequestInit = {}) {
 api.get = (endpoint: string) =>
   api(endpoint, { method: "GET" });
 
-api.post = (endpoint: string, data?: any) =>
+api.post = (endpoint: string, data?: unknown) =>
   api(endpoint, {
     method: "POST",
     body: data instanceof FormData ? data : JSON.stringify(data),
   });
 
-api.put = (endpoint: string, data?: any) =>
+api.put = (endpoint: string, data?: unknown) =>
   api(endpoint, {
     method: "PUT",
     body: data instanceof FormData ? data : JSON.stringify(data),
