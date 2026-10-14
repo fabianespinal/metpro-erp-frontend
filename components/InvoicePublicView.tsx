@@ -6,8 +6,15 @@ interface InvoicePublicViewProps {
   invoiceId: string;
 }
 
+// Only the fields this view renders.
+interface PublicInvoice {
+  invoice_number: string;
+  client_name: string | null;
+  total_amount: number | string | null;
+}
+
 export default function InvoicePublicView({ invoiceId }: InvoicePublicViewProps) {
-  const [invoice, setInvoice] = useState<any>(null);
+  const [invoice, setInvoice] = useState<PublicInvoice | null>(null);
 
   useEffect(() => {
     fetch(`https://api.metprord.com/invoices/public/${invoiceId}`)
