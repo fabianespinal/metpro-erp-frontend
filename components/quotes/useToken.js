@@ -1,12 +1,5 @@
-import { useState, useEffect } from 'react'
+import { useStoredItem } from '../../lib/useStoredItem'
 
 export function useToken() {
-  const [token, setToken] = useState(null)
-
-  useEffect(() => {
-    const storedToken = localStorage.getItem('token')
-    setToken(storedToken)
-  }, [])
-
-  return token
+  return useStoredItem('token')
 }

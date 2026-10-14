@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 export default function ContactModal({ contact, onClose, onSubmit }) {
   const [form, setForm] = useState({
@@ -7,7 +7,10 @@ export default function ContactModal({ contact, onClose, onSubmit }) {
     phone: "",
   });
 
-  useEffect(() => {
+  // Sync form when the contact prop changes. Runs during render, not in an effect.
+  const [syncedContact, setSyncedContact] = useState(undefined);
+  if (contact !== syncedContact) {
+    setSyncedContact(contact);
     if (contact) {
       setForm({
         name: contact.name || "",
@@ -15,7 +18,7 @@ export default function ContactModal({ contact, onClose, onSubmit }) {
         phone: contact.phone || "",
       });
     }
-  }, [contact]);
+  }
 
   function handleChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value });

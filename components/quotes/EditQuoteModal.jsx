@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 
 export default function EditQuoteModal({ isOpen, onClose, quote, onSave, clients }) {
   const [saveError, setSaveError] = useState('')
@@ -11,7 +11,10 @@ export default function EditQuoteModal({ isOpen, onClose, quote, onSave, clients
     status: 'Draft',
   })
 
-  useEffect(() => {
+  // Sync form when the quote prop changes. Runs during render, not in an effect.
+  const [syncedQuote, setSyncedQuote] = useState(undefined)
+  if (quote !== syncedQuote) {
+    setSyncedQuote(quote)
     if (quote) {
       setFormData({
         client_id: quote.client_id || '',
@@ -23,7 +26,7 @@ export default function EditQuoteModal({ isOpen, onClose, quote, onSave, clients
         status: quote.status || 'Draft',
       })
     }
-  }, [quote])
+  }
 
   if (!isOpen || !quote) return null
 
