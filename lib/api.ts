@@ -1,5 +1,16 @@
 "use client";
 
+/**
+ * Success responses are {"data": payload, "success": true}.
+ * Return the payload. Any other body is returned unchanged (errors, legacy shapes).
+ */
+export function unwrapEnvelope<T = unknown>(body: unknown): T {
+  if (body && typeof body === "object" && (body as { success?: unknown }).success === true && "data" in body) {
+    return (body as { data: T }).data;
+  }
+  return body as T;
+}
+
 export async function api(endpoint: string, options: RequestInit = {}) {
   const rawBase = process.env.NEXT_PUBLIC_API_URL;
   if (!rawBase) throw new Error("Backend URL missing");
@@ -45,7 +56,7 @@ export async function api(endpoint: string, options: RequestInit = {}) {
     throw err;
   }
 
-  return res.json().catch(() => null);
+  return res.json().catch(() => null).then(unwrapEnvelope);
 }
 
 // Convenience helpers

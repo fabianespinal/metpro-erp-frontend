@@ -1,4 +1,5 @@
 "use client";
+import { unwrapEnvelope } from "@/lib/api";
 
 import { useEffect, useState } from "react";
 
@@ -12,7 +13,7 @@ export default function InvoicePublicView({ invoiceId }: InvoicePublicViewProps)
   useEffect(() => {
     fetch(`https://api.metprord.com/invoices/public/${invoiceId}`)
       .then(res => res.json())
-      .then(data => setInvoice(data));
+      .then(data => setInvoice(unwrapEnvelope(data)));
   }, [invoiceId]);
 
   if (!invoice) return <p>Cargando factura...</p>;

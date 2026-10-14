@@ -1,4 +1,5 @@
 "use client";
+import { unwrapEnvelope } from "@/lib/api";
 import { useEffect, useState } from "react";
 
 type User = {
@@ -29,7 +30,7 @@ export default function UsersPage() {
         },
       });
 
-      const data: User[] = await res.json();
+      const data = unwrapEnvelope<User[]>(await res.json());
       setUsers(data);
     } catch (err) {
       console.error("Failed to load users:", err);

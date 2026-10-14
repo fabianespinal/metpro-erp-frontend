@@ -1,4 +1,5 @@
 'use client'
+import { unwrapEnvelope } from "@/lib/api"
 
 import { useState, useCallback } from 'react'
 import { Button } from "@/components/ui/button"
@@ -104,7 +105,7 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete }) {
       }
 
       // Parse successful response
-      const result = await response.json()
+      const result = unwrapEnvelope(await response.json())
       setImportResult(result)
 
       // Auto-close on success

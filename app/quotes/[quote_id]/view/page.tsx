@@ -1,4 +1,5 @@
 "use client";
+import { unwrapEnvelope } from "@/lib/api";
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
@@ -105,7 +106,7 @@ export default function QuotePublicView() {
     fetch(`${API_URL}/quotes/${quoteId}/public`)
       .then((r) => {
         if (!r.ok) throw new Error("Quote not found");
-        return r.json();
+        return r.json().then((body: unknown) => unwrapEnvelope<Quote>(body));
       })
       .then(setQuote)
       .catch(() => setError("No se pudo cargar la cotización."))
