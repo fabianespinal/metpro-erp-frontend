@@ -52,7 +52,7 @@ export default function ProductSelectionModal({ isOpen, onClose, onSelect, produ
             </div>
           ) : filteredProducts.length === 0 ? (
             <div className='text-center text-gray-500 py-4'>
-              No products match "{searchTerm}"
+              No products match &ldquo;{searchTerm}&rdquo;
             </div>
           ) : (
             <div className='space-y-2'>

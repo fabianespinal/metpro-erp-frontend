@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [dev, main]
+  push:
+    branches: [dev]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: typecheck and build
+    runs-on: ubuntu-latest
+    env:
+      # Build-time public variable. Empty value breaks fetches at build time.
+      NEXT_PUBLIC_API_URL: https://api.metprord.com
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Typecheck (blocking)
+        run: npx tsc --noEmit
+
+      - name: Build (blocking)
+        run: npm run build
+
+      - name: Lint (non-blocking until existing errors are fixed)
+        continue-on-error: true
+        run: npm run lint
