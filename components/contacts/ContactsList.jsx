@@ -5,11 +5,11 @@ export default function ContactsList({ contacts, onEdit, onDelete }) {
   const router = useRouter();
 
   if (!contacts || contacts.length === 0) {
-    return <p className="text-gray-500">No hay contactos registrados.</p>;
+    return <p className="text-muted">No hay contactos registrados.</p>;
   }
 
   return (
-    <div className="bg-white shadow rounded-md overflow-hidden">
+    <div className="bg-surface shadow rounded-md overflow-hidden">
       <table className={dt.table}>
         <thead className={dt.thead}>
           <tr>
@@ -29,14 +29,14 @@ export default function ContactsList({ contacts, onEdit, onDelete }) {
 
               <td className={`${dt.td} flex flex-wrap gap-2`}>
                 <button
-                  className="px-3 py-1 bg-blue-600 text-white rounded"
+                  className="px-3 py-1 bg-accent text-white rounded"
                   onClick={() => router.push(`/quotes?contactId=${c.id}&companyId=${c.company_id}`)}
                 >
                   Use in Quote
                 </button>
 
                 <button
-                  className="px-3 py-1 bg-yellow-500 text-white rounded"
+                  className="px-3 py-1 bg-amber-600 text-white rounded"
                   onClick={() => onEdit(c)}
                 >
                   Editar

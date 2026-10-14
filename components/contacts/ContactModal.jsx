@@ -28,7 +28,7 @@ export default function ContactModal({ contact, onClose, onSubmit }) {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center">
-      <div className="bg-white p-6 rounded shadow-lg w-full max-w-md">
+      <div className="bg-surface p-6 rounded shadow-card w-full max-w-md">
         <h2 className="text-xl font-semibold mb-4">
           {contact ? "Editar Contacto" : "Añadir Contacto"}
         </h2>
@@ -62,14 +62,14 @@ export default function ContactModal({ contact, onClose, onSubmit }) {
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 bg-gray-300 rounded"
+              className="px-4 py-2 bg-line rounded"
             >
               Cancelar
             </button>
 
             <button
               type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded"
+              className="px-4 py-2 bg-accent text-white rounded"
             >
               Guardar
             </button>

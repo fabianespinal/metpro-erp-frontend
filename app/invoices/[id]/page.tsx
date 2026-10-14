@@ -53,7 +53,7 @@ export default function InvoiceDetailPage() {
   if (loading || !invoice) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <p className="text-gray-600">Cargando factura...</p>
+        <p className="text-muted">Cargando factura...</p>
       </div>
     );
   }
@@ -61,50 +61,50 @@ export default function InvoiceDetailPage() {
   const payments = invoice.payments ?? [];
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-4xl mx-auto bg-white shadow rounded-lg p-6">
+    <div className="min-h-screen bg-canvas p-6">
+      <div className="max-w-4xl mx-auto bg-surface shadow rounded-lg p-6">
 
         <PageHeader title={`Factura #${invoice.invoice_number}`} />
 
         <div className="grid grid-cols-2 gap-4 mb-6">
           <div>
-            <p className="text-gray-600">Cliente</p>
+            <p className="text-muted">Cliente</p>
             <p className="font-medium">{invoice.client_name}</p>
           </div>
 
           <div>
-            <p className="text-gray-600">Fecha</p>
+            <p className="text-muted">Fecha</p>
             <p className="font-medium">
               {invoice.invoice_date?.split("T")[0]}
             </p>
           </div>
 
           <div>
-            <p className="text-gray-600">Estado</p>
+            <p className="text-muted">Estado</p>
             <StatusPill status={invoice.status} />
           </div>
         </div>
 
-        <div className="bg-gray-50 p-4 rounded-lg mb-6">
+        <div className="bg-canvas p-4 rounded-lg mb-6">
           <h2 className="text-xl font-semibold mb-3">Totales</h2>
 
           <div className="grid grid-cols-3 gap-4">
             <div>
-              <p className="text-gray-600">Total</p>
+              <p className="text-muted">Total</p>
               <p className="font-bold text-lg">
                 ${(invoice.total_amount ?? 0).toFixed(2)}
               </p>
             </div>
 
             <div>
-              <p className="text-gray-600">Pagado</p>
-              <p className="font-bold text-lg text-green-600">
+              <p className="text-muted">Pagado</p>
+              <p className="font-bold text-lg text-emerald-600">
                 ${(invoice.amount_paid ?? 0).toFixed(2)}
               </p>
             </div>
 
             <div>
-              <p className="text-gray-600">Pendiente</p>
+              <p className="text-muted">Pendiente</p>
               <p className="font-bold text-lg text-red-600">
                 ${(invoice.amount_due ?? 0).toFixed(2)}
               </p>
@@ -113,7 +113,7 @@ export default function InvoiceDetailPage() {
 
           <button
             onClick={() => setPaymentOpen(true)}
-            className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            className="mt-4 bg-accent text-white px-4 py-2 rounded hover:bg-accent-strong"
           >
             Registrar Pago
           </button>
@@ -123,27 +123,27 @@ export default function InvoiceDetailPage() {
           <h2 className="text-xl font-semibold mb-3">Historial de Pagos</h2>
 
           {payments.length === 0 ? (
-            <p className="text-gray-500">No hay pagos registrados.</p>
+            <p className="text-muted">No hay pagos registrados.</p>
           ) : (
-            <table className="min-w-full divide-y divide-gray-200 bg-white">
-              <thead className="bg-gray-50">
+            <table className="min-w-full divide-y divide-line bg-surface">
+              <thead className="bg-canvas">
                 <tr>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                  <th className="px-4 py-2 text-left text-xs font-medium text-muted uppercase">
                     Fecha
                   </th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                  <th className="px-4 py-2 text-left text-xs font-medium text-muted uppercase">
                     Metodo
                   </th>
-                  <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">
+                  <th className="px-4 py-2 text-right text-xs font-medium text-muted uppercase">
                     Monto
                   </th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+                  <th className="px-4 py-2 text-left text-xs font-medium text-muted uppercase">
                     Notas
                   </th>
                 </tr>
               </thead>
 
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y divide-line">
                 {payments.map((p) => (
                   <tr key={p.id}>
                     <td className="px-4 py-2">

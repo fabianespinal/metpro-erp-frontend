@@ -26,7 +26,7 @@ export default function ExpenseForm({ clients, onSubmit, loading }) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="bg-white shadow rounded-lg p-6 mb-6"
+      className="bg-surface shadow rounded-lg p-6 mb-6"
     >
       <h2 className="text-xl font-bold mb-4">Agregar Gasto</h2>
 
@@ -140,7 +140,7 @@ export default function ExpenseForm({ clients, onSubmit, loading }) {
         <button
           type="submit"
           disabled={loading}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          className="bg-accent text-white px-4 py-2 rounded hover:bg-accent-strong"
         >
           {loading ? "Guardando..." : "Agregar Gasto"}
         </button>

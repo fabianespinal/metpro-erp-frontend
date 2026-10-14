@@ -179,13 +179,13 @@ export default function ExpensesPage() {
 
       <ExpensesChart expenses={filtered} />
 
-      <div className="bg-white rounded-lg shadow p-6 mt-6">
+      <div className="bg-surface rounded-lg shadow p-6 mt-6">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold">Recorded Expenses</h2>
 
           <button
             onClick={() => exportExpensesCSV(filtered)}
-            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+            className="bg-accent text-white px-4 py-2 rounded hover:bg-accent-strong"
           >
             Export CSV
           </button>

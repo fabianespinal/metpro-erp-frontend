@@ -2,7 +2,7 @@ import { dt } from "@/components/ui/data-table";
 export default function ExpensesTable({ expenses, onDelete }) {
   if (expenses.length === 0) {
     return (
-      <div className="p-4 text-gray-500">
+      <div className="p-4 text-muted">
         No hay gastos registrados todavía.
       </div>
     );

@@ -25,7 +25,7 @@ export default function ExpensesChart({ expenses }) {
   const data = Object.values(monthlyTotals);
 
   return (
-    <div className="bg-white shadow rounded-lg p-6 mb-6">
+    <div className="bg-surface shadow rounded-lg p-6 mb-6">
       <h2 className="text-xl font-semibold mb-4">Gastos Mensuales</h2>
 
       <Bar
