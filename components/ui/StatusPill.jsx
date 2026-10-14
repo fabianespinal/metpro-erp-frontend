@@ -7,20 +7,28 @@ import React from "react";
  * Supports Projects, Invoices, Quotes, Orders, etc.
  */
 
+// Neutral = pre-work. Accent = in motion. Green = done or paid.
+// Amber = held. Red = cancelled. Thin ring keeps badges flat.
+const NEUTRAL = "bg-canvas text-muted ring-line";
+const ACCENT = "bg-blue-50 text-blue-700 ring-blue-200";
+const SUCCESS = "bg-emerald-50 text-emerald-700 ring-emerald-200";
+const WARNING = "bg-amber-50 text-amber-700 ring-amber-200";
+const DANGER = "bg-red-50 text-red-700 ring-red-200";
+
 const STATUS_STYLES = {
   // PROJECT STATUSES
-  planning: "bg-gray-100 text-gray-800",
-  active: "bg-purple-100 text-purple-800",
-  in_progress: "bg-blue-100 text-blue-800",
-  completed: "bg-green-100 text-green-800",
-  on_hold: "bg-yellow-100 text-yellow-800",
-  cancelled: "bg-red-100 text-red-800",
+  planning: NEUTRAL,
+  active: ACCENT,
+  in_progress: ACCENT,
+  completed: SUCCESS,
+  on_hold: WARNING,
+  cancelled: DANGER,
 
   // INVOICE STATUSES
-  draft: "bg-gray-100 text-gray-800",
-  approved: "bg-blue-100 text-blue-800",
-  invoiced: "bg-green-100 text-green-800",
-  paid: "bg-emerald-100 text-emerald-800",
+  draft: NEUTRAL,
+  approved: ACCENT,
+  invoiced: SUCCESS,
+  paid: SUCCESS,
 };
 
 const STATUS_LABELS = {
@@ -42,12 +50,12 @@ const STATUS_LABELS = {
 export default function StatusPill({ status }) {
   const normalized = status?.toLowerCase() || "planning";
 
-  const style = STATUS_STYLES[normalized] || "bg-gray-100 text-gray-800";
+  const style = STATUS_STYLES[normalized] || NEUTRAL;
   const label = STATUS_LABELS[normalized] || status || "Unknown";
 
   return (
     <span
-      className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${style}`}
+      className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ring-1 ring-inset ${style}`}
     >
       {label}
     </span>
