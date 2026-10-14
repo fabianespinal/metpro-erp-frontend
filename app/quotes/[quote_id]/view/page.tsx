@@ -137,8 +137,8 @@ export default function QuotePublicView() {
   const t = calcTotals(quote.items || [], charges);
 
   return (
-    <div className="min-h-screen bg-canvas px-4 py-10 text-ink print:bg-white print:py-0">
-      <div className="mx-auto max-w-[860px] rounded-lg border border-line bg-surface p-6 shadow-card sm:p-10 print:border-0 print:p-0 print:shadow-none">
+    <div className="min-h-screen bg-canvas px-2 py-6 text-ink sm:px-4 sm:py-10 print:bg-white print:py-0">
+      <div className="mx-auto max-w-[860px] rounded-lg border border-line bg-surface p-4 shadow-card sm:p-10 print:border-0 print:p-0 print:shadow-none">
 
         {/* Header */}
         <div className="flex flex-col gap-6 border-b border-line pb-6 sm:flex-row sm:items-start sm:justify-between">
@@ -202,10 +202,10 @@ export default function QuotePublicView() {
             <table className={dt.table}>
               <thead className={dt.thead}>
                 <tr>
-                  <th className={dt.th}>Descripción</th>
-                  <th className={dt.thRight}>Cantidad</th>
-                  <th className={dt.thRight}>Precio Unit.</th>
-                  <th className={dt.thRight}>Total</th>
+                  <th className="whitespace-nowrap px-1 py-2 text-left text-[11px] font-semibold uppercase tracking-wide text-muted sm:px-4 sm:py-2.5">Descripción</th>
+                  <th className="whitespace-nowrap px-1 py-2 text-right text-[11px] font-semibold uppercase tracking-wide text-muted sm:px-4 sm:py-2.5">Cantidad</th>
+                  <th className="whitespace-nowrap px-1 py-2 text-right text-[11px] font-semibold uppercase tracking-wide text-muted sm:px-4 sm:py-2.5">Precio Unit.</th>
+                  <th className="whitespace-nowrap px-1 py-2 text-right text-[11px] font-semibold uppercase tracking-wide text-muted sm:px-4 sm:py-2.5">Total</th>
                 </tr>
               </thead>
               <tbody className={dt.tbody}>
@@ -213,10 +213,10 @@ export default function QuotePublicView() {
                   const lineTotal = item.quantity * item.unit_price;
                   return (
                     <tr key={i} className={dt.tr}>
-                      <td className={dt.td}>{item.product_name}</td>
-                      <td className={dt.tdRight}>{item.quantity.toFixed(2)}</td>
-                      <td className={dt.tdRight}>{fmt(item.unit_price)}</td>
-                      <td className={dt.tdRight}>{fmt(lineTotal)}</td>
+                      <td className="px-1 py-2.5 text-xs text-ink sm:px-4 sm:py-3 sm:text-sm">{item.product_name}</td>
+                      <td className="whitespace-nowrap px-1 py-2.5 text-right text-xs tabular-nums text-ink sm:px-4 sm:py-3 sm:text-sm">{item.quantity.toFixed(2)}</td>
+                      <td className="whitespace-nowrap px-1 py-2.5 text-right text-xs tabular-nums text-ink sm:px-4 sm:py-3 sm:text-sm">{fmt(item.unit_price)}</td>
+                      <td className="whitespace-nowrap px-1 py-2.5 text-right text-xs tabular-nums text-ink sm:px-4 sm:py-3 sm:text-sm">{fmt(lineTotal)}</td>
                     </tr>
                   );
                 })}
