@@ -4,6 +4,8 @@ import { unwrapEnvelope } from "@/lib/api"
 import { useState, useEffect } from 'react'
 import StatusPill from '@/components/ui/StatusPill'
 import { PageHeader } from '@/components/ui/page-header'
+import { Button } from '@/components/ui/button'
+import { fb } from '@/components/ui/filter-bar'
 
 // ============================================================
 // STATUS NORMALIZATION (CRITICAL - USED EVERYWHERE)
@@ -347,10 +349,10 @@ export default function ProjectsPage() {
     const budget = (Number(project.estimated_budget) || 0).toFixed(2)
 
     return (
-      <div key={project.id} className='bg-white p-4 rounded-lg shadow border border-gray-200 mb-3'>
+      <div key={project.id} className='rounded-lg border border-line bg-surface p-4 shadow-card mb-3'>
         <div className='mb-2'>
-          <h3 className='font-semibold text-gray-900 mb-1'>{project.name}</h3>
-          <p className='text-sm text-gray-600'>{client?.company_name || '—'}</p>
+          <h3 className='font-semibold text-ink mb-1'>{project.name}</h3>
+          <p className='text-sm text-muted'>{client?.company_name || '—'}</p>
         </div>
 
         <div className='mb-2'>
@@ -358,28 +360,28 @@ export default function ProjectsPage() {
           <StatusPill status={project.status} />
         </div>
 
-        <div className='text-sm text-gray-700 mb-2'>
+        <div className='text-sm text-ink mb-2'>
           <div className='flex justify-between mb-1'>
-            <span className='text-gray-500'>Budget:</span>
+            <span className='text-muted'>Budget:</span>
             <span className='font-medium'>${budget}</span>
           </div>
           {project.start_date && (
             <div className='flex justify-between mb-1'>
-              <span className='text-gray-500'>Start:</span>
+              <span className='text-muted'>Start:</span>
               <span>{project.start_date}</span>
             </div>
           )}
           {project.end_date && (
             <div className='flex justify-between'>
-              <span className='text-gray-500'>End:</span>
+              <span className='text-muted'>End:</span>
               <span>{project.end_date}</span>
             </div>
           )}
         </div>
 
-        <div className='flex gap-2 pt-2 border-t border-gray-200'>
+        <div className='flex gap-2 pt-2 border-t border-line'>
           <button
-            className='text-blue-600 text-sm hover:underline'
+            className='text-accent text-sm hover:underline'
             onClick={() => handleEditClick(project)}
           >
             Edit
@@ -405,11 +407,11 @@ export default function ProjectsPage() {
       {/* ============================================================
            FILTER DROPDOWN (BACKEND-SAFE VALUES)
          ============================================================ */}
-      <div className='mb-6'>
+      <div className={fb.bar}>
         <select
           value={filters.status}
           onChange={(e) => setFilters({ status: e.target.value })}
-          className='border border-gray-300 p-2 rounded'
+          className={`${fb.control} md:w-56`}
         >
           <option value=''>All Statuses</option>
           {STATUS_OPTIONS.map(s => (
@@ -428,39 +430,39 @@ export default function ProjectsPage() {
           
           {/* PLANNING COLUMN */}
           <div>
-            <div className='bg-gray-100 p-3 rounded-t-lg border border-gray-300'>
-              <h2 className='font-semibold text-gray-900'>Planning</h2>
-              <p className='text-sm text-gray-600'>
+            <div className='bg-surface p-3 rounded-t-lg border border-line'>
+              <h2 className='font-semibold text-ink'>Planning</h2>
+              <p className='text-sm text-muted'>
                 {getProjectsByStatus('planning').length} projects
               </p>
             </div>
-            <div className='bg-gray-50 p-3 rounded-b-lg border border-t-0 border-gray-300 min-h-[200px]'>
+            <div className='bg-canvas p-3 rounded-b-lg border border-t-0 border-line min-h-[200px]'>
               {getProjectsByStatus('planning').map(renderProjectCard)}
             </div>
           </div>
 
           {/* IN PROGRESS COLUMN */}
           <div>
-            <div className='bg-blue-100 p-3 rounded-t-lg border border-blue-300'>
-              <h2 className='font-semibold text-gray-900'>In Progress</h2>
-              <p className='text-sm text-gray-600'>
+            <div className='bg-surface p-3 rounded-t-lg border border-line'>
+              <h2 className='font-semibold text-ink'>In Progress</h2>
+              <p className='text-sm text-muted'>
                 {getProjectsByStatus('in_progress').length} projects
               </p>
             </div>
-            <div className='bg-blue-50 p-3 rounded-b-lg border border-t-0 border-blue-300 min-h-[200px]'>
+            <div className='bg-canvas p-3 rounded-b-lg border border-t-0 border-line min-h-[200px]'>
               {getProjectsByStatus('in_progress').map(renderProjectCard)}
             </div>
           </div>
 
           {/* COMPLETED COLUMN */}
           <div>
-            <div className='bg-green-100 p-3 rounded-t-lg border border-green-300'>
-              <h2 className='font-semibold text-gray-900'>Completed</h2>
-              <p className='text-sm text-gray-600'>
+            <div className='bg-surface p-3 rounded-t-lg border border-line'>
+              <h2 className='font-semibold text-ink'>Completed</h2>
+              <p className='text-sm text-muted'>
                 {getProjectsByStatus('completed').length} projects
               </p>
             </div>
-            <div className='bg-green-50 p-3 rounded-b-lg border border-t-0 border-green-300 min-h-[200px]'>
+            <div className='bg-canvas p-3 rounded-b-lg border border-t-0 border-line min-h-[200px]'>
               {getProjectsByStatus('completed').map(renderProjectCard)}
             </div>
           </div>
@@ -470,8 +472,8 @@ export default function ProjectsPage() {
         // ============================================================
         // FILTERED VIEW (BACKEND-SAFE FILTERING)
         // ============================================================
-        <div className='bg-white rounded-lg shadow p-6 border border-gray-200 mb-10'>
-          <h2 className='font-semibold text-gray-900 mb-4'>Filtered Results</h2>
+        <div className='rounded-lg border border-line bg-surface p-6 shadow-card mb-10'>
+          <h2 className='font-semibold text-ink mb-4'>Filtered Results</h2>
           <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
             {projects.map(renderProjectCard)}
           </div>
@@ -481,8 +483,8 @@ export default function ProjectsPage() {
       {/* ============================================================
            CREATE/EDIT FORM (BACKEND-SAFE VALUES)
          ============================================================ */}
-      <div className='mt-10 bg-white p-6 rounded-lg shadow border border-gray-200'>
-        <h2 className='text-xl font-bold mb-4'>
+      <div className='mt-10 rounded-lg border border-line bg-surface p-6 shadow-card'>
+        <h2 className='text-lg font-semibold tracking-tight text-ink mb-4'>
           {editingProject ? 'Edit Project' : 'Create Project'}
         </h2>
 
@@ -497,7 +499,7 @@ export default function ProjectsPage() {
                 ? setEditingProject({ ...editingProject, name: e.target.value })
                 : setNewProject({ ...newProject, name: e.target.value })
             }
-            className='border p-2 rounded'
+            className={fb.control}
           />
 
           {/* Client */}
@@ -508,7 +510,7 @@ export default function ProjectsPage() {
                 ? setEditingProject({ ...editingProject, client_id: e.target.value })
                 : setNewProject({ ...newProject, client_id: e.target.value })
             }
-            className='border p-2 rounded'
+            className={fb.control}
           >
             <option value=''>Select Client *</option>
             {clients.map(c => (
@@ -524,7 +526,7 @@ export default function ProjectsPage() {
                 ? setEditingProject({ ...editingProject, status: e.target.value })
                 : setNewProject({ ...newProject, status: e.target.value })
             }
-            className='border p-2 rounded'
+            className={fb.control}
           >
             {STATUS_OPTIONS.map(s => (
               <option key={s.value} value={s.value}>
@@ -542,7 +544,7 @@ export default function ProjectsPage() {
                 ? setEditingProject({ ...editingProject, start_date: e.target.value })
                 : setNewProject({ ...newProject, start_date: e.target.value })
             }
-            className='border p-2 rounded'
+            className={fb.control}
           />
 
           {/* End Date */}
@@ -554,7 +556,7 @@ export default function ProjectsPage() {
                 ? setEditingProject({ ...editingProject, end_date: e.target.value })
                 : setNewProject({ ...newProject, end_date: e.target.value })
             }
-            className='border p-2 rounded'
+            className={fb.control}
           />
 
           {/* Budget */}
@@ -567,7 +569,7 @@ export default function ProjectsPage() {
                 ? setEditingProject({ ...editingProject, estimated_budget: e.target.value })
                 : setNewProject({ ...newProject, estimated_budget: e.target.value })
             }
-            className='border p-2 rounded'
+            className={fb.control}
           />
 
           {/* Description */}
@@ -579,7 +581,7 @@ export default function ProjectsPage() {
                 ? setEditingProject({ ...editingProject, description: e.target.value })
                 : setNewProject({ ...newProject, description: e.target.value })
             }
-            className='border p-2 rounded col-span-1 md:col-span-2'
+            className={`${fb.control} h-auto py-2 col-span-1 md:col-span-2`}
           />
 
           {/* Notes */}
@@ -591,7 +593,7 @@ export default function ProjectsPage() {
                 ? setEditingProject({ ...editingProject, notes: e.target.value })
                 : setNewProject({ ...newProject, notes: e.target.value })
             }
-            className='border p-2 rounded col-span-1 md:col-span-2'
+            className={`${fb.control} h-auto py-2 col-span-1 md:col-span-2`}
           />
         </div>
 
@@ -599,28 +601,17 @@ export default function ProjectsPage() {
         <div className='mt-4 flex gap-3'>
           {editingProject ? (
             <>
-              <button
-                onClick={handleUpdate}
-                disabled={loading}
-                className='bg-blue-600 text-white px-4 py-2 rounded disabled:opacity-50'
-              >
+              <Button onClick={handleUpdate} disabled={loading}>
                 Update
-              </button>
-              <button
-                onClick={() => setEditingProject(null)}
-                className='bg-gray-300 px-4 py-2 rounded'
-              >
+              </Button>
+              <Button variant="outline" onClick={() => setEditingProject(null)}>
                 Cancel
-              </button>
+              </Button>
             </>
           ) : (
-            <button
-              onClick={handleCreate}
-              disabled={loading}
-              className='bg-green-600 text-white px-4 py-2 rounded disabled:opacity-50'
-            >
+            <Button onClick={handleCreate} disabled={loading}>
               Create
-            </button>
+            </Button>
           )}
         </div>
       </div>

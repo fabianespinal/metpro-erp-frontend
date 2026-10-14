@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { PageHeader } from "@/components/ui/page-header";
+import { dt } from "@/components/ui/data-table";
 
 type User = {
   id: number;
@@ -25,27 +26,29 @@ export default function UsersPage() {
     <div>
       <PageHeader title="Users" />
 
-      <table className="w-full border">
-        <thead>
-          <tr className="bg-gray-100">
-            <th className="p-2">ID</th>
-            <th className="p-2">Username</th>
-            <th className="p-2">Email</th>
-            <th className="p-2">Role</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {users.map((u) => (
-            <tr key={u.id} className="border-t">
-              <td className="p-2">{u.id}</td>
-              <td className="p-2">{u.username}</td>
-              <td className="p-2">{u.email}</td>
-              <td className="p-2">{u.role}</td>
+      <div className={dt.wrap}>
+        <table className={dt.table}>
+          <thead className={dt.thead}>
+            <tr>
+              <th className={dt.th}>ID</th>
+              <th className={dt.th}>Username</th>
+              <th className={dt.th}>Email</th>
+              <th className={dt.th}>Role</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+
+          <tbody className={dt.tbody}>
+            {users.map((u) => (
+              <tr key={u.id} className={dt.tr}>
+                <td className={dt.td}>{u.id}</td>
+                <td className={dt.td}>{u.username}</td>
+                <td className={dt.td}>{u.email}</td>
+                <td className={dt.td}>{u.role}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
