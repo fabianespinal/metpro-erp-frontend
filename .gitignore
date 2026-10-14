@@ -25,3 +25,5 @@ yarn-error.log*
 # OS
 .DS_Store
 Thumbs.db
+# TypeScript incremental build cache
+tsconfig.tsbuildinfo
