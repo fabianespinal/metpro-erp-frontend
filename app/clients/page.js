@@ -6,6 +6,8 @@ import Link from "next/link";
 import { api } from '@/lib/api'
 import CSVImportModal from '@/components/client/CSVImportModal'
 import { useCurrentRole } from '@/lib/currentRole'
+import { PageHeader } from '@/components/ui/page-header'
+import { Button } from '@/components/ui/button'
 
 export default function ClientsPage() {
   const { isAdmin } = useCurrentRole()
@@ -124,15 +126,14 @@ export default function ClientsPage() {
 
   return (
     <div className="w-full px-4 lg:px-8 py-8">
-      <div className='flex justify-between items-center mb-8'>
-        <h1 className='text-3xl font-bold text-left flex-1'>Clientes</h1>
-        <button
-          onClick={() => setImportModalOpen(true)}
-          className='bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 shadow-md hover:shadow-lg transition-shadow'
-        >
-          Importar CSV
-        </button>
-      </div>
+      <PageHeader
+        title="Clientes"
+        actions={
+          <Button variant="outline" onClick={() => setImportModalOpen(true)}>
+            Importar CSV
+          </Button>
+        }
+      />
 
       {/* Debug Info (SSR-safe) */}
       <div className='bg-yellow-50 border border-yellow-200 rounded p-3 mb-4 text-xs'>

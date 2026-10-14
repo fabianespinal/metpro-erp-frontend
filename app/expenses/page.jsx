@@ -7,6 +7,7 @@ import { api } from "@/lib/api";
 import ExpensesFilters from "@/components/expenses/ExpensesFilters";
 import ExpensesSummary from "@/components/expenses/ExpensesSummary";
 import ExpensesChart from "@/components/expenses/ExpensesChart";
+import { PageHeader } from "@/components/ui/page-header";
 
 export default function ExpensesPage() {
   const [clients, setClients] = useState([]);
@@ -164,7 +165,7 @@ export default function ExpensesPage() {
 
   return (
     <div className="w-full px-4 lg:px-8 py-6">
-      <h1 className="text-2xl font-bold mb-6">Expenses</h1>
+      <PageHeader title="Expenses" />
 
       <ExpenseForm
         clients={clients}

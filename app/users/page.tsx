@@ -1,5 +1,6 @@
 "use client";
 import { unwrapEnvelope } from "@/lib/api";
+import { PageHeader } from "@/components/ui/page-header";
 import { useEffect, useState } from "react";
 
 type User = {
@@ -47,7 +48,7 @@ export default function UsersPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-4">User Management</h1>
+      <PageHeader title="User Management" />
 
       <table className="w-full border">
         <thead>

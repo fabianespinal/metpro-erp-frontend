@@ -11,6 +11,7 @@ import { useToken } from '@/components/quotes/useToken'
 import { useQuoteForm } from '@/components/quotes/useQuoteForm'
 import { mergeQuotesWithInvoices, filterQuotesByStatus } from '@/components/quotes/quoteUtils'
 import SentBadge from "@/components/SentBadge";
+import { PageHeader } from "@/components/ui/page-header";
 import SendToClientButton from "@/components/SendToClientButton";
 import {
   previewPDF,
@@ -259,7 +260,7 @@ export default function QuotesPage() {
 
   return (
   <div className="w-full px-4 lg:px-8 py-6">
-    <h1 className="text-2xl font-bold mb-6">Cotizar</h1>
+    <PageHeader title="Cotizar" />
 
     <QuoteForm
       clients={clients}

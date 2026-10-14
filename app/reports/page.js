@@ -1,5 +1,6 @@
 'use client'
 import { unwrapEnvelope } from "@/lib/api"
+import { PageHeader } from "@/components/ui/page-header"
 
 import { useState, useEffect } from 'react'
 
@@ -133,7 +134,7 @@ export default function ReportsPage() {
 
   return (
     <div className="w-full px-4 lg:px-8 py-8">
-      <h1 className='text-3xl font-bold mb-8 text-gray-900'>Reportes</h1>
+      <PageHeader title="Reportes" />
 
       {/* Report Type Selector */}
       <div className="bg-white rounded-lg shadow p-6 mb-6 border border-gray-200">

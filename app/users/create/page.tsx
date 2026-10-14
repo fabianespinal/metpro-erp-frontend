@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
+import { PageHeader } from "@/components/ui/page-header";
 
 type User = {
   id: number;
@@ -22,7 +23,7 @@ export default function UsersPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-4">Users</h1>
+      <PageHeader title="Users" />
 
       <table className="w-full border">
         <thead>

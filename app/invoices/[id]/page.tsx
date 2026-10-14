@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { fetchInvoiceWithPayments } from "@/lib/invoiceApi";
 import RecordPaymentModal from "@/components/invoices/RecordPaymentModal";
 import StatusPill from "@/components/ui/StatusPill";
+import { PageHeader } from "@/components/ui/page-header";
 
 interface Payment {
   id: number;
@@ -63,9 +64,7 @@ export default function InvoiceDetailPage() {
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-4xl mx-auto bg-white shadow rounded-lg p-6">
 
-        <h1 className="text-3xl font-bold mb-4">
-          Factura #{invoice.invoice_number}
-        </h1>
+        <PageHeader title={`Factura #${invoice.invoice_number}`} />
 
         <div className="grid grid-cols-2 gap-4 mb-6">
           <div>

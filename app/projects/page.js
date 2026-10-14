@@ -3,6 +3,7 @@ import { unwrapEnvelope } from "@/lib/api"
 
 import { useState, useEffect } from 'react'
 import StatusPill from '@/components/ui/StatusPill'
+import { PageHeader } from '@/components/ui/page-header'
 
 // ============================================================
 // STATUS NORMALIZATION (CRITICAL - USED EVERYWHERE)
@@ -399,7 +400,7 @@ export default function ProjectsPage() {
   // ============================================================
   return (
     <div className="w-full px-4 lg:px-8 py-6">
-      <h1 className='text-2xl font-bold mb-6'>Gestion Proyectos</h1>
+      <PageHeader title="Gestion Proyectos" />
 
       {/* ============================================================
            FILTER DROPDOWN (BACKEND-SAFE VALUES)

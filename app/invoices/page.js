@@ -6,6 +6,7 @@ import StatusPill from "@/components/ui/StatusPill";
 import RecordPaymentModal from "@/components/invoices/RecordPaymentModal";
 import SendToClientButton from "@/components/SendToClientButton";
 import SentBadge from "@/components/SentBadge";
+import { PageHeader } from "@/components/ui/page-header";
 
 export default function InvoicesPage() {
   const [invoices, setInvoices] = useState([]);
@@ -138,10 +139,7 @@ export default function InvoicesPage() {
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="w-full px-4 lg:px-8">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">💰 Facturas</h1>
-          <p className="text-gray-600">Ver y gestionar todas las facturas</p>
-        </div>
+        <PageHeader title="💰 Facturas" subtitle="Ver y gestionar todas las facturas" />
 
         <div className="bg-white shadow rounded-lg overflow-hidden mt-6">
           <table className="min-w-full divide-y divide-gray-200">
