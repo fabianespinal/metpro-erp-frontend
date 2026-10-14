@@ -54,7 +54,6 @@ export default function OverflowMenu({
               }}
               className='w-full text-left px-4 py-2 hover:bg-canvas flex items-center gap-2'
             >
-              <span>👁️</span>
               <span>Preview PDF</span>
             </button>
 
@@ -65,7 +64,6 @@ export default function OverflowMenu({
               }}
               className='w-full text-left px-4 py-2 hover:bg-canvas flex items-center gap-2'
             >
-              <span>⬇️</span>
               <span>Download PDF</span>
             </button>
 
@@ -77,7 +75,6 @@ export default function OverflowMenu({
                 }}
                 className='w-full text-left px-4 py-2 hover:bg-canvas flex items-center gap-2 text-emerald-700'
               >
-                <span>✓</span>
                 <span>Approve Quote</span>
               </button>
             )}
@@ -90,7 +87,6 @@ export default function OverflowMenu({
                 }}
                 className='w-full text-left px-4 py-2 hover:bg-canvas flex items-center gap-2 text-accent-strong'
               >
-                <span>📄</span>
                 <span>Convert to Invoice</span>
               </button>
             )}
@@ -103,7 +99,6 @@ export default function OverflowMenu({
                 }}
                 className='w-full text-left px-4 py-2 hover:bg-canvas flex items-center gap-2'
               >
-                <span>📦</span>
                 <span>Generate Conduce</span>
               </button>
             )}
@@ -117,7 +112,6 @@ export default function OverflowMenu({
               }}
               className='w-full text-left px-4 py-2 hover:bg-canvas flex items-center gap-2'
             >
-              <span>📋</span>
               <span>Duplicate</span>
             </button>
 
@@ -128,7 +122,6 @@ export default function OverflowMenu({
               }}
               className='w-full text-left px-4 py-2 hover:bg-canvas flex items-center gap-2'
             >
-              <span>✏️</span>
               <span>Edit</span>
             </button>
 
@@ -143,7 +136,6 @@ export default function OverflowMenu({
                   }}
                   className='w-full text-left px-4 py-2 hover:bg-canvas flex items-center gap-2 text-red-600'
                 >
-                  <span>🗑️</span>
                   <span>Delete</span>
                 </button>
               </>

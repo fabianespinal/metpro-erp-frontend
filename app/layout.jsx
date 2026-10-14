@@ -11,7 +11,8 @@ import "./globals.css";
 
 export default function RootLayout({ children }) {
   const pathname = usePathname();
-  const isPublic = isPublicPath(pathname);
+  // Header hidden on customer views and on the login page.
+  const showHeader = !isPublicPath(pathname) && pathname !== "/login";
 
   return (
     <html lang="en">
@@ -22,7 +23,7 @@ export default function RootLayout({ children }) {
         <Toaster position="top-right" />
 
         <AuthGuard>
-          {!isPublic && <Header />}
+          {showHeader && <Header />}
 
           <main className="flex-1 w-full px-4 py-6">
             {children}

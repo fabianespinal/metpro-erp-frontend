@@ -53,7 +53,7 @@ const lineTotal = (base - discount).toFixed(2)
               className='px-3 py-2 bg-accent text-white rounded hover:bg-accent-strong text-sm'
               title='Select from database'
             >
-              📦
+              Select
             </button>
           </div>
         </div>

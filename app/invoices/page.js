@@ -112,7 +112,7 @@ export default function InvoicesPage() {
 
       if (window.toast) {
         window.toast("Status updated!", {
-          title: "✅ Success",
+          title: "Success",
           description: `Invoice status changed to ${newStatus}`,
         });
       }
@@ -140,7 +140,7 @@ export default function InvoicesPage() {
   return (
     <div className="min-h-screen bg-canvas p-6">
       <div className="w-full px-4 lg:px-8">
-        <PageHeader title="💰 Facturas" subtitle="Ver y gestionar todas las facturas" />
+        <PageHeader title="Facturas" subtitle="Ver y gestionar todas las facturas" />
 
         <div className="bg-surface shadow rounded-lg overflow-hidden mt-6">
           <table className={dt.table}>

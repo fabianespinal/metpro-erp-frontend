@@ -8,7 +8,6 @@ export default function DeleteQuoteModal({ isOpen, onClose, onConfirm, quoteId, 
       <div className='bg-surface rounded-lg shadow-card max-w-md w-full'>
         <div className='p-6'>
           <div className='flex items-center gap-3 mb-4'>
-            <div className='text-4xl'>⚠️</div>
             <h3 className='text-xl font-bold text-ink'>Delete Quote</h3>
           </div>
 

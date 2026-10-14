@@ -22,7 +22,7 @@ export default function SendToClientModal({
 
   if (!open) return null;
 
-  // 🔥 Prevent undefined ID from causing 422 errors
+  // Prevent undefined ID from causing 422 errors
   if (id === null || id === undefined || id === "" || id === 0) {
     console.error("SendToClientModal received invalid ID:", id);
     return (

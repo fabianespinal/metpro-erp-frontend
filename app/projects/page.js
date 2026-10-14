@@ -89,7 +89,7 @@ export default function ProjectsPage() {
 
       const rawData = unwrapEnvelope(await res.json())
 
-      // 🔒 CRITICAL FIX: Normalize EVERY project status BEFORE storing
+      // CRITICAL FIX: Normalize EVERY project status BEFORE storing
       const normalizedProjects = rawData.map(project => ({
         ...project,
         status: normalizeStatus(project.status)
@@ -177,7 +177,7 @@ export default function ProjectsPage() {
       throw new Error(dateError)
     }
 
-    // 🔒 CRITICAL FIX: Normalize status before sending to backend
+    // CRITICAL FIX: Normalize status before sending to backend
     if (payload.status) {
       payload.status = normalizeStatus(payload.status)
     }
@@ -253,10 +253,10 @@ export default function ProjectsPage() {
       if (res.ok) {
         const updatedProject = unwrapEnvelope(await res.json())
         
-        // 🔒 CRITICAL FIX: Normalize the returned project status
+        // CRITICAL FIX: Normalize the returned project status
         updatedProject.status = normalizeStatus(updatedProject.status)
         
-        // 🔒 CRITICAL FIX: Update local state IMMEDIATELY before refetch
+        // CRITICAL FIX: Update local state IMMEDIATELY before refetch
         // This prevents visual glitches and ensures instant Kanban updates
         setProjects(prevProjects => 
           prevProjects.map(p => 
@@ -334,7 +334,7 @@ export default function ProjectsPage() {
   const handleEditClick = (project) => {
     const editData = {
       ...project,
-      status: normalizeStatus(project.status), // 🔒 Ensure normalized value enters edit form
+      status: normalizeStatus(project.status), // Ensure normalized value enters edit form
       start_date: formatDateForInput(project.start_date),
       end_date: formatDateForInput(project.end_date)
     }
@@ -356,7 +356,7 @@ export default function ProjectsPage() {
         </div>
 
         <div className='mb-2'>
-          {/* 🔒 StatusPill receives normalized backend-safe value */}
+          {/* StatusPill receives normalized backend-safe value */}
           <StatusPill status={project.status} />
         </div>
 

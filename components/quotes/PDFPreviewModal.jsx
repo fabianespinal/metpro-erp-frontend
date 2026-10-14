@@ -26,7 +26,6 @@ export default function PDFPreviewModal({ isOpen, onClose, quoteId, pdfUrl }) {
           ) : (
             <div className='flex items-center justify-center h-full'>
               <div className='text-center'>
-                <div className='text-4xl mb-4'>📄</div>
                 <p className='text-muted'>Loading PDF...</p>
               </div>
             </div>

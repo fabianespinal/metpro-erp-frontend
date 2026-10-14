@@ -30,14 +30,13 @@ export default function ProductSelectionModal({ isOpen, onClose, onSelect, produ
           <div className='relative'>
             <input
               type='text'
-              placeholder='🔍 Search products by name...'
+              placeholder='Search products by name...'
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className='w-full border border-line rounded-lg py-2 px-4 pl-10 focus:ring-2 focus:ring-accent focus:border-accent'
               autoFocus
             />
             <div className='absolute left-3 top-2.5 text-muted'>
-              <span>🔍</span>
             </div>
           </div>
         </div>
@@ -46,7 +45,6 @@ export default function ProductSelectionModal({ isOpen, onClose, onSelect, produ
         <div className='flex-1 overflow-y-auto p-4'>
           {products.length === 0 ? (
             <div className='text-center text-muted py-8'>
-              <div className='text-4xl mb-2'>📦</div>
               <p className='font-medium'>No products in database yet</p>
               <p className='text-sm mt-1'>Go to Products page to add products first</p>
             </div>
