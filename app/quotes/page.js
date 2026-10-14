@@ -10,8 +10,6 @@ import QuoteTable from '@/components/quotes/QuoteTable'
 import { useToken } from '@/components/quotes/useToken'
 import { useQuoteForm } from '@/components/quotes/useQuoteForm'
 import { mergeQuotesWithInvoices, filterQuotesByStatus } from '@/components/quotes/quoteUtils'
-import SentBadge from "@/components/SentBadge";
-import SendToClientButton from "@/components/SendToClientButton";
 import {
   previewPDF,
   downloadPDF,

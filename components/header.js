@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 export default function Header() {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
-  const [username, setUsername] = useState(null);
+  const [, setUsername] = useState(null);
 
   useEffect(() => {
     setMounted(true);
