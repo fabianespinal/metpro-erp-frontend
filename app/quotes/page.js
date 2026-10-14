@@ -12,6 +12,7 @@ import { useQuoteForm } from '@/components/quotes/useQuoteForm'
 import { mergeQuotesWithInvoices, filterQuotesByStatus } from '@/components/quotes/quoteUtils'
 import SentBadge from "@/components/SentBadge";
 import { PageHeader } from "@/components/ui/page-header";
+import { fb } from "@/components/ui/filter-bar";
 import SendToClientButton from "@/components/SendToClientButton";
 import {
   previewPDF,
@@ -296,7 +297,7 @@ export default function QuotesPage() {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="border p-2 rounded"
+          className={`${fb.control} w-44`}
         >
           <option value="all">All Statuses</option>
           <option value="Draft">Draft</option>

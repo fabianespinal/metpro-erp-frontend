@@ -1,3 +1,4 @@
+import { dt } from "@/components/ui/data-table";
 import { useRouter } from "next/navigation";
 
 export default function ContactsList({ contacts, onEdit, onDelete }) {
@@ -9,24 +10,24 @@ export default function ContactsList({ contacts, onEdit, onDelete }) {
 
   return (
     <div className="bg-white shadow rounded-md overflow-hidden">
-      <table className="w-full text-left">
-        <thead className="bg-gray-100">
+      <table className={dt.table}>
+        <thead className={dt.thead}>
           <tr>
-            <th className="p-3">Nombre</th>
-            <th className="p-3">Email</th>
-            <th className="p-3">Teléfono</th>
-            <th className="p-3">Acciones</th>
+            <th className={dt.th}>Nombre</th>
+            <th className={dt.th}>Email</th>
+            <th className={dt.th}>Teléfono</th>
+            <th className={dt.th}>Acciones</th>
           </tr>
         </thead>
 
-        <tbody>
+        <tbody className={dt.tbody}>
           {contacts.map((c) => (
-            <tr key={c.id} className="border-b hover:bg-gray-50">
-              <td className="p-3">{c.name}</td>
-              <td className="p-3">{c.email}</td>
-              <td className="p-3">{c.phone}</td>
+            <tr key={c.id} className={dt.tr}>
+              <td className={dt.td}>{c.name}</td>
+              <td className={dt.td}>{c.email}</td>
+              <td className={dt.td}>{c.phone}</td>
 
-              <td className="p-3 flex gap-2 flex-wrap">
+              <td className={`${dt.td} flex flex-wrap gap-2`}>
                 <button
                   className="px-3 py-1 bg-blue-600 text-white rounded"
                   onClick={() => router.push(`/quotes?contactId=${c.id}&companyId=${c.company_id}`)}

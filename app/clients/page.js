@@ -1,4 +1,5 @@
 "use client";
+import { dt } from "@/components/ui/data-table";
 export const dynamic = "force-dynamic";
 
 import { useState, useEffect } from 'react'
@@ -271,32 +272,32 @@ export default function ClientsPage() {
             No hay clientes aún. Agrega uno arriba o importa desde CSV!
           </div>
         ) : (
-          <table className='w-full'>
-            <thead className='bg-gray-50'>
+          <table className={dt.table}>
+            <thead className={dt.thead}>
               <tr>
-                <th className='p-3 text-left'>Compañía</th>
-                <th className='p-3 text-left'>Contact</th>
-                <th className='p-3 text-left'>Email</th>
-                <th className='p-3 text-left'>Teléfono</th>
-                <th className='p-3 text-left'>Dirección</th>
-                <th className='p-3 text-left'>Notas</th>
-                <th className='p-3 text-left'>RCN</th>
-                <th className='p-3 text-right'>Acciones</th>
+                <th className={dt.th}>Compañía</th>
+                <th className={dt.th}>Contact</th>
+                <th className={dt.th}>Email</th>
+                <th className={dt.th}>Teléfono</th>
+                <th className={dt.th}>Dirección</th>
+                <th className={dt.th}>Notas</th>
+                <th className={dt.th}>RCN</th>
+                <th className={dt.thRight}>Acciones</th>
               </tr>
             </thead>
 
-            <tbody>
+            <tbody className={dt.tbody}>
               {clients.map((client) => (
-                <tr key={client.id} className='border-t hover:bg-gray-50'>
-                  <td className='p-3 font-medium'>{client.company_name}</td>
-                  <td className='p-3'>{client.contact_name || '-'}</td>
-                  <td className='p-3'>{client.email || '-'}</td>
-                  <td className='p-3'>{client.phone || '-'}</td>
-                  <td className='p-3'>{client.address || '-'}</td>
-                  <td className='p-3'>{client.notes || '-'}</td>
-                  <td className='p-3'>{client.tax_id || '-'}</td>
+                <tr key={client.id} className={dt.tr}>
+                  <td className={dt.td}>{client.company_name}</td>
+                  <td className={dt.td}>{client.contact_name || '-'}</td>
+                  <td className={dt.td}>{client.email || '-'}</td>
+                  <td className={dt.td}>{client.phone || '-'}</td>
+                  <td className={dt.td}>{client.address || '-'}</td>
+                  <td className={dt.td}>{client.notes || '-'}</td>
+                  <td className={dt.td}>{client.tax_id || '-'}</td>
 
-                  <td className='p-3 text-right'>
+                  <td className={dt.tdRight}>
                     <div className='flex justify-end gap-2'>
                       <button
                         onClick={() => setEditingClient(client)}

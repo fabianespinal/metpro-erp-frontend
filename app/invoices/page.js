@@ -1,4 +1,5 @@
 "use client";
+import { dt } from "@/components/ui/data-table";
 
 import { useState, useEffect } from "react";
 import { api, sendInvoiceToClient } from "@/lib/api";
@@ -142,47 +143,47 @@ export default function InvoicesPage() {
         <PageHeader title="💰 Facturas" subtitle="Ver y gestionar todas las facturas" />
 
         <div className="bg-white shadow rounded-lg overflow-hidden mt-6">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className={dt.table}>
+            <thead className={dt.thead}>
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Factura #</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cliente</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fecha</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Total</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Pagado</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Pendiente</th>
-                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Estado</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Acciones</th>
+                <th className={dt.th}>Factura #</th>
+                <th className={dt.th}>Cliente</th>
+                <th className={dt.th}>Fecha</th>
+                <th className={dt.thRight}>Total</th>
+                <th className={dt.thRight}>Pagado</th>
+                <th className={dt.thRight}>Pendiente</th>
+                <th className={dt.th}>Estado</th>
+                <th className={dt.thRight}>Acciones</th>
               </tr>
             </thead>
 
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className={dt.tbody}>
               {filteredInvoices.map((inv) => (
-                <tr key={inv.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 font-medium">{inv.invoice_number}</td>
-                  <td className="px-4 py-3">{inv.client_name}</td>
-                  <td className="px-4 py-3">{inv.invoice_date?.split("T")[0]}</td>
+                <tr key={inv.id} className={dt.tr}>
+                  <td className={dt.td}>{inv.invoice_number}</td>
+                  <td className={dt.td}>{inv.client_name}</td>
+                  <td className={dt.td}>{inv.invoice_date?.split("T")[0]}</td>
 
-                  <td className="px-4 py-3 text-right font-bold">
+                  <td className={dt.tdRight}>
                     ${(inv.total_amount ?? 0).toFixed(2)}
                   </td>
 
-                  <td className="px-4 py-3 text-right">
+                  <td className={dt.tdRight}>
                     ${(inv.amount_paid ?? 0).toFixed(2)}
                   </td>
 
-                  <td className="px-4 py-3 text-right">
+                  <td className={dt.tdRight}>
                     ${(
                       inv.amount_due ??
                       (inv.total_amount ?? 0) - (inv.amount_paid ?? 0)
                     ).toFixed(2)}
                   </td>
 
-                  <td className="px-4 py-3 text-center">
+                  <td className={dt.td}>
                     <StatusPill status={inv.status} />
                   </td>
 
-                  <td className="px-4 py-3 text-right space-x-2">
+                  <td className={dt.tdRight}>
                     {sentMap[inv.id] && <SentBadge />}
                     <SendToClientButton
                       id={inv.id}

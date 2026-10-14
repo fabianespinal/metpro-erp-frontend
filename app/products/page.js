@@ -1,4 +1,5 @@
 'use client'
+import { dt } from "@/components/ui/data-table";
 
 import { useState, useEffect } from 'react'
 import { api } from "@/lib/api"
@@ -228,27 +229,27 @@ const handleUpdateProduct = async (e) => {
             No hay productos aún. Añade uno arriba o importa desde CSV!
           </div>
         ) : (
-          <table className='w-full'>
-            <thead className='bg-gray-50'>
+          <table className={dt.table}>
+            <thead className={dt.thead}>
               <tr>
-                <th className='p-3 text-left'>Nombre Producto</th>
-                <th className='p-3 text-left'>Descripción</th>
-                <th className='p-3 text-right'>Precio Unitario</th>
-                <th className='p-3 text-right'>Acciones</th>
+                <th className={dt.th}>Nombre Producto</th>
+                <th className={dt.th}>Descripción</th>
+                <th className={dt.thRight}>Precio Unitario</th>
+                <th className={dt.thRight}>Acciones</th>
               </tr>
             </thead>
 
-            <tbody>
+            <tbody className={dt.tbody}>
               {products.map((product) => (
-                <tr key={product.id} className='border-t hover:bg-gray-50'>
-                  <td className='p-3 font-medium'>{product.name}</td>
-                  <td className='p-3'>{product.description || '-'}</td>
+                <tr key={product.id} className={dt.tr}>
+                  <td className={dt.td}>{product.name}</td>
+                  <td className={dt.td}>{product.description || '-'}</td>
 
-                  <td className='p-3 text-right font-bold'>
+                  <td className={dt.tdRight}>
                     ${ (product.unit_price ?? 0).toFixed(2) }
                   </td>
 
-                  <td className='p-3 text-right'>
+                  <td className={dt.tdRight}>
                     <div className='flex justify-end gap-2'>
                       <button
                         onClick={() => setEditingProduct(product)}

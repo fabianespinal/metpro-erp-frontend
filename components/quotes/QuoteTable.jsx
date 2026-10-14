@@ -1,3 +1,4 @@
+import { dt } from "@/components/ui/data-table";
 import StatusPill from '@/components/ui/StatusPill'
 import PrimaryActionButton from './PrimaryActionButton'
 import OverflowMenu from './OverflowMenu'
@@ -27,32 +28,32 @@ export default function QuoteTable({
   }
 
   return (
-    <table className='w-full'>
-      <thead className='bg-gray-50'>
+    <table className={dt.table}>
+      <thead className={dt.thead}>
         <tr>
-          <th className='p-3 text-left'>Quote ID</th>
-          <th className='p-3 text-left'>Client</th>
-          <th className='p-3 text-left'>Project</th>
-          <th className='p-3 text-left'>Date</th>
-          <th className='p-3 text-right'>Amount</th>
-          <th className='p-3 text-left'>Status</th>
-          <th className='p-3 text-right'>Actions</th>
+          <th className={dt.th}>Quote ID</th>
+          <th className={dt.th}>Client</th>
+          <th className={dt.th}>Project</th>
+          <th className={dt.th}>Date</th>
+          <th className={dt.thRight}>Amount</th>
+          <th className={dt.th}>Status</th>
+          <th className={dt.thRight}>Actions</th>
         </tr>
       </thead>
 
-      <tbody>
+      <tbody className={dt.tbody}>
         {quotes.map((quote) => (
-          <tr key={quote.quote_id} className='border-t hover:bg-gray-50'>
-            <td className='p-3 font-medium'>{quote.quote_id}</td>
-            <td className='p-3'>{quote.client_name}</td>
-            <td className='p-3'>{quote.project_name || '-'}</td>
-            <td className='p-3'>{quote.date}</td>
+          <tr key={quote.quote_id} className={dt.tr}>
+            <td className={dt.td}>{quote.quote_id}</td>
+            <td className={dt.td}>{quote.client_name}</td>
+            <td className={dt.td}>{quote.project_name || '-'}</td>
+            <td className={dt.td}>{quote.date}</td>
 
-            <td className='p-3 text-right font-bold'>
+            <td className={dt.tdRight}>
               ${ (quote.total_amount ?? 0).toFixed(2) }
             </td>
 
-            <td className='p-3'>
+            <td className={dt.td}>
               <StatusPill status={quote.status} />
               {quote.has_invoice && (
                 <div className='text-xs text-blue-600 mt-1'>
@@ -61,7 +62,7 @@ export default function QuoteTable({
               )}
             </td>
 
-            <td className='p-3 text-right'>
+            <td className={dt.tdRight}>
               <div className='flex items-center gap-2 justify-end'>
                 {sentMap[quote.quote_id] && <SentBadge />}
                 <SendToClientButton
