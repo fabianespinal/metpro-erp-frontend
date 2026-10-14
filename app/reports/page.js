@@ -1,6 +1,9 @@
 'use client'
 import { unwrapEnvelope } from "@/lib/api"
 import { PageHeader } from "@/components/ui/page-header"
+import { Button } from "@/components/ui/button"
+import { fb } from "@/components/ui/filter-bar"
+import { dt } from "@/components/ui/data-table"
 
 import { useState, useEffect } from 'react'
 
@@ -133,47 +136,55 @@ export default function ReportsPage() {
   }
 
   return (
-    <div className="w-full px-4 lg:px-8 py-8">
-      <PageHeader title="Reportes" />
+    <div className="w-full px-4 lg:px-8 py-8 text-ink">
+      <PageHeader title="Reportes" subtitle="Análisis de cotizaciones, ingresos y actividad de clientes" />
 
       {/* Report Type Selector */}
-      <div className="bg-white rounded-lg shadow p-6 mb-6 border border-gray-200">
-        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+      <div className={`${fb.bar} mb-6 items-center justify-between`}>
+        <div className="flex flex-col gap-3 md:flex-row md:flex-wrap md:items-end">
 
-          {/* Left side: filters */}
-          <div className="flex flex-col md:flex-row gap-4 flex-wrap">
-
+          <div>
+            <label className={fb.label}>Tipo de reporte</label>
             <select
               value={reportType}
               onChange={(e) => {
                 setReportType(e.target.value)
                 setReportData(null)
               }}
-              className="border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className={`${fb.control} md:w-56`}
             >
               <option value="quotes-summary">Quotes Summary</option>
               <option value="revenue">Revenue Report</option>
               <option value="client-activity">Client Activity</option>
             </select>
+          </div>
 
+          <div>
+            <label className={fb.label}>Desde</label>
             <input
               type="date"
               value={filters.start_date}
               onChange={(e) => setFilters({ ...filters, start_date: e.target.value })}
-              className="border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className={`${fb.control} md:w-44`}
             />
+          </div>
 
+          <div>
+            <label className={fb.label}>Hasta</label>
             <input
               type="date"
               value={filters.end_date}
               onChange={(e) => setFilters({ ...filters, end_date: e.target.value })}
-              className="border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className={`${fb.control} md:w-44`}
             />
+          </div>
 
+          <div>
+            <label className={fb.label}>Cliente</label>
             <select
               value={filters.client_id}
               onChange={(e) => setFilters({ ...filters, client_id: e.target.value })}
-              className="border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className={`${fb.control} md:w-64`}
             >
               <option value="">All Clients</option>
               {clients.map(client => (
@@ -182,37 +193,32 @@ export default function ReportsPage() {
                 </option>
               ))}
             </select>
-
           </div>
 
-          {/* Right side: Run Report button */}
-          <button
-            onClick={runReport}
-            disabled={loading}
-            className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 disabled:opacity-50 flex items-center justify-center font-medium transition shadow-md hover:shadow-lg"
-          >
-            {loading ? (
-              <span className="flex items-center">
-                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Running...
-              </span>
-            ) : 'Run Report'}
-          </button>
-
         </div>
+
+        {/* Right side: Run Report button */}
+        <Button onClick={runReport} disabled={loading}>
+          {loading ? (
+            <span className="flex items-center">
+              <svg className="animate-spin -ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Running...
+            </span>
+          ) : 'Run Report'}
+        </Button>
       </div>
 
       {/* Report Results */}
       {reportData && (
-        <div className='bg-white rounded-lg shadow p-6 border border-gray-200'>
+        <div className='rounded-lg border border-line bg-surface p-6 shadow-card'>
 
           {/* Filters Applied */}
-          <div className='mb-6 p-4 bg-blue-50 rounded border border-blue-200'>
-            <p className='font-medium text-blue-900'>Filters Applied:</p>
-            <p className='text-sm text-blue-800'>
+          <div className='mb-6 rounded-md border border-line bg-canvas p-4'>
+            <p className='text-sm font-medium text-ink'>Filters Applied:</p>
+            <p className='text-sm text-muted'>
               Date Range: {filters.start_date} to {filters.end_date}
               {filters.client_id &&
                 ` | Client: ${clients.find(c => c.id == filters.client_id)?.company_name}`}
@@ -220,19 +226,16 @@ export default function ReportsPage() {
           </div>
 
           {/* Report Header */}
-          <div className='flex justify-between items-center mb-4'>
-            <h2 className='text-2xl font-bold text-gray-900'>
+          <div className='mb-4 flex items-center justify-between'>
+            <h2 className='text-lg font-semibold tracking-tight text-ink'>
               {reportType === 'quotes-summary' && 'Quotes Summary Report'}
               {reportType === 'revenue' && 'Revenue Report'}
               {reportType === 'client-activity' && 'Client Activity Report'}
             </h2>
 
-            <button
-              onClick={exportCSV}
-              className='bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 flex items-center gap-2 font-medium transition shadow-md hover:shadow-lg'
-            >
-              📥 Export CSV
-            </button>
+            <Button variant="outline" onClick={exportCSV}>
+              Export CSV
+            </Button>
           </div>
 
           {/* ----------------------------- */}
@@ -240,42 +243,44 @@ export default function ReportsPage() {
           {/* ----------------------------- */}
           {reportType === 'quotes-summary' && (
             <div>
-              <div className='grid grid-cols-2 md:grid-cols-4 gap-4 mb-6'>
-                <div className='bg-white border border-gray-200 p-4 rounded text-center shadow-sm'>
-                  <div className='text-3xl font-bold text-blue-600'>
+              <div className='mb-6 grid grid-cols-2 gap-4 md:grid-cols-4'>
+                <div className='rounded-lg border border-line bg-surface p-4 text-center shadow-card'>
+                  <div className='text-2xl font-semibold tabular-nums text-ink'>
                     {reportData.summary?.total_quotes ?? 0}
                   </div>
-                  <div className='text-gray-600 mt-1'>Total Quotes</div>
+                  <div className='mt-1 text-sm text-muted'>Total Quotes</div>
                 </div>
 
                 {reportData.status_breakdown?.map(status => (
-                  <div key={status.status} className='bg-white border border-gray-200 p-4 rounded text-center shadow-sm'>
-                    <div className='text-xl font-bold text-gray-900'>{status.count}</div>
-                    <div className='text-sm text-gray-700 mt-1'>{status.status}</div>
-                    <div className='text-xs text-gray-500'>{status.percentage}%</div>
+                  <div key={status.status} className='rounded-lg border border-line bg-surface p-4 text-center shadow-card'>
+                    <div className='text-xl font-semibold tabular-nums text-ink'>{status.count}</div>
+                    <div className='mt-1 text-sm text-ink'>{status.status}</div>
+                    <div className='text-xs text-muted'>{status.percentage}%</div>
                   </div>
                 ))}
               </div>
 
-              <h3 className='font-bold mb-2 text-gray-800'>Status Breakdown</h3>
-              <table className='w-full border border-gray-200'>
-                <thead className='bg-gray-100'>
-                  <tr>
-                    <th className='p-2 border border-gray-200'>Status</th>
-                    <th className='p-2 border border-gray-200'>Count</th>
-                    <th className='p-2 border border-gray-200'>Percentage</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {reportData.status_breakdown?.map((row, i) => (
-                    <tr key={i} className={i % 2 === 0 ? 'bg-gray-50' : ''}>
-                      <td className='p-2 border border-gray-200 text-gray-700'>{row.status}</td>
-                      <td className='p-2 border border-gray-200 text-right text-gray-900 font-medium'>{row.count}</td>
-                      <td className='p-2 border border-gray-200 text-right text-gray-700'>{row.percentage}%</td>
+              <h3 className='mb-3 text-base font-semibold text-ink'>Status Breakdown</h3>
+              <div className={dt.wrap}>
+                <table className={dt.table}>
+                  <thead className={dt.thead}>
+                    <tr>
+                      <th className={dt.th}>Status</th>
+                      <th className={dt.thRight}>Count</th>
+                      <th className={dt.thRight}>Percentage</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className={dt.tbody}>
+                    {reportData.status_breakdown?.map((row, i) => (
+                      <tr key={i} className={dt.tr}>
+                        <td className={dt.td}>{row.status}</td>
+                        <td className={dt.tdRight}>{row.count}</td>
+                        <td className={dt.tdRight}>{row.percentage}%</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
 
@@ -284,54 +289,56 @@ export default function ReportsPage() {
           {/* ----------------------------- */}
           {reportType === 'revenue' && (
             <div>
-              <div className='grid grid-cols-1 md:grid-cols-3 gap-4 mb-6'>
+              <div className='mb-6 grid grid-cols-1 gap-4 md:grid-cols-3'>
 
-                <div className='bg-white border border-gray-200 p-4 rounded text-center shadow-sm'>
-                  <div className='text-2xl font-bold text-green-600'>
+                <div className='rounded-lg border border-line bg-surface p-4 text-center shadow-card'>
+                  <div className='text-2xl font-semibold tabular-nums text-emerald-600'>
                     ${((reportData.revenue_breakdown?.find(r => r.status === 'Approved')?.total_revenue) ?? 0).toFixed(2)}
                   </div>
-                  <div className='text-gray-600 mt-1'>Approved Revenue</div>
+                  <div className='mt-1 text-sm text-muted'>Approved Revenue</div>
                 </div>
 
-                <div className='bg-white border border-gray-200 p-4 rounded text-center shadow-sm'>
-                  <div className='text-2xl font-bold text-yellow-600'>
+                <div className='rounded-lg border border-line bg-surface p-4 text-center shadow-card'>
+                  <div className='text-2xl font-semibold tabular-nums text-amber-600'>
                     ${((reportData.revenue_breakdown?.find(r => r.status === 'Pending (Draft)')?.total_revenue) ?? 0).toFixed(2)}
                   </div>
-                  <div className='text-gray-600 mt-1'>Pending Revenue</div>
+                  <div className='mt-1 text-sm text-muted'>Pending Revenue</div>
                 </div>
 
-                <div className='bg-white border border-gray-200 p-4 rounded text-center shadow-sm'>
-                  <div className='text-3xl font-bold text-blue-600'>
+                <div className='rounded-lg border border-line bg-surface p-4 text-center shadow-card'>
+                  <div className='text-2xl font-semibold tabular-nums text-ink'>
                     ${(reportData.grand_total ?? 0).toFixed(2)}
                   </div>
-                  <div className='text-gray-600 mt-1'>Grand Total</div>
+                  <div className='mt-1 text-sm text-muted'>Grand Total</div>
                 </div>
 
               </div>
 
-              <h3 className='font-bold mb-2 text-gray-800'>Revenue Breakdown</h3>
-              <table className='w-full border border-gray-200'>
-                <thead className='bg-gray-100'>
-                  <tr>
-                    <th className='p-2 border border-gray-200'>Status</th>
-                    <th className='p-2 border border-gray-200'>Revenue</th>
-                    <th className='p-2 border border-gray-200'>Quote Count</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {reportData.revenue_breakdown?.map((row, i) => (
-                    <tr key={i} className={i % 2 === 0 ? 'bg-gray-50' : ''}>
-                      <td className='p-2 border border-gray-200 text-gray-700'>{row.status}</td>
-                      <td className='p-2 border border-gray-200 text-right font-medium text-gray-900'>
-                        ${(row.total_revenue ?? 0).toFixed(2)}
-                      </td>
-                      <td className='p-2 border border-gray-200 text-right text-gray-700'>
-                        {row.quote_count}
-                      </td>
+              <h3 className='mb-3 text-base font-semibold text-ink'>Revenue Breakdown</h3>
+              <div className={dt.wrap}>
+                <table className={dt.table}>
+                  <thead className={dt.thead}>
+                    <tr>
+                      <th className={dt.th}>Status</th>
+                      <th className={dt.thRight}>Revenue</th>
+                      <th className={dt.thRight}>Quote Count</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className={dt.tbody}>
+                    {reportData.revenue_breakdown?.map((row, i) => (
+                      <tr key={i} className={dt.tr}>
+                        <td className={dt.td}>{row.status}</td>
+                        <td className={dt.tdRight}>
+                          ${(row.total_revenue ?? 0).toFixed(2)}
+                        </td>
+                        <td className={dt.tdRight}>
+                          {row.quote_count}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
 
@@ -340,53 +347,53 @@ export default function ReportsPage() {
           {/* ----------------------------- */}
           {reportType === 'client-activity' && (
             <div>
-              <div className='grid grid-cols-1 md:grid-cols-3 gap-4 mb-6'>
-                <div className='bg-white border border-gray-200 p-4 rounded text-center shadow-sm'>
-                  <div className='text-3xl font-bold text-blue-600'>
+              <div className='mb-6 grid grid-cols-1 gap-4 md:grid-cols-3'>
+                <div className='rounded-lg border border-line bg-surface p-4 text-center shadow-card'>
+                  <div className='text-2xl font-semibold tabular-nums text-ink'>
                     {reportData.summary?.total_clients ?? 0}
                   </div>
-                  <div className='text-gray-600 mt-1'>Active Clients</div>
+                  <div className='mt-1 text-sm text-muted'>Active Clients</div>
                 </div>
 
-                <div className='bg-white border border-gray-200 p-4 rounded text-center shadow-sm'>
-                  <div className='text-3xl font-bold text-purple-600'>
+                <div className='rounded-lg border border-line bg-surface p-4 text-center shadow-card'>
+                  <div className='text-2xl font-semibold tabular-nums text-ink'>
                     {reportData.summary?.total_quotes ?? 0}
                   </div>
-                  <div className='text-gray-600 mt-1'>Total Quotes</div>
+                  <div className='mt-1 text-sm text-muted'>Total Quotes</div>
                 </div>
 
-                <div className='bg-white border border-gray-200 p-4 rounded text-center shadow-sm'>
-                  <div className='text-2xl font-bold text-green-600'>
+                <div className='rounded-lg border border-line bg-surface p-4 text-center shadow-card'>
+                  <div className='text-2xl font-semibold tabular-nums text-emerald-600'>
                     ${(reportData.summary?.total_revenue ?? 0).toFixed(2)}
                   </div>
-                  <div className='text-gray-600 mt-1'>Total Revenue</div>
+                  <div className='mt-1 text-sm text-muted'>Total Revenue</div>
                 </div>
               </div>
 
-              <h3 className='font-bold mb-2 text-gray-800'>Client Activity</h3>
-              <div className='overflow-x-auto'>
-                <table className='w-full border border-gray-200'>
-                  <thead className='bg-gray-100'>
+              <h3 className='mb-3 text-base font-semibold text-ink'>Client Activity</h3>
+              <div className={dt.wrap}>
+                <table className={dt.table}>
+                  <thead className={dt.thead}>
                     <tr>
-                      <th className='p-2 border border-gray-200'>Client</th>
-                      <th className='p-2 border border-gray-200'>Quotes</th>
-                      <th className='p-2 border border-gray-200'>Total Quoted</th>
-                      <th className='p-2 border border-gray-200'>Last Quote</th>
+                      <th className={dt.th}>Client</th>
+                      <th className={dt.thRight}>Quotes</th>
+                      <th className={dt.thRight}>Total Quoted</th>
+                      <th className={dt.th}>Last Quote</th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody className={dt.tbody}>
                     {reportData.clients?.map((row, i) => (
-                      <tr key={i} className={i % 2 === 0 ? 'bg-gray-50' : ''}>
-                        <td className='p-2 border border-gray-200 font-medium text-gray-900'>
+                      <tr key={i} className={dt.tr}>
+                        <td className={dt.td}>
                           {row.client_name}
                         </td>
-                        <td className='p-2 border border-gray-200 text-right text-gray-700'>
+                        <td className={dt.tdRight}>
                           {row.quote_count}
                         </td>
-                        <td className='p-2 border border-gray-200 text-right font-medium text-gray-900'>
+                        <td className={dt.tdRight}>
                           ${(row.total_quoted ?? 0).toFixed(2)}
                         </td>
-                        <td className='p-2 border border-gray-200 text-gray-700'>
+                        <td className={dt.td}>
                           {row.last_quote_date || 'N/A'}
                         </td>
                       </tr>
