@@ -119,7 +119,7 @@ export default function ClientsPage() {
     fetchClients()
     if (typeof window !== "undefined" && window.toast) {
       window.toast("Clients Imported!", {
-        title: "✅ Success",
+        title: "Success",
         description: "Client list updated with new imports"
       })
     }
@@ -137,17 +137,17 @@ export default function ClientsPage() {
       />
 
       {/* Debug Info (SSR-safe) */}
-      <div className='bg-yellow-50 border border-yellow-200 rounded p-3 mb-4 text-xs'>
+      <div className='bg-amber-50 border border-amber-200 rounded p-3 mb-4 text-xs'>
         <strong>Debug Info:</strong> Token in localStorage:{' '}
         {tokenStatus === "checking"
           ? "⏳ Checking..."
           : tokenStatus === "present"
-          ? "✅ Present"
-          : "❌ Missing"}
+          ? "Present"
+          : "Missing"}
       </div>
 
       {/* Create/Edit Client Form */}
-      <div className='bg-white rounded-lg shadow p-6 mb-8'>
+      <div className='bg-surface rounded-lg shadow p-6 mb-8'>
         <h2 className='text-xl font-semibold mb-4'>
           {editingClient ? "Edit Client" : "New Client"}
         </h2>
@@ -245,7 +245,7 @@ export default function ClientsPage() {
             <button
               type='submit'
               disabled={loading}
-              className='bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 disabled:opacity-50'
+              className='bg-accent text-white px-6 py-2 rounded hover:bg-accent-strong disabled:opacity-50'
             >
               {loading ? "Saving..." : editingClient ? "Update Client" : "Add Client"}
             </button>
@@ -254,7 +254,7 @@ export default function ClientsPage() {
               <button
                 type='button'
                 onClick={() => setEditingClient(null)}
-                className='bg-gray-300 px-6 py-2 rounded hover:bg-gray-400'
+                className='bg-line px-6 py-2 rounded hover:bg-line/70'
               >
                 Cancel
               </button>
@@ -264,11 +264,11 @@ export default function ClientsPage() {
       </div>
 
       {/* Clients List */}
-      <div className='bg-white rounded-lg shadow overflow-x-auto'>
+      <div className='bg-surface rounded-lg shadow overflow-x-auto'>
         <div className='p-4 border-b font-bold'>Lista de Clientes ({clients.length})</div>
 
         {clients.length === 0 ? (
-          <div className='p-8 text-center text-gray-500'>
+          <div className='p-8 text-center text-muted'>
             No hay clientes aún. Agrega uno arriba o importa desde CSV!
           </div>
         ) : (
@@ -301,7 +301,7 @@ export default function ClientsPage() {
                     <div className='flex justify-end gap-2'>
                       <button
                         onClick={() => setEditingClient(client)}
-                        className='text-blue-600 hover:text-blue-800 px-2 py-1 rounded hover:bg-blue-50 transition'
+                        className='text-accent hover:text-accent-strong px-2 py-1 rounded hover:bg-accent/10 transition'
                       >
                         Editar
                       </button>
@@ -309,7 +309,7 @@ export default function ClientsPage() {
                       {isAdmin && (
                         <button
                           onClick={() => handleDeleteClient(client.id)}
-                          className='text-red-600 hover:text-red-800 px-2 py-1 rounded hover:bg-red-50 transition'
+                          className='text-red-600 hover:text-red-700 px-2 py-1 rounded hover:bg-red-50 transition'
                         >
                           Eliminar
                         </button>
@@ -318,7 +318,7 @@ export default function ClientsPage() {
                       {/* NEW: Manage Contacts */}
                       <Link
                         href={`/contacts/${client.id}`}
-                        className='text-green-600 hover:text-green-800 px-2 py-1 rounded hover:bg-green-50 transition'
+                        className='text-emerald-600 hover:text-emerald-700 px-2 py-1 rounded hover:bg-emerald-50 transition'
                       >
                         Contactos
                       </Link>

@@ -122,7 +122,7 @@ const handleUpdateProduct = async (e) => {
       <PageHeader title="Productos" />
 
       {/* Import CSV */}
-      <div className='bg-white rounded-lg shadow p-6 mb-8'>
+      <div className='bg-surface rounded-lg shadow p-6 mb-8'>
         <h2 className='text-xl font-semibold mb-4'>Importar Productos desde CSV</h2>
         <form onSubmit={handleCsvImport} className='flex gap-4'>
           <input
@@ -134,24 +134,24 @@ const handleUpdateProduct = async (e) => {
           <button
             type='submit'
             disabled={loading || !csvFile}
-            className='bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium shadow-md hover:shadow-lg transition-shadow disabled:opacity-50'
+            className='bg-accent hover:bg-accent-strong text-white px-4 py-2 rounded-lg font-medium shadow-card hover:shadow-card transition-shadow disabled:opacity-50'
           >
             {loading ? 'Importing...' : 'Import CSV'}
           </button>
         </form>
 
         {importResult && (
-          <div className='mt-4 p-4 bg-green-50 rounded'>
-            <p>✅ Importodo: {importResult.imported} productos</p>
-            {importResult.skipped > 0 && <p>⚠️ Skipped: {importResult.skipped} products</p>}
+          <div className='mt-4 p-4 bg-emerald-50 rounded'>
+            <p>Importodo: {importResult.imported} productos</p>
+            {importResult.skipped > 0 && <p>Skipped: {importResult.skipped} products</p>}
           </div>
         )}
       </div>
 
       {/* Create / Edit Product */}
-      <div className='bg-white rounded-lg shadow p-6 mb-8'>
+      <div className='bg-surface rounded-lg shadow p-6 mb-8'>
         <h2 className='text-xl font-semibold mb-4'>
-          {editingProduct ? 'Edit Product' : '➕ Add New Product'}
+          {editingProduct ? 'Edit Product' : 'Add New Product'}
         </h2>
 
         <form
@@ -202,16 +202,16 @@ const handleUpdateProduct = async (e) => {
             <button
               type='submit'
               disabled={loading}
-              className='bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium shadow-md hover:shadow-lg transition-shadow disabled:opacity-50'
+              className='bg-accent hover:bg-accent-strong text-white px-4 py-2 rounded-lg font-medium shadow-card hover:shadow-card transition-shadow disabled:opacity-50'
             >
-              {loading ? 'Saving...' : editingProduct ? 'Update Product' : '➕ Add Product'}
+              {loading ? 'Saving...' : editingProduct ? 'Update Product' : 'Add Product'}
             </button>
 
             {editingProduct && (
               <button
                 type='button'
                 onClick={() => setEditingProduct(null)}
-                className='bg-gray-300 px-6 py-2 rounded hover:bg-gray-400'
+                className='bg-line px-6 py-2 rounded hover:bg-line/70'
               >
                 Cancel
               </button>
@@ -221,11 +221,11 @@ const handleUpdateProduct = async (e) => {
       </div>
 
       {/* Product List */}
-      <div className='bg-white rounded-lg shadow overflow-hidden'>
+      <div className='bg-surface rounded-lg shadow overflow-hidden'>
         <div className='p-4 border-b font-bold'>Catalogo Productos ({products.length})</div>
 
         {products.length === 0 ? (
-          <div className='p-8 text-center text-gray-500'>
+          <div className='p-8 text-center text-muted'>
             No hay productos aún. Añade uno arriba o importa desde CSV!
           </div>
         ) : (
@@ -253,7 +253,7 @@ const handleUpdateProduct = async (e) => {
                     <div className='flex justify-end gap-2'>
                       <button
                         onClick={() => setEditingProduct(product)}
-                        className='text-blue-600 hover:text-blue-800'
+                        className='text-accent hover:text-accent-strong'
                       >
                         Edit
                       </button>
@@ -261,7 +261,7 @@ const handleUpdateProduct = async (e) => {
                       {isAdmin && (
                         <button
                           onClick={() => handleDeleteProduct(product.id)}
-                          className='text-red-600 hover:text-red-800'
+                          className='text-red-600 hover:text-red-700'
                         >
                           Borrar
                         </button>
