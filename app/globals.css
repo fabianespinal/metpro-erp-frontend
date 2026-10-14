@@ -2,6 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Design tokens (item 13). Slate base, blue accent. RGB channels so Tailwind
+   opacity modifiers work. Additive in module 1: no page uses these yet. */
+:root {
+  --canvas: 248 250 252;        /* slate-50  page background */
+  --surface: 255 255 255;       /* white     cards, panels */
+  --ink: 15 23 42;              /* slate-900 primary text */
+  --muted: 100 116 139;         /* slate-500 secondary text */
+  --line: 226 232 240;          /* slate-200 borders, dividers */
+  --accent: 37 99 235;          /* blue-600  primary action */
+  --accent-strong: 29 78 216;   /* blue-700  hover, pressed */
+}
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
