@@ -144,7 +144,7 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete }) {
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
       <div className="bg-surface rounded-lg shadow-card w-full max-w-2xl max-h-[90vh] flex flex-col">
         <div className="flex items-center justify-between p-5 border-b">
-          <h3 className="text-xl font-bold text-ink">📤 Import Clients from CSV</h3>
+          <h3 className="text-xl font-bold text-ink">Import Clients from CSV</h3>
           <button onClick={handleClose} className="text-muted hover:text-muted text-2xl leading-none">×</button>
         </div>
         
@@ -188,7 +188,7 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete }) {
                 <label htmlFor="csv-upload" className="cursor-pointer block">
                   {file ? (
                     <div>
-                      <div className="text-4xl mb-2">✅</div>
+                      <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-emerald-700">File ready</p>
                       <p className="font-medium text-emerald-700">{file.name}</p>
                       <p className="text-sm text-muted mt-1">
                         { ((file?.size ?? 0) / 1024).toFixed(2) } KB • Click to change file
@@ -196,7 +196,7 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete }) {
                     </div>
                   ) : (
                     <div>
-                      <div className="text-4xl mb-2">⬇️</div>
+                      <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">No file selected</p>
                       <p className="font-medium text-ink">
                         {dragActive ? 'Drop your CSV file here' : 'Drag & drop CSV file here'}
                       </p>
@@ -208,7 +208,7 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete }) {
               
               {/* Import Options */}
               <div className="space-y-3">
-                <h4 className="font-medium text-ink">⚙️ Import Options</h4>
+                <h4 className="font-medium text-ink">Import Options</h4>
                 <label className="flex items-center space-x-3 p-3 bg-canvas rounded-lg cursor-pointer hover:bg-canvas transition">
                   <input
                     type="radio"
@@ -238,7 +238,7 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete }) {
               {/* Error Message */}
               {error && (
                 <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
-                  ❌ {error}
+                  Error: {error}
                 </div>
               )}
             </div>
@@ -250,9 +250,9 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete }) {
               }`}>
                 <div className="flex items-center justify-center mb-4">
                   {importResult.success ? (
-                    <div className="text-6xl">✅</div>
+                    <p className="text-sm font-semibold uppercase tracking-wide text-emerald-700">Import successful</p>
                   ) : (
-                    <div className="text-6xl">❌</div>
+                    <p className="text-sm font-semibold uppercase tracking-wide text-red-700">Import failed</p>
                   )}
                 </div>
                 <h4 className="text-xl font-bold text-center mb-2">

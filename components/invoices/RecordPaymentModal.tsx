@@ -56,7 +56,7 @@ const [form, setForm] = useState({
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded shadow-lg w-full max-w-md">
+      <div className="bg-surface p-6 rounded shadow-card w-full max-w-md">
         <h2 className="text-xl font-semibold mb-4">Record Payment</h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -119,7 +119,7 @@ const [form, setForm] = useState({
             <button
               type="submit"
               disabled={loading}
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+              className="bg-accent text-white px-4 py-2 rounded hover:bg-accent-strong"
             >
               {loading ? "Saving..." : "Record Payment"}
             </button>

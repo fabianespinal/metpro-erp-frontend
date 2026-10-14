@@ -5,9 +5,14 @@ import AuthGuard from "@/components/AuthGuard";
 import Header from "@/components/header";
 import GlobalLoader from "@/components/GlobalLoader";
 import { Toaster } from "react-hot-toast";
+import { usePathname } from "next/navigation";
+import { isPublicPath } from "@/lib/publicRoutes";
 import "./globals.css";
 
 export default function RootLayout({ children }) {
+  const pathname = usePathname();
+  const isPublic = isPublicPath(pathname);
+
   return (
     <html lang="en">
       <body className="bg-canvas text-ink min-h-screen flex flex-col">
@@ -17,7 +22,7 @@ export default function RootLayout({ children }) {
         <Toaster position="top-right" />
 
         <AuthGuard>
-          <Header />
+          {!isPublic && <Header />}
 
           <main className="flex-1 w-full px-4 py-6">
             {children}

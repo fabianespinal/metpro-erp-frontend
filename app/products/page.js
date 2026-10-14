@@ -140,8 +140,8 @@ const handleUpdateProduct = async (e) => {
 
         {importResult && (
           <div className='mt-4 p-4 bg-emerald-50 rounded'>
-            <p>Importodo: {importResult.imported} productos</p>
-            {importResult.skipped > 0 && <p>Skipped: {importResult.skipped} products</p>}
+            <p>Importado: {importResult.imported} productos</p>
+            {importResult.skipped > 0 && <p>Omitidos: {importResult.skipped} productos</p>}
           </div>
         )}
       </div>

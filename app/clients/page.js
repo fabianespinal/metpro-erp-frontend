@@ -26,16 +26,6 @@ export default function ClientsPage() {
   const [loading, setLoading] = useState(false)
   const [importModalOpen, setImportModalOpen] = useState(false)
 
-  // Debug token status (SSR-safe)
-  const [tokenStatus, setTokenStatus] = useState("checking")
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const token = localStorage.getItem("token")
-      setTokenStatus(token ? "present" : "missing")
-    }
-  }, [])
-
   useEffect(() => {
     fetchClients()
   }, [])
@@ -135,16 +125,6 @@ export default function ClientsPage() {
           </Button>
         }
       />
-
-      {/* Debug Info (SSR-safe) */}
-      <div className='bg-amber-50 border border-amber-200 rounded p-3 mb-4 text-xs'>
-        <strong>Debug Info:</strong> Token in localStorage:{' '}
-        {tokenStatus === "checking"
-          ? "⏳ Checking..."
-          : tokenStatus === "present"
-          ? "Present"
-          : "Missing"}
-      </div>
 
       {/* Create/Edit Client Form */}
       <div className='bg-surface rounded-lg shadow p-6 mb-8'>
@@ -318,7 +298,7 @@ export default function ClientsPage() {
                       {/* NEW: Manage Contacts */}
                       <Link
                         href={`/contacts/${client.id}`}
-                        className='text-emerald-600 hover:text-emerald-700 px-2 py-1 rounded hover:bg-emerald-50 transition'
+                        className='text-accent hover:text-accent-strong px-2 py-1 rounded hover:bg-accent/10 transition'
                       >
                         Contactos
                       </Link>

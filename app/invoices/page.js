@@ -131,18 +131,18 @@ export default function InvoicesPage() {
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Cargando facturas...</p>
+          <p className="text-muted">Cargando facturas...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-canvas p-6">
       <div className="w-full px-4 lg:px-8">
         <PageHeader title="💰 Facturas" subtitle="Ver y gestionar todas las facturas" />
 
-        <div className="bg-white shadow rounded-lg overflow-hidden mt-6">
+        <div className="bg-surface shadow rounded-lg overflow-hidden mt-6">
           <table className={dt.table}>
             <thead className={dt.thead}>
               <tr>
@@ -192,14 +192,14 @@ export default function InvoicesPage() {
                     />
                     <button
                       onClick={() => handleDownloadPDF(inv.id, inv.invoice_number)}
-                      className="text-blue-600 hover:underline"
+                      className="text-accent hover:underline"
                     >
                       PDF
                     </button>
 
                     <button
                       onClick={() => handleDownloadConduce(inv.id, inv.invoice_number)}
-                      className="text-green-600 hover:underline"
+                      className="text-emerald-600 hover:underline"
                     >
                       Conduce
                     </button>

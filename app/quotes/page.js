@@ -290,7 +290,7 @@ export default function QuotesPage() {
       onOpenProductModal={handleOpenProductModal}
     />
 
-    <div className="bg-white rounded-lg shadow p-6">
+    <div className="bg-surface rounded-lg shadow p-6">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-semibold">Existing Quotes</h2>
 
@@ -308,7 +308,7 @@ export default function QuotesPage() {
       </div>
 
       {safeQuotes.length === 0 ? (
-        <div className="p-8 text-center text-gray-500">
+        <div className="p-8 text-center text-muted">
           No quotes yet. Create one above!
         </div>
       ) : (

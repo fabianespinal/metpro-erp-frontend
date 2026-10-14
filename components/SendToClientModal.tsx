@@ -27,11 +27,11 @@ export default function SendToClientModal({
     console.error("SendToClientModal received invalid ID:", id);
     return (
       <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-        <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+        <div className="bg-surface rounded-lg shadow-card p-6 w-full max-w-md">
           <h2 className="text-xl font-semibold mb-4 text-center">
             Invalid Document
           </h2>
-          <p className="text-gray-700 mb-6">
+          <p className="text-ink mb-6">
             This document cannot be sent because its ID is missing or invalid.
           </p>
           <div className="flex justify-end">
@@ -73,12 +73,12 @@ export default function SendToClientModal({
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+      <div className="bg-surface rounded-lg shadow-card p-6 w-full max-w-md">
         <h2 className="text-xl font-semibold mb-4 text-center">
           Enviar {type === "quote" ? "Cotización" : "Factura"}
         </h2>
 
-        <p className="text-gray-700 mb-6">
+        <p className="text-ink mb-6">
           ¿Desea enviar este documento al cliente?
           Se adjuntará el PDF y se incluirá el enlace público.
         </p>
