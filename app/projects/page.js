@@ -1,4 +1,5 @@
 'use client'
+import { unwrapEnvelope } from "@/lib/api"
 
 import { useState, useEffect } from 'react'
 import StatusPill from '@/components/ui/StatusPill'
@@ -83,7 +84,7 @@ export default function ProjectsPage() {
         return
       }
 
-      const rawData = await res.json()
+      const rawData = unwrapEnvelope(await res.json())
 
       // 🔒 CRITICAL FIX: Normalize EVERY project status BEFORE storing
       const normalizedProjects = rawData.map(project => ({
@@ -116,7 +117,7 @@ export default function ProjectsPage() {
       )
 
       if (res.ok) {
-        setClients(await res.json())
+        setClients(unwrapEnvelope(await res.json()))
       }
     } catch (err) {
       console.error('Fetch clients error:', err)
@@ -247,7 +248,7 @@ export default function ProjectsPage() {
       )
 
       if (res.ok) {
-        const updatedProject = await res.json()
+        const updatedProject = unwrapEnvelope(await res.json())
         
         // 🔒 CRITICAL FIX: Normalize the returned project status
         updatedProject.status = normalizeStatus(updatedProject.status)

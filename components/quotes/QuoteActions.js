@@ -1,3 +1,4 @@
+import { unwrapEnvelope } from "@/lib/api";
 /**
  * QuoteActions.js
  * Centralized module for all quote-related API operations
@@ -91,7 +92,7 @@ export async function approveQuote(quoteId, token) {
     });
 
     await handleResponse(response);
-    const data = await response.json();
+    const data = unwrapEnvelope(await response.json());
     return data;
   } catch (error) {
     console.error("Approve quote error:", error);
@@ -111,7 +112,7 @@ export async function duplicateQuote(quoteId, token) {
     });
 
     await handleResponse(response);
-    const data = await response.json();
+    const data = unwrapEnvelope(await response.json());
     return data;
   } catch (error) {
     console.error("Duplicate quote error:", error);
@@ -145,7 +146,7 @@ export async function deleteQuote(quoteId, token) {
       return { success: true };
     }
     
-    const data = await response.json();
+    const data = unwrapEnvelope(await response.json());
     return data;
   } catch (error) {
     console.error("Delete quote error:", error);
@@ -166,7 +167,7 @@ export async function editQuote(quoteId, token, payload) {
     });
 
     await handleResponse(response);
-    const data = await response.json();
+    const data = unwrapEnvelope(await response.json());
     return data;
   } catch (error) {
     console.error("Edit quote error:", error);
@@ -186,7 +187,7 @@ export async function convertToInvoice(quoteId, token) {
     });
 
     await handleResponse(response);
-    const data = await response.json();
+    const data = unwrapEnvelope(await response.json());
     return data;
   } catch (error) {
     console.error("Convert to invoice error:", error);
@@ -207,7 +208,7 @@ export async function updateQuoteStatus(quoteId, token, newStatus) {
     });
 
     await handleResponse(response);
-    const data = await response.json();
+    const data = unwrapEnvelope(await response.json());
     return data;
   } catch (error) {
     console.error("Update status error:", error);
@@ -254,7 +255,7 @@ export async function fetchQuotes(token, params) {
     });
 
     await handleResponse(response);
-    const data = await response.json();
+    const data = unwrapEnvelope(await response.json());
     return data;
   } catch (error) {
     console.error("Fetch quotes error:", error);
@@ -274,7 +275,7 @@ export async function fetchQuote(quoteId, token) {
     });
 
     await handleResponse(response);
-    const data = await response.json();
+    const data = unwrapEnvelope(await response.json());
     return data;
   } catch (error) {
     console.error("Fetch quote error:", error);
@@ -295,7 +296,7 @@ export async function createQuote(token, payload) {
     });
 
     await handleResponse(response);
-    const data = await response.json();
+    const data = unwrapEnvelope(await response.json());
     return data;
   } catch (error) {
     console.error("Create quote error:", error);

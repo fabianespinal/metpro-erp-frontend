@@ -1,4 +1,5 @@
 'use client'
+import { unwrapEnvelope } from "@/lib/api"
 
 import { useState, useEffect } from 'react'
 
@@ -36,7 +37,7 @@ export default function ReportsPage() {
       })
 
       if (res.ok) {
-        const data = await res.json()
+        const data = unwrapEnvelope(await res.json())
         setClients(Array.isArray(data) ? data : [])
       }
     } catch (error) {
@@ -73,7 +74,7 @@ export default function ReportsPage() {
         throw new Error(`Server error: ${errText || res.status}`)
       }
 
-      setReportData(await res.json())
+      setReportData(unwrapEnvelope(await res.json()))
     } catch (error) {
       console.error('Report generation failed:', error)
       alert(`Report failed: ${error.message}`)

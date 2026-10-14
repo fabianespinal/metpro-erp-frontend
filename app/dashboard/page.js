@@ -1,4 +1,5 @@
 'use client'
+import { unwrapEnvelope } from "@/lib/api"
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
@@ -39,10 +40,10 @@ export default function DashboardPage() {
           fetch(`${API}/expenses`, { headers: { Authorization: `Bearer ${token}` } })
         ])
 
-        const clients = await clientsRes.json()
-        const quotes = await quotesRes.json()
-        const invoices = await invoicesRes.json()
-        const expenses = await expensesRes.json()
+        const clients = unwrapEnvelope(await clientsRes.json())
+        const quotes = unwrapEnvelope(await quotesRes.json())
+        const invoices = unwrapEnvelope(await invoicesRes.json())
+        const expenses = unwrapEnvelope(await expensesRes.json())
 
         // Compute stats
         const activeClients = clients.length
