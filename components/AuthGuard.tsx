@@ -8,11 +8,24 @@ interface AuthGuardProps {
   children: ReactNode;
 }
 
+// Customer-facing views. Reachable without login.
+// /quotes/<id>/view and /inv/<id> only. No other route is public.
+const PUBLIC_PATTERNS: RegExp[] = [
+  /^\/quotes\/[^/]+\/view\/?$/,
+  /^\/inv\/[^/]+\/?$/,
+];
+
+function isPublicPath(pathname: string): boolean {
+  return PUBLIC_PATTERNS.some((re) => re.test(pathname));
+}
+
 export default function AuthGuard({ children }: AuthGuardProps) {
   const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
+    if (isPublicPath(pathname)) return;
+
     const token = localStorage.getItem("token");
 
     if (!token && pathname !== "/login") {
