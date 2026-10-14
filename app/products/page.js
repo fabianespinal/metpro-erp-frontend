@@ -5,6 +5,8 @@ import { useState, useEffect } from 'react'
 import { api } from "@/lib/api"
 import { useCurrentRole } from "@/lib/currentRole"
 import { PageHeader } from '@/components/ui/page-header'
+import { Button } from '@/components/ui/button'
+import { fb } from '@/components/ui/filter-bar'
 
 export default function ProductsPage() {
   const { isAdmin } = useCurrentRole()
@@ -122,22 +124,18 @@ const handleUpdateProduct = async (e) => {
       <PageHeader title="Productos" />
 
       {/* Import CSV */}
-      <div className='bg-surface rounded-lg shadow p-6 mb-8'>
-        <h2 className='text-xl font-semibold mb-4'>Importar Productos desde CSV</h2>
-        <form onSubmit={handleCsvImport} className='flex gap-4'>
+      <div className='rounded-lg border border-line bg-surface p-6 shadow-card mb-8'>
+        <h2 className='text-lg font-semibold tracking-tight text-ink mb-4'>Importar Productos desde CSV</h2>
+        <form onSubmit={handleCsvImport} className='flex flex-col gap-3 sm:flex-row sm:items-center'>
           <input
             type='file'
             accept='.csv'
             onChange={(e) => setCsvFile(e.target.files[0])}
-            className='flex-1 border p-2 rounded'
+            className={`${fb.control} min-w-0 flex-1 py-1.5`}
           />
-          <button
-            type='submit'
-            disabled={loading || !csvFile}
-            className='bg-accent hover:bg-accent-strong text-white px-4 py-2 rounded-lg font-medium shadow-card hover:shadow-card transition-shadow disabled:opacity-50'
-          >
+          <Button type='submit' disabled={loading || !csvFile} className='shrink-0'>
             {loading ? 'Importing...' : 'Import CSV'}
-          </button>
+          </Button>
         </form>
 
         {importResult && (
