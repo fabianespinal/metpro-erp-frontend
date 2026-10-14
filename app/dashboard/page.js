@@ -1,12 +1,19 @@
 'use client'
 import { unwrapEnvelope } from "@/lib/api"
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useSyncExternalStore } from 'react'
 import Link from 'next/link'
 import { PageHeader } from '@/components/ui/page-header'
 
+const noopSubscribe = () => () => {}
+
 export default function DashboardPage() {
-  const [username, setUsername] = useState('')
+  // Read once from localStorage. Server snapshot is 'User' for prerender.
+  const username = useSyncExternalStore(
+    noopSubscribe,
+    () => localStorage.getItem('username') || 'User',
+    () => 'User'
+  )
   const [stats, setStats] = useState({
     clients: 0,
     pendingQuotes: 0,
@@ -20,12 +27,6 @@ export default function DashboardPage() {
   const [recentQuotes, setRecentQuotes] = useState([])
   const [recentInvoices, setRecentInvoices] = useState([])
   const [recentExpenses, setRecentExpenses] = useState([])
-
-  // Load username
-  useEffect(() => {
-    const storedUser = localStorage.getItem('username')
-    setUsername(storedUser || 'User')
-  }, [])
 
   // Load dashboard data
   useEffect(() => {
