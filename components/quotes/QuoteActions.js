@@ -3,6 +3,8 @@
  * Centralized module for all quote-related API operations
  */
 
+import { fetchCurrentRole, isAdminRole } from "@/lib/currentRole";
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 /**
@@ -122,6 +124,14 @@ export async function duplicateQuote(quoteId, token) {
  */
 export async function deleteQuote(quoteId, token) {
   try {
+    // UI guard only. The backend enforces admin on DELETE /quotes/{id}.
+    const role = await fetchCurrentRole();
+    if (!isAdminRole(role)) {
+      const error = new Error("Insufficient permissions");
+      error.status = 403;
+      throw error;
+    }
+
     const url = API_URL + "/quotes/" + quoteId;
     const response = await fetch(url, {
       method: "DELETE",

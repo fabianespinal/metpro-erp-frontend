@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { clearCurrentRoleCache } from "@/lib/currentRole";
 
 export default function Header() {
   const router = useRouter();
@@ -18,6 +19,7 @@ export default function Header() {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("username");
+    clearCurrentRoleCache();
     router.push("/login");
   };
 
