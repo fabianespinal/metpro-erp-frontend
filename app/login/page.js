@@ -4,6 +4,8 @@ export const dynamic = "force-dynamic";
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { api } from '@/lib/api'
+import { Button } from '@/components/ui/button'
+import { fb } from '@/components/ui/filter-bar'
 
 export default function LoginPage() {
   const [username, setUsername] = useState('')
@@ -83,57 +85,57 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black flex items-center justify-center px-4 relative">
+    <div className="min-h-screen bg-canvas flex items-center justify-center px-4 relative">
       <form
         onSubmit={handleLogin}
-        className="bg-gray-800/60 backdrop-blur-xl p-8 rounded-xl shadow-xl w-full max-w-md border border-gray-700"
+        className="w-full max-w-sm rounded-lg border border-line bg-surface p-8 shadow-card"
       >
         <div className="flex flex-col items-center mb-6">
           <img
             src="/logo.png"
             alt="METPRO Logo"
-            className="h-20 w-auto mb-3 drop-shadow-lg"
+            className="h-16 w-auto mb-3"
           />
         </div>
 
-        <h1 className="text-3xl font-bold text-white mb-6 text-center">
+        <h1 className="text-xl font-semibold tracking-tight text-ink mb-6 text-center">
           Login
         </h1>
 
         {error && (
-          <div className="bg-red-500/20 text-red-300 border border-red-500/40 p-3 rounded mb-4 text-sm">
+          <div className="rounded-md border border-red-200 bg-red-50 p-3 mb-4 text-sm text-red-700">
             {error}
           </div>
         )}
 
-        <label className="block text-gray-300 text-sm mb-1">Username</label>
+        <label className="block text-sm font-medium text-ink mb-1">Username</label>
         <input
           type="text"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
-          className="w-full p-3 rounded bg-gray-900 border border-gray-700 text-white mb-4"
+          className={`${fb.control} h-10 mb-4`}
           required
         />
 
-        <label className="block text-gray-300 text-sm mb-1">Password</label>
+        <label className="block text-sm font-medium text-ink mb-1">Password</label>
         <div className="relative mb-4">
           <input
             type={showPassword ? "text" : "password"}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full p-3 rounded bg-gray-900 border border-gray-700 text-white"
+            className={`${fb.control} h-10`}
             required
           />
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-3 text-gray-400 hover:text-gray-200"
+            className="absolute right-2 top-1/2 -translate-y-1/2 px-2 text-xs font-medium text-muted hover:text-ink"
           >
-            {showPassword ? "🙈" : "👁️"}
+            {showPassword ? "Ocultar" : "Mostrar"}
           </button>
         </div>
 
-        <label className="flex items-center gap-2 text-gray-300 text-sm mb-4">
+        <label className="flex items-center gap-2 text-sm text-ink mb-4">
           <input
             type="checkbox"
             checked={rememberMe}
@@ -142,10 +144,10 @@ export default function LoginPage() {
           Remember me
         </label>
 
-        <button
+        <Button
           type="submit"
           disabled={loading}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition disabled:opacity-50"
+          className="w-full h-10"
         >
           {loading ? (
             <span className="flex items-center justify-center gap-2">
@@ -155,7 +157,7 @@ export default function LoginPage() {
           ) : (
             "Login"
           )}
-        </button>
+        </Button>
       </form>
     </div>
   )
