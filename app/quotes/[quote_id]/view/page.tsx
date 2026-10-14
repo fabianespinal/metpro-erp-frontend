@@ -1,5 +1,6 @@
 "use client";
 import { unwrapEnvelope } from "@/lib/api";
+import { dt } from "@/components/ui/data-table";
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
@@ -115,16 +116,16 @@ export default function QuotePublicView() {
 
   if (loading) {
     return (
-      <div style={styles.centered}>
-        <div style={styles.spinner} />
+      <div className="flex min-h-screen items-center justify-center bg-canvas">
+        <div className="h-8 w-8 animate-spin rounded-full border-[3px] border-line border-t-ink" />
       </div>
     );
   }
 
   if (error || !quote) {
     return (
-      <div style={styles.centered}>
-        <p style={{ color: "#888", fontFamily: "Georgia, serif" }}>{error || "Cotización no encontrada."}</p>
+      <div className="flex min-h-screen items-center justify-center bg-canvas px-4">
+        <p className="text-sm text-muted">{error || "Cotización no encontrada."}</p>
       </div>
     );
   }
@@ -136,331 +137,169 @@ export default function QuotePublicView() {
   const t = calcTotals(quote.items || [], charges);
 
   return (
-    <div style={styles.page}>
-      {/* Header */}
-      <div style={styles.header}>
-        <div>
-          <div style={styles.companyName}>Metpro SRL</div>
-          <div style={styles.companyInfo}>Parque Industrial Disdo</div>
-          <div style={styles.companyInfo}>Calle Central No. 1, Hato Nuevo Palave</div>
-          <div style={styles.companyInfo}>Tel: (829) 439-8476 | RNC: 131-71683-2</div>
-        </div>
-        <div style={styles.docBadge}>
-          <div style={styles.docType}>COTIZACIÓN</div>
-          <div style={styles.docId}>{quote.quote_id}</div>
-          <div style={styles.docDate}>
-            {quote.created_at?.slice(0, 10)}
-          </div>
-        </div>
-      </div>
+    <div className="min-h-screen bg-canvas px-4 py-10 text-ink print:bg-white print:py-0">
+      <div className="mx-auto max-w-[860px] rounded-lg border border-line bg-surface p-6 shadow-card sm:p-10 print:border-0 print:p-0 print:shadow-none">
 
-      {/* Client Info */}
-      <div style={styles.section}>
-        <div style={styles.sectionTitle}>Información del Cliente</div>
-        <div style={styles.clientGrid}>
+        {/* Header */}
+        <div className="flex flex-col gap-6 border-b border-line pb-6 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <span style={styles.label}>Cliente:</span> {quote.company_name}
+            <div className="text-lg font-semibold">Metpro SRL</div>
+            <div className="mt-1 text-sm leading-6 text-muted">Parque Industrial Disdo</div>
+            <div className="text-sm leading-6 text-muted">Calle Central No. 1, Hato Nuevo Palave</div>
+            <div className="text-sm leading-6 text-muted">Tel: (829) 439-8476 | RNC: 131-71683-2</div>
           </div>
-          <div>
-            <span style={styles.label}>Contacto:</span> {quote.contact_name}
-          </div>
-          <div>
-            <span style={styles.label}>Email:</span> {quote.contact_email}
-          </div>
-          <div>
-            <span style={styles.label}>Teléfono:</span> {quote.contact_phone}
-          </div>
-          {quote.project_name && (
-            <div style={{ gridColumn: "1 / -1" }}>
-              <span style={styles.label}>Proyecto:</span> {quote.project_name}
+          <div className="sm:text-right">
+            <div className="text-xl font-semibold uppercase tracking-widest">COTIZACIÓN</div>
+            <div className="mt-1 text-sm text-muted">{quote.quote_id}</div>
+            <div className="mt-0.5 text-sm text-muted">
+              {quote.created_at?.slice(0, 10)}
             </div>
-          )}
-          {quote.valid_until && (
-            <div>
-              <span style={styles.label}>Válido hasta:</span> {quote.valid_until}
-            </div>
-          )}
-          {quote.payment_terms && (
-            <div>
-              <span style={styles.label}>Términos de pago:</span> {quote.payment_terms}
-            </div>
-          )}
+          </div>
         </div>
-      </div>
 
-      {/* Items Table */}
-      <div style={styles.section}>
-        <div style={styles.sectionTitle}>Detalle de Items</div>
-        <table style={styles.table}>
-          <thead>
-            <tr style={styles.tableHead}>
-              <th style={{ ...styles.th, textAlign: "left" }}>Descripción</th>
-              <th style={styles.th}>Cantidad</th>
-              <th style={styles.th}>Precio Unit.</th>
-              <th style={styles.th}>Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            {quote.items.map((item, i) => {
-              const lineTotal = item.quantity * item.unit_price;
-              return (
-                <tr key={i} style={i % 2 === 0 ? styles.trEven : styles.trOdd}>
-                  <td style={{ ...styles.td, textAlign: "left" }}>{item.product_name}</td>
-                  <td style={styles.td}>{item.quantity.toFixed(2)}</td>
-                  <td style={styles.td}>{fmt(item.unit_price)}</td>
-                  <td style={styles.td}>{fmt(lineTotal)}</td>
+        {/* Client Info */}
+        <div className="mt-8">
+          <div className="mb-4 border-b border-line pb-2 text-xs font-semibold uppercase tracking-wider text-muted">
+            Información del Cliente
+          </div>
+          <div className="grid grid-cols-1 gap-x-6 gap-y-2 text-sm leading-7 sm:grid-cols-2">
+            <div>
+              <span className="font-semibold">Cliente:</span> {quote.company_name}
+            </div>
+            <div>
+              <span className="font-semibold">Contacto:</span> {quote.contact_name}
+            </div>
+            <div>
+              <span className="font-semibold">Email:</span> {quote.contact_email}
+            </div>
+            <div>
+              <span className="font-semibold">Teléfono:</span> {quote.contact_phone}
+            </div>
+            {quote.project_name && (
+              <div className="sm:col-span-2">
+                <span className="font-semibold">Proyecto:</span> {quote.project_name}
+              </div>
+            )}
+            {quote.valid_until && (
+              <div>
+                <span className="font-semibold">Válido hasta:</span> {quote.valid_until}
+              </div>
+            )}
+            {quote.payment_terms && (
+              <div>
+                <span className="font-semibold">Términos de pago:</span> {quote.payment_terms}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Items Table */}
+        <div className="mt-8">
+          <div className="mb-4 border-b border-line pb-2 text-xs font-semibold uppercase tracking-wider text-muted">
+            Detalle de Items
+          </div>
+          <div className={dt.wrap}>
+            <table className={dt.table}>
+              <thead className={dt.thead}>
+                <tr>
+                  <th className={dt.th}>Descripción</th>
+                  <th className={dt.thRight}>Cantidad</th>
+                  <th className={dt.thRight}>Precio Unit.</th>
+                  <th className={dt.thRight}>Total</th>
                 </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Totals */}
-      <div style={styles.totalsWrapper}>
-        <div style={styles.totalsBox}>
-          <div style={styles.sectionTitle}>Resumen Financiero</div>
-          <div style={styles.totalRow}>
-            <span>Subtotal de Items</span>
-            <span>{fmt(t.itemsTotal)}</span>
-          </div>
-          {t.totalDiscounts > 0 && (
-            <div style={styles.totalRow}>
-              <span>Descuentos</span>
-              <span>-{fmt(t.totalDiscounts)}</span>
-            </div>
-          )}
-          {charges?.supervision && (
-            <div style={styles.totalRow}>
-              <span>Supervisión ({t.supervisionPct}%)</span>
-              <span>{fmt(t.supervision)}</span>
-            </div>
-          )}
-          {charges?.admin && (
-            <div style={styles.totalRow}>
-              <span>Administración ({t.adminPct}%)</span>
-              <span>{fmt(t.admin)}</span>
-            </div>
-          )}
-          {charges?.insurance && (
-            <div style={styles.totalRow}>
-              <span>Seguro ({t.insurancePct}%)</span>
-              <span>{fmt(t.insurance)}</span>
-            </div>
-          )}
-          {charges?.transport && (
-            <div style={styles.totalRow}>
-              <span>Transporte ({t.transportPct}%)</span>
-              <span>{fmt(t.transport)}</span>
-            </div>
-          )}
-          {charges?.contingency && (
-            <div style={styles.totalRow}>
-              <span>Contingencia ({t.contingencyPct}%)</span>
-              <span>{fmt(t.contingency)}</span>
-            </div>
-          )}
-          <div style={styles.totalRow}>
-            <span>Subtotal General</span>
-            <span>{fmt(t.subtotalGeneral)}</span>
-          </div>
-          <div style={styles.totalRow}>
-            <span>ITBIS (18%)</span>
-            <span>{fmt(t.itbis)}</span>
-          </div>
-          <div style={styles.grandTotalRow}>
-            <span>TOTAL GENERAL</span>
-            <span>{fmt(t.grandTotal)}</span>
+              </thead>
+              <tbody className={dt.tbody}>
+                {quote.items.map((item, i) => {
+                  const lineTotal = item.quantity * item.unit_price;
+                  return (
+                    <tr key={i} className={dt.tr}>
+                      <td className={dt.td}>{item.product_name}</td>
+                      <td className={dt.tdRight}>{item.quantity.toFixed(2)}</td>
+                      <td className={dt.tdRight}>{fmt(item.unit_price)}</td>
+                      <td className={dt.tdRight}>{fmt(lineTotal)}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         </div>
-      </div>
 
-      {/* Notes */}
-      {quote.notes && (
-        <div style={styles.section}>
-          <div style={styles.sectionTitle}>Notas</div>
-          <p style={styles.notes}>{quote.notes}</p>
+        {/* Totals */}
+        <div className="mt-8 flex justify-end">
+          <div className="w-full max-w-sm">
+            <div className="mb-4 border-b border-line pb-2 text-xs font-semibold uppercase tracking-wider text-muted">
+              Resumen Financiero
+            </div>
+            <div className="flex justify-between border-b border-line py-1.5 text-sm tabular-nums">
+              <span className="text-muted">Subtotal de Items</span>
+              <span>{fmt(t.itemsTotal)}</span>
+            </div>
+            {t.totalDiscounts > 0 && (
+              <div className="flex justify-between border-b border-line py-1.5 text-sm tabular-nums">
+                <span className="text-muted">Descuentos</span>
+                <span>-{fmt(t.totalDiscounts)}</span>
+              </div>
+            )}
+            {charges?.supervision && (
+              <div className="flex justify-between border-b border-line py-1.5 text-sm tabular-nums">
+                <span className="text-muted">Supervisión ({t.supervisionPct}%)</span>
+                <span>{fmt(t.supervision)}</span>
+              </div>
+            )}
+            {charges?.admin && (
+              <div className="flex justify-between border-b border-line py-1.5 text-sm tabular-nums">
+                <span className="text-muted">Administración ({t.adminPct}%)</span>
+                <span>{fmt(t.admin)}</span>
+              </div>
+            )}
+            {charges?.insurance && (
+              <div className="flex justify-between border-b border-line py-1.5 text-sm tabular-nums">
+                <span className="text-muted">Seguro ({t.insurancePct}%)</span>
+                <span>{fmt(t.insurance)}</span>
+              </div>
+            )}
+            {charges?.transport && (
+              <div className="flex justify-between border-b border-line py-1.5 text-sm tabular-nums">
+                <span className="text-muted">Transporte ({t.transportPct}%)</span>
+                <span>{fmt(t.transport)}</span>
+              </div>
+            )}
+            {charges?.contingency && (
+              <div className="flex justify-between border-b border-line py-1.5 text-sm tabular-nums">
+                <span className="text-muted">Contingencia ({t.contingencyPct}%)</span>
+                <span>{fmt(t.contingency)}</span>
+              </div>
+            )}
+            <div className="flex justify-between border-b border-line py-1.5 text-sm tabular-nums">
+              <span className="text-muted">Subtotal General</span>
+              <span>{fmt(t.subtotalGeneral)}</span>
+            </div>
+            <div className="flex justify-between border-b border-line py-1.5 text-sm tabular-nums">
+              <span className="text-muted">ITBIS (18%)</span>
+              <span>{fmt(t.itbis)}</span>
+            </div>
+            <div className="mt-1 flex justify-between border-t-2 border-ink pt-3 text-base font-semibold tabular-nums">
+              <span>TOTAL GENERAL</span>
+              <span>{fmt(t.grandTotal)}</span>
+            </div>
+          </div>
         </div>
-      )}
 
-      <div style={styles.footer}>
-        Generado por METPRO · metprord.com
+        {/* Notes */}
+        {quote.notes && (
+          <div className="mt-8">
+            <div className="mb-4 border-b border-line pb-2 text-xs font-semibold uppercase tracking-wider text-muted">
+              Notas
+            </div>
+            <p className="text-sm leading-7 text-muted">{quote.notes}</p>
+          </div>
+        )}
+
+        <div className="mt-10 border-t border-line pt-6 text-center text-xs text-muted">
+          Generado por METPRO · metprord.com
+        </div>
       </div>
     </div>
   );
 }
-
-const styles: Record<string, React.CSSProperties> = {
-  page: {
-    maxWidth: 860,
-    margin: "0 auto",
-    padding: "40px 24px",
-    fontFamily: "Georgia, 'Times New Roman', serif",
-    color: "#1a1a1a",
-    backgroundColor: "#fafafa",
-    minHeight: "100vh",
-  },
-  centered: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    minHeight: "100vh",
-  },
-  spinner: {
-    width: 32,
-    height: 32,
-    border: "3px solid #e0e0e0",
-    borderTop: "3px solid #1a1a1a",
-    borderRadius: "50%",
-    animation: "spin 0.8s linear infinite",
-  },
-  header: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    borderBottom: "2px solid #1a1a1a",
-    paddingBottom: 24,
-    marginBottom: 32,
-  },
-  companyName: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 4,
-  },
-  companyInfo: {
-    fontSize: 13,
-    color: "#555",
-    lineHeight: 1.6,
-  },
-  docBadge: {
-    textAlign: "right",
-  },
-  docType: {
-    fontSize: 22,
-    fontWeight: "bold",
-    letterSpacing: 2,
-    color: "#1a1a1a",
-  },
-  docId: {
-    fontSize: 14,
-    color: "#555",
-    marginTop: 4,
-  },
-  docDate: {
-    fontSize: 13,
-    color: "#888",
-    marginTop: 2,
-  },
-  section: {
-    marginBottom: 32,
-  },
-  sectionTitle: {
-    fontSize: 11,
-    fontWeight: "bold",
-    letterSpacing: 2,
-    textTransform: "uppercase",
-    color: "#888",
-    borderBottom: "1px solid #e0e0e0",
-    paddingBottom: 8,
-    marginBottom: 16,
-    fontFamily: "system-ui, sans-serif",
-  },
-  clientGrid: {
-    display: "grid",
-    gridTemplateColumns: "1fr 1fr",
-    gap: "8px 24px",
-    fontSize: 14,
-    lineHeight: 1.8,
-  },
-  label: {
-    fontWeight: "bold",
-    fontFamily: "system-ui, sans-serif",
-    fontSize: 13,
-  },
-  table: {
-    width: "100%",
-    borderCollapse: "collapse",
-    fontSize: 14,
-  },
-  tableHead: {
-    backgroundColor: "#1a1a1a",
-    color: "#fff",
-  },
-  th: {
-    padding: "10px 12px",
-    fontFamily: "system-ui, sans-serif",
-    fontSize: 12,
-    fontWeight: 600,
-    letterSpacing: 1,
-    textTransform: "uppercase",
-    textAlign: "right",
-  },
-  td: {
-    padding: "10px 12px",
-    textAlign: "right",
-    fontFamily: "system-ui, sans-serif",
-    fontSize: 13,
-  },
-  trEven: {
-    backgroundColor: "#fff",
-  },
-  trOdd: {
-    backgroundColor: "#f5f5f5",
-  },
-  totalsWrapper: {
-    display: "flex",
-    justifyContent: "flex-end",
-    marginBottom: 32,
-  },
-  totalsBox: {
-    width: 360,
-  },
-  totalRow: {
-    display: "flex",
-    justifyContent: "space-between",
-    padding: "6px 0",
-    fontSize: 14,
-    fontFamily: "system-ui, sans-serif",
-    borderBottom: "1px solid #f0f0f0",
-  },
-  grandTotalRow: {
-    display: "flex",
-    justifyContent: "space-between",
-    padding: "12px 0 6px",
-    fontSize: 16,
-    fontWeight: "bold",
-    fontFamily: "system-ui, sans-serif",
-    borderTop: "2px solid #1a1a1a",
-    marginTop: 4,
-  },
-  notes: {
-    fontSize: 14,
-    lineHeight: 1.7,
-    color: "#444",
-    fontFamily: "system-ui, sans-serif",
-  },
-  actions: {
-    display: "flex",
-    justifyContent: "center",
-    marginBottom: 40,
-  },
-  downloadBtn: {
-    display: "inline-block",
-    padding: "12px 32px",
-    backgroundColor: "#1a1a1a",
-    color: "#fff",
-    textDecoration: "none",
-    fontFamily: "system-ui, sans-serif",
-    fontSize: 14,
-    fontWeight: 600,
-    letterSpacing: 1,
-  },
-  footer: {
-    textAlign: "center",
-    fontSize: 12,
-    color: "#aaa",
-    fontFamily: "system-ui, sans-serif",
-    borderTop: "1px solid #e0e0e0",
-    paddingTop: 24,
-  },
-};
