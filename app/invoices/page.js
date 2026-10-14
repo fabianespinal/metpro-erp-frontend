@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { api, sendInvoiceToClient } from "@/lib/api";
+import { api } from "@/lib/api";
 import StatusPill from "@/components/ui/StatusPill";
 import RecordPaymentModal from "@/components/invoices/RecordPaymentModal";
 import SendToClientButton from "@/components/SendToClientButton";
@@ -10,7 +10,7 @@ import SentBadge from "@/components/SentBadge";
 export default function InvoicesPage() {
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [statusFilter] = useState("all");
   const [sentMap, setSentMap] = useState({});
 
   const [paymentOpen, setPaymentOpen] = useState(false);

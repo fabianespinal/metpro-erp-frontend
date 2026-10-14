@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { DEFAULT_CHARGES, calculateQuoteTotals } from './quoteUtils'
+import { DEFAULT_CHARGES } from './quoteUtils'
 import { api } from '@/lib/api'
 
 export function useQuoteForm() {
@@ -14,7 +14,7 @@ export function useQuoteForm() {
   const [paymentTerms, setPaymentTerms] = useState('')
   const [validUntil, setValidUntil] = useState('')
   const [charges, setCharges] = useState(DEFAULT_CHARGES)
-  const [totals, setTotals] = useState(null)
+  const [totals] = useState(null)
 
   useEffect(() => {
   if (!selectedClient?.id) return

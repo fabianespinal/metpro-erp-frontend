@@ -27,7 +27,7 @@ async function handleResponse(response) {
     try {
       const errorData = await response.json();
       errorMessage = errorData.message || errorData.error || errorMessage;
-    } catch (e) {
+    } catch {
       // Response wasn't JSON, use default message
     }
     const error = new Error(errorMessage);
