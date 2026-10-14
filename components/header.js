@@ -2,18 +2,14 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
+
+const subscribeNoop = () => () => {};
 
 export default function Header() {
   const router = useRouter();
-  const [mounted, setMounted] = useState(false);
-  const [, setUsername] = useState(null);
-
-  useEffect(() => {
-    setMounted(true);
-    const storedUser = localStorage.getItem("username");
-    setUsername(storedUser || "User");
-  }, []);
+  // false on server and during hydration, true after mount.
+  const mounted = useSyncExternalStore(subscribeNoop, () => true, () => false);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
