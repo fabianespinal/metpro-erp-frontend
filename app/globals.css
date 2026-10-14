@@ -14,6 +14,22 @@
   --accent-strong: 29 78 216;   /* blue-700  hover, pressed */
 }
 
+/* Global loader bar (item 13, module 5). Respects reduced motion. */
+@keyframes loader-slide {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(300%); }
+}
+.loader-bar {
+  animation: loader-slide 1.2s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .loader-bar {
+    animation: none;
+    width: 100%;
+    opacity: 0.6;
+  }
+}
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
