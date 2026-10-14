@@ -142,19 +142,19 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete }) {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+      <div className="bg-surface rounded-lg shadow-card w-full max-w-2xl max-h-[90vh] flex flex-col">
         <div className="flex items-center justify-between p-5 border-b">
-          <h3 className="text-xl font-bold text-gray-900">📤 Import Clients from CSV</h3>
-          <button onClick={handleClose} className="text-gray-400 hover:text-gray-600 text-2xl leading-none">×</button>
+          <h3 className="text-xl font-bold text-ink">📤 Import Clients from CSV</h3>
+          <button onClick={handleClose} className="text-muted hover:text-muted text-2xl leading-none">×</button>
         </div>
         
         <div className="p-6 overflow-y-auto flex-1">
           {!importResult ? (
             <div className="space-y-6">
               {/* CSV Requirements */}
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <h4 className="font-bold text-blue-900 mb-2">📋 CSV Requirements</h4>
-                <ul className="text-sm text-blue-800 space-y-1">
+              <div className="bg-accent/10 border border-accent/30 rounded-lg p-4">
+                <h4 className="font-bold text-accent-strong mb-2">CSV Requirements</h4>
+                <ul className="text-sm text-accent-strong space-y-1">
                   <li>• <span className="font-medium">Required column:</span> company_name</li>
                   <li>• <span className="font-medium">Optional columns:</span> contact_name, email, phone, address, tax_id, notes</li>
                   <li>• File must be UTF-8 encoded (Excel: Save As → CSV UTF-8)</li>
@@ -167,10 +167,10 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete }) {
               <div 
                 className={`border-2 border-dashed rounded-lg p-8 text-center transition-all ${
                   dragActive 
-                    ? 'border-blue-500 bg-blue-50' 
+                    ? 'border-accent bg-accent/10' 
                     : file 
-                      ? 'border-green-500 bg-green-50' 
-                      : 'border-gray-300 hover:border-blue-400'
+                      ? 'border-emerald-600 bg-emerald-50' 
+                      : 'border-line hover:border-accent'
                 }`}
                 onDragEnter={handleDrag}
                 onDragLeave={handleDrag}
@@ -189,18 +189,18 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete }) {
                   {file ? (
                     <div>
                       <div className="text-4xl mb-2">✅</div>
-                      <p className="font-medium text-green-700">{file.name}</p>
-                      <p className="text-sm text-gray-500 mt-1">
+                      <p className="font-medium text-emerald-700">{file.name}</p>
+                      <p className="text-sm text-muted mt-1">
                         { ((file?.size ?? 0) / 1024).toFixed(2) } KB • Click to change file
                       </p>
                     </div>
                   ) : (
                     <div>
                       <div className="text-4xl mb-2">⬇️</div>
-                      <p className="font-medium text-gray-700">
+                      <p className="font-medium text-ink">
                         {dragActive ? 'Drop your CSV file here' : 'Drag & drop CSV file here'}
                       </p>
-                      <p className="text-sm text-gray-500 mt-1">or click to browse</p>
+                      <p className="text-sm text-muted mt-1">or click to browse</p>
                     </div>
                   )}
                 </label>
@@ -208,36 +208,36 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete }) {
               
               {/* Import Options */}
               <div className="space-y-3">
-                <h4 className="font-medium text-gray-700">⚙️ Import Options</h4>
-                <label className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition">
+                <h4 className="font-medium text-ink">⚙️ Import Options</h4>
+                <label className="flex items-center space-x-3 p-3 bg-canvas rounded-lg cursor-pointer hover:bg-canvas transition">
                   <input
                     type="radio"
                     checked={skipDuplicates}
                     onChange={() => setSkipDuplicates(true)}
-                    className="form-radio text-blue-600"
+                    className="form-radio text-accent"
                   />
                   <div>
-                    <p className="font-medium text-gray-900">Skip duplicates</p>
-                    <p className="text-sm text-gray-600">Keep existing records, skip duplicates</p>
+                    <p className="font-medium text-ink">Skip duplicates</p>
+                    <p className="text-sm text-muted">Keep existing records, skip duplicates</p>
                   </div>
                 </label>
-                <label className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition">
+                <label className="flex items-center space-x-3 p-3 bg-canvas rounded-lg cursor-pointer hover:bg-canvas transition">
                   <input
                     type="radio"
                     checked={!skipDuplicates}
                     onChange={() => setSkipDuplicates(false)}
-                    className="form-radio text-blue-600"
+                    className="form-radio text-accent"
                   />
                   <div>
-                    <p className="font-medium text-gray-900">Overwrite existing</p>
-                    <p className="text-sm text-gray-600">Update existing records with new data</p>
+                    <p className="font-medium text-ink">Overwrite existing</p>
+                    <p className="text-sm text-muted">Update existing records with new data</p>
                   </div>
                 </label>
               </div>
               
               {/* Error Message */}
               {error && (
-                <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg text-sm">
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
                   ❌ {error}
                 </div>
               )}
@@ -246,7 +246,7 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete }) {
             // Import Results
             <div className="space-y-4">
               <div className={`p-6 rounded-lg ${
-                importResult.success ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'
+                importResult.success ? 'bg-emerald-50 border border-emerald-600' : 'bg-red-50 border border-red-200'
               }`}>
                 <div className="flex items-center justify-center mb-4">
                   {importResult.success ? (
@@ -260,30 +260,30 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete }) {
                 </h4>
                 {importResult.success && importResult.summary && (
                   <div className="grid grid-cols-2 gap-4 mt-4 text-sm">
-                    <div className="text-center p-3 bg-white rounded shadow-sm">
-                      <div className="font-bold text-2xl text-green-600">{importResult.summary.inserted || 0}</div>
-                      <div className="text-gray-600">New Clients</div>
+                    <div className="text-center p-3 bg-surface rounded shadow-sm">
+                      <div className="font-bold text-2xl text-emerald-600">{importResult.summary.inserted || 0}</div>
+                      <div className="text-muted">New Clients</div>
                     </div>
-                    <div className="text-center p-3 bg-white rounded shadow-sm">
-                      <div className="font-bold text-2xl text-blue-600">{importResult.summary.updated || 0}</div>
-                      <div className="text-gray-600">Updated</div>
+                    <div className="text-center p-3 bg-surface rounded shadow-sm">
+                      <div className="font-bold text-2xl text-accent">{importResult.summary.updated || 0}</div>
+                      <div className="text-muted">Updated</div>
                     </div>
-                    <div className="text-center p-3 bg-white rounded shadow-sm">
-                      <div className="font-bold text-2xl text-yellow-600">{importResult.summary.skipped || 0}</div>
-                      <div className="text-gray-600">Skipped</div>
+                    <div className="text-center p-3 bg-surface rounded shadow-sm">
+                      <div className="font-bold text-2xl text-amber-600">{importResult.summary.skipped || 0}</div>
+                      <div className="text-muted">Skipped</div>
                     </div>
-                    <div className="text-center p-3 bg-white rounded shadow-sm">
+                    <div className="text-center p-3 bg-surface rounded shadow-sm">
                       <div className="font-bold text-2xl text-red-600">{importResult.summary.errors_count || 0}</div>
-                      <div className="text-gray-600">Errors</div>
+                      <div className="text-muted">Errors</div>
                     </div>
                   </div>
                 )}
               </div>
               
               {importResult.errors && importResult.errors.length > 0 && (
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 max-h-60 overflow-y-auto">
-                  <h5 className="font-bold text-yellow-900 mb-2">⚠️ Import Warnings & Errors:</h5>
-                  <ul className="text-sm text-yellow-800 space-y-1">
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 max-h-60 overflow-y-auto">
+                  <h5 className="font-bold text-amber-800 mb-2">Import Warnings & Errors:</h5>
+                  <ul className="text-sm text-amber-800 space-y-1">
                     {importResult.errors.map((err, i) => (
                       <li key={i}>• {err}</li>
                     ))}
@@ -291,7 +291,7 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete }) {
                 </div>
               )}
               
-              <div className="text-center text-sm text-gray-500">
+              <div className="text-center text-sm text-muted">
                 {importResult.success 
                   ? 'Modal will close automatically in 5 seconds...' 
                   : 'Please fix errors and try again'}
@@ -305,7 +305,7 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete }) {
           {importResult ? (
             <Button
               onClick={handleClose}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              className="px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent-strong"
             >
               Close
             </Button>
@@ -324,8 +324,8 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete }) {
                 disabled={!file || isUploading}
                 className={`px-4 py-2 ${
                   !file || isUploading
-                    ? 'bg-gray-300 cursor-not-allowed'
-                    : 'bg-blue-600 text-white hover:bg-blue-700'
+                    ? 'bg-line cursor-not-allowed'
+                    : 'bg-accent text-white hover:bg-accent-strong'
                 }`}
               >
                 {isUploading ? (
