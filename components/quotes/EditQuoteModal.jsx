@@ -103,10 +103,10 @@ export default function EditQuoteModal({ isOpen, onClose, quote, onSave, clients
 
   return (
     <div className='fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4'>
-      <div className='bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto'>
-        <div className='flex items-center justify-between p-6 border-b sticky top-0 bg-white'>
-          <h3 className='text-xl font-bold text-gray-900'>Edit Quote: {quote.quote_id}</h3>
-          <button onClick={onClose} className='text-gray-400 hover:text-gray-600 text-2xl'>&times;</button>
+      <div className='bg-surface rounded-lg shadow-card max-w-4xl w-full max-h-[90vh] overflow-y-auto'>
+        <div className='flex items-center justify-between p-6 border-b sticky top-0 bg-surface'>
+          <h3 className='text-xl font-bold text-ink'>Edit Quote: {quote.quote_id}</h3>
+          <button onClick={onClose} className='text-muted hover:text-muted text-2xl'>&times;</button>
         </div>
 
         <form onSubmit={handleSubmit} className='p-6 space-y-4'>
@@ -117,7 +117,7 @@ export default function EditQuoteModal({ isOpen, onClose, quote, onSave, clients
             <select
               value={formData.client_id}
               onChange={(e) => setFormData({ ...formData, client_id: e.target.value })}
-              className='w-full border border-gray-300 rounded-lg p-2'
+              className='w-full border border-line rounded-lg p-2'
               required
             >
               <option value=''>-- Select Client --</option>
@@ -136,7 +136,7 @@ export default function EditQuoteModal({ isOpen, onClose, quote, onSave, clients
               type='text'
               value={formData.project_name}
               onChange={(e) => setFormData({ ...formData, project_name: e.target.value })}
-              className='w-full border border-gray-300 rounded-lg p-2'
+              className='w-full border border-line rounded-lg p-2'
               placeholder='Enter project name'
             />
           </div>
@@ -147,7 +147,7 @@ export default function EditQuoteModal({ isOpen, onClose, quote, onSave, clients
             <select
               value={formData.status}
               onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-              className='w-full border border-gray-300 rounded-lg p-2'
+              className='w-full border border-line rounded-lg p-2'
             >
               <option value='Draft'>Draft</option>
               <option value='Sent'>Sent</option>
@@ -165,33 +165,33 @@ export default function EditQuoteModal({ isOpen, onClose, quote, onSave, clients
               <button
                 type='button'
                 onClick={addItem}
-                className='text-sm px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700'
+                className='text-sm px-3 py-1 bg-accent text-white rounded-lg hover:bg-accent-strong'
               >
                 + Add Item
               </button>
             </div>
 
-            <div className='border border-gray-200 rounded-lg overflow-hidden'>
+            <div className='border border-line rounded-lg overflow-hidden'>
               <table className='w-full text-sm'>
-                <thead className='bg-gray-50'>
+                <thead className='bg-canvas'>
                   <tr>
-                    <th className='text-left px-3 py-2 font-medium text-gray-600'>Product</th>
-                    <th className='text-right px-3 py-2 font-medium text-gray-600 w-20'>Qty</th>
-                    <th className='text-right px-3 py-2 font-medium text-gray-600 w-28'>Unit Price</th>
-                    <th className='text-right px-3 py-2 font-medium text-gray-600 w-24'>Discount</th>
-                    <th className='text-right px-3 py-2 font-medium text-gray-600 w-28'>Total</th>
+                    <th className='text-left px-3 py-2 font-medium text-muted'>Product</th>
+                    <th className='text-right px-3 py-2 font-medium text-muted w-20'>Qty</th>
+                    <th className='text-right px-3 py-2 font-medium text-muted w-28'>Unit Price</th>
+                    <th className='text-right px-3 py-2 font-medium text-muted w-24'>Discount</th>
+                    <th className='text-right px-3 py-2 font-medium text-muted w-28'>Total</th>
                     <th className='w-10'></th>
                   </tr>
                 </thead>
                 <tbody>
                   {items.map((item, i) => (
-                    <tr key={i} className='border-t border-gray-100'>
+                    <tr key={i} className='border-t border-line'>
                       <td className='px-3 py-2'>
                         <input
                           list={`products-${i}`}
                           value={item.product_name}
                           onChange={(e) => selectProduct(i, e.target.value)}
-                          className='w-full border border-gray-300 rounded p-1 text-sm'
+                          className='w-full border border-line rounded p-1 text-sm'
                           placeholder='Product name'
                         />
                         <datalist id={`products-${i}`}>
@@ -205,7 +205,7 @@ export default function EditQuoteModal({ isOpen, onClose, quote, onSave, clients
                           type='number'
                           value={item.quantity}
                           onChange={(e) => updateItem(i, 'quantity', e.target.value)}
-                          className='w-full border border-gray-300 rounded p-1 text-right text-sm'
+                          className='w-full border border-line rounded p-1 text-right text-sm'
                           min='0'
                           step='0.01'
                         />
@@ -215,7 +215,7 @@ export default function EditQuoteModal({ isOpen, onClose, quote, onSave, clients
                           type='number'
                           value={item.unit_price}
                           onChange={(e) => updateItem(i, 'unit_price', e.target.value)}
-                          className='w-full border border-gray-300 rounded p-1 text-right text-sm'
+                          className='w-full border border-line rounded p-1 text-right text-sm'
                           min='0'
                           step='0.01'
                         />
@@ -225,7 +225,7 @@ export default function EditQuoteModal({ isOpen, onClose, quote, onSave, clients
                           <select
                             value={item.discount_type}
                             onChange={(e) => updateItem(i, 'discount_type', e.target.value)}
-                            className='border border-gray-300 rounded p-1 text-xs'
+                            className='border border-line rounded p-1 text-xs'
                           >
                             <option value='none'>None</option>
                             <option value='percentage'>%</option>
@@ -236,7 +236,7 @@ export default function EditQuoteModal({ isOpen, onClose, quote, onSave, clients
                               type='number'
                               value={item.discount_value}
                               onChange={(e) => updateItem(i, 'discount_value', e.target.value)}
-                              className='w-16 border border-gray-300 rounded p-1 text-right text-xs'
+                              className='w-16 border border-line rounded p-1 text-right text-xs'
                               min='0'
                               step='0.01'
                             />
@@ -250,7 +250,7 @@ export default function EditQuoteModal({ isOpen, onClose, quote, onSave, clients
                         <button
                           type='button'
                           onClick={() => removeItem(i)}
-                          className='text-red-400 hover:text-red-600 font-bold'
+                          className='text-red-600 hover:text-red-600 font-bold'
                         >
                           ×
                         </button>
@@ -259,7 +259,7 @@ export default function EditQuoteModal({ isOpen, onClose, quote, onSave, clients
                   ))}
                   {items.length === 0 && (
                     <tr>
-                      <td colSpan={6} className='px-3 py-4 text-center text-gray-400 text-sm'>
+                      <td colSpan={6} className='px-3 py-4 text-center text-muted text-sm'>
                         No items. Click "+ Add Item" to add one.
                       </td>
                     </tr>
@@ -275,7 +275,7 @@ export default function EditQuoteModal({ isOpen, onClose, quote, onSave, clients
             <textarea
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              className='w-full border border-gray-300 rounded-lg p-2'
+              className='w-full border border-line rounded-lg p-2'
               rows='3'
               placeholder='Additional notes'
             />
@@ -287,7 +287,7 @@ export default function EditQuoteModal({ isOpen, onClose, quote, onSave, clients
             <textarea
               value={formData.payment_terms}
               onChange={(e) => setFormData({ ...formData, payment_terms: e.target.value })}
-              className='w-full border border-gray-300 rounded-lg p-2'
+              className='w-full border border-line rounded-lg p-2'
               rows='3'
               placeholder='Ej: 50% anticipo, 50% contra entrega'
             />
@@ -300,7 +300,7 @@ export default function EditQuoteModal({ isOpen, onClose, quote, onSave, clients
               type='date'
               value={formData.valid_until}
               onChange={(e) => setFormData({ ...formData, valid_until: e.target.value })}
-              className='w-full border border-gray-300 rounded-lg p-2'
+              className='w-full border border-line rounded-lg p-2'
             />
           </div>
 
@@ -312,13 +312,13 @@ export default function EditQuoteModal({ isOpen, onClose, quote, onSave, clients
             <button
               type='button'
               onClick={onClose}
-              className='px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100'
+              className='px-4 py-2 border border-line rounded-lg hover:bg-canvas'
             >
               Cancel
             </button>
             <button
               type='submit'
-              className='px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700'
+              className='px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent-strong'
             >
               Save Changes
             </button>

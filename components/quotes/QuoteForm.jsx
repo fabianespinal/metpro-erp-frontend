@@ -29,7 +29,7 @@ export default function QuoteForm({
   onOpenProductModal
 }) {
   return (
-    <div className='bg-white rounded-lg shadow p-6 mb-8'>
+    <div className='bg-surface rounded-lg shadow p-6 mb-8'>
       <h2 className='text-xl font-semibold mb-4'>Create New Quote</h2>
       
       {/* COMPANY SELECT */}
@@ -55,9 +55,9 @@ export default function QuoteForm({
         <div className='mb-4'>
           <label className='block text-sm font-medium mb-2'>Select Contact (optional)</label>
           {contacts.length === 0 ? (
-            <p className='text-sm text-gray-500 border p-2 rounded bg-gray-50'>
+            <p className='text-sm text-muted border p-2 rounded bg-canvas'>
               No contacts found for this company. Add contacts from the{' '}
-              <a href='/clients' className='text-blue-600 underline'>
+              <a href='/clients' className='text-accent underline'>
                 Clients page
               </a>
               .
@@ -132,7 +132,7 @@ export default function QuoteForm({
         <button
           type='button'
           onClick={handleAddItem}
-          className='w-full bg-blue-100 text-blue-700 py-2 rounded hover:bg-blue-200'
+          className='w-full bg-accent/10 text-accent-strong py-2 rounded hover:bg-accent/10'
         >
           + Add Item
         </button>
@@ -160,7 +160,7 @@ export default function QuoteForm({
       <button
         onClick={onSubmit}
         disabled={loading}
-        className='w-full bg-blue-600 text-white py-3 rounded hover:bg-blue-700 disabled:bg-gray-400'
+        className='w-full bg-accent text-white py-3 rounded hover:bg-accent-strong disabled:opacity-50'
       >
         {loading ? 'Creating...' : 'Create Quote'}
       </button>

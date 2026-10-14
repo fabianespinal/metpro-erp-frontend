@@ -36,7 +36,7 @@ export default function OverflowMenu({
     <div className='relative' ref={menuRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className='p-2 hover:bg-gray-100 rounded-full transition'
+        className='p-2 hover:bg-canvas rounded-full transition'
         aria-label='More actions'
       >
         <svg className='w-5 h-5' fill='currentColor' viewBox='0 0 20 20'>
@@ -45,14 +45,14 @@ export default function OverflowMenu({
       </button>
 
       {isOpen && (
-        <div className='absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border z-50'>
+        <div className='absolute right-0 mt-2 w-56 bg-surface rounded-lg shadow-card border z-50'>
           <div className='py-1'>
             <button
               onClick={() => {
                 onPreviewPDF()
                 setIsOpen(false)
               }}
-              className='w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2'
+              className='w-full text-left px-4 py-2 hover:bg-canvas flex items-center gap-2'
             >
               <span>👁️</span>
               <span>Preview PDF</span>
@@ -63,7 +63,7 @@ export default function OverflowMenu({
                 onDownloadPDF()
                 setIsOpen(false)
               }}
-              className='w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2'
+              className='w-full text-left px-4 py-2 hover:bg-canvas flex items-center gap-2'
             >
               <span>⬇️</span>
               <span>Download PDF</span>
@@ -75,7 +75,7 @@ export default function OverflowMenu({
                   onApprove()
                   setIsOpen(false)
                 }}
-                className='w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2 text-green-700'
+                className='w-full text-left px-4 py-2 hover:bg-canvas flex items-center gap-2 text-emerald-700'
               >
                 <span>✓</span>
                 <span>Approve Quote</span>
@@ -88,7 +88,7 @@ export default function OverflowMenu({
                   onConvertToInvoice()
                   setIsOpen(false)
                 }}
-                className='w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2 text-blue-700'
+                className='w-full text-left px-4 py-2 hover:bg-canvas flex items-center gap-2 text-accent-strong'
               >
                 <span>📄</span>
                 <span>Convert to Invoice</span>
@@ -101,7 +101,7 @@ export default function OverflowMenu({
                   onGenerateConduce()
                   setIsOpen(false)
                 }}
-                className='w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2'
+                className='w-full text-left px-4 py-2 hover:bg-canvas flex items-center gap-2'
               >
                 <span>📦</span>
                 <span>Generate Conduce</span>
@@ -115,7 +115,7 @@ export default function OverflowMenu({
                 onDuplicate()
                 setIsOpen(false)
               }}
-              className='w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2'
+              className='w-full text-left px-4 py-2 hover:bg-canvas flex items-center gap-2'
             >
               <span>📋</span>
               <span>Duplicate</span>
@@ -126,7 +126,7 @@ export default function OverflowMenu({
                 onEdit()
                 setIsOpen(false)
               }}
-              className='w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2'
+              className='w-full text-left px-4 py-2 hover:bg-canvas flex items-center gap-2'
             >
               <span>✏️</span>
               <span>Edit</span>
@@ -141,7 +141,7 @@ export default function OverflowMenu({
                     onDelete()
                     setIsOpen(false)
                   }}
-                  className='w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-2 text-red-600'
+                  className='w-full text-left px-4 py-2 hover:bg-canvas flex items-center gap-2 text-red-600'
                 >
                   <span>🗑️</span>
                   <span>Delete</span>

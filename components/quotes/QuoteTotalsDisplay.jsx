@@ -2,7 +2,7 @@ export default function QuoteTotalsDisplay({ totals, charges }) {
   if (!totals) return null
 
   return (
-    <div className='mt-6 p-4 bg-gray-50 rounded-lg space-y-2'>
+    <div className='mt-6 p-4 bg-canvas rounded-lg space-y-2'>
       <div className='flex justify-between text-sm'>
         <span>Items Subtotal:</span>
         <span className='font-medium'>${totals.items_total}</span>
@@ -21,35 +21,35 @@ export default function QuoteTotalsDisplay({ totals, charges }) {
       </div>
       
       {parseFloat(totals.supervision) > 0 && (
-        <div className='flex justify-between text-sm text-blue-600'>
+        <div className='flex justify-between text-sm text-accent'>
           <span>Supervision ({charges.supervision_percentage}%):</span>
           <span>${totals.supervision}</span>
         </div>
       )}
       
       {parseFloat(totals.admin) > 0 && (
-        <div className='flex justify-between text-sm text-blue-600'>
+        <div className='flex justify-between text-sm text-accent'>
           <span>Admin ({charges.admin_percentage}%):</span>
           <span>${totals.admin}</span>
         </div>
       )}
       
       {parseFloat(totals.insurance) > 0 && (
-        <div className='flex justify-between text-sm text-blue-600'>
+        <div className='flex justify-between text-sm text-accent'>
           <span>Insurance ({charges.insurance_percentage}%):</span>
           <span>${totals.insurance}</span>
         </div>
       )}
       
       {parseFloat(totals.transport) > 0 && (
-        <div className='flex justify-between text-sm text-blue-600'>
+        <div className='flex justify-between text-sm text-accent'>
           <span>Transport ({charges.transport_percentage}%):</span>
           <span>${totals.transport}</span>
         </div>
       )}
       
       {parseFloat(totals.contingency) > 0 && (
-        <div className='flex justify-between text-sm text-blue-600'>
+        <div className='flex justify-between text-sm text-accent'>
           <span>Contingency ({charges.contingency_percentage}%):</span>
           <span>${totals.contingency}</span>
         </div>
@@ -67,7 +67,7 @@ export default function QuoteTotalsDisplay({ totals, charges }) {
       
       <div className='flex justify-between text-xl font-bold border-t-2 pt-2'>
         <span>Grand Total:</span>
-        <span className='text-green-600'>${totals.grand_total}</span>
+        <span className='text-emerald-600'>${totals.grand_total}</span>
       </div>
     </div>
   )

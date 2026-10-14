@@ -21,7 +21,7 @@ export default function QuoteTable({
 }) {
   if (quotes.length === 0) {
     return (
-      <div className='p-8 text-center text-gray-500'>
+      <div className='p-8 text-center text-muted'>
         No quotes match the selected status filter.
       </div>
     )
@@ -56,7 +56,7 @@ export default function QuoteTable({
             <td className={dt.td}>
               <StatusPill status={quote.status} />
               {quote.has_invoice && (
-                <div className='text-xs text-blue-600 mt-1'>
+                <div className='text-xs text-accent mt-1'>
                   Invoice: {quote.invoice_number}
                 </div>
               )}

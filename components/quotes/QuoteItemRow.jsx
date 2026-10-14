@@ -29,7 +29,7 @@ const lineTotal = (base - discount).toFixed(2)
           <button
             type='button'
             onClick={() => onRemove(index)}
-            className='text-red-600 hover:text-red-800 font-bold text-xl'
+            className='text-red-600 hover:text-red-700 font-bold text-xl'
           >
             ×
           </button>
@@ -50,7 +50,7 @@ const lineTotal = (base - discount).toFixed(2)
             <button
               type='button'
               onClick={() => onOpenProductModal(index)}
-              className='px-3 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm'
+              className='px-3 py-2 bg-accent text-white rounded hover:bg-accent-strong text-sm'
               title='Select from database'
             >
               📦
@@ -108,7 +108,7 @@ const lineTotal = (base - discount).toFixed(2)
         </div>
         <div>
           <label className='block text-xs font-medium mb-1'>Line Total</label>
-          <div className='w-full border p-2 rounded bg-gray-100 font-bold text-sm'>
+          <div className='w-full border p-2 rounded bg-canvas font-bold text-sm'>
             ${lineTotal}
           </div>
         </div>
