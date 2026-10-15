@@ -43,16 +43,21 @@ export async function api(endpoint: string, options: RequestInit = {}) {
   if (!res.ok) {
     const text = await res.text().catch(() => "");
     let message = `API error ${res.status}`;
+    let code: string | undefined;
     try {
       const body = JSON.parse(text);
       if (body && body.detail) {
         message = typeof body.detail === "string" ? body.detail : JSON.stringify(body.detail);
       }
+      if (body && typeof body.code === "string") {
+        code = body.code;
+      }
     } catch {
       if (text) message = `API error ${res.status}: ${text}`;
     }
-    const err = new Error(message) as Error & { status?: number };
+    const err = new Error(message) as Error & { status?: number; code?: string };
     err.status = res.status;
+    if (code) err.code = code;
     throw err;
   }
 
