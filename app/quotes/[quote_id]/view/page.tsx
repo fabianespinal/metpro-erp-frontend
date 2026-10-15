@@ -1,11 +1,10 @@
 "use client";
-import { unwrapEnvelope } from "@/lib/api";
+import { api } from "@/lib/api";
 import { dt } from "@/components/ui/data-table";
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 interface QuoteItem {
   product_name: string;
@@ -104,14 +103,39 @@ export default function QuotePublicView() {
 
   useEffect(() => {
     if (!quoteId) return;
-    fetch(`${API_URL}/quotes/${quoteId}/public`)
-      .then((r) => {
-        if (!r.ok) throw new Error("Quote not found");
-        return r.json().then((body: unknown) => unwrapEnvelope<Quote>(body));
-      })
-      .then(setQuote)
-      .catch(() => setError("No se pudo cargar la cotización."))
-      .finally(() => setLoading(false));
+    // Internal view: authenticated read. Public token route is for the customer page only.
+    let cancelled = false;
+    (async () => {
+      try {
+        const q = (await api(`/quotes/${quoteId}`)) as Quote & { client_id: number; contact_id: number };
+        const [client, contacts] = await Promise.all([
+          api(`/clients/${q.client_id}`).catch(() => null),
+          api(`/contacts/company/${q.client_id}`).catch(() => []),
+        ]);
+        const contact = Array.isArray(contacts)
+          ? (contacts as Array<{ id: number; name: string; email?: string; phone?: string }>).find(
+              (c) => c.id === q.contact_id
+            )
+          : undefined;
+        if (cancelled) return;
+        const c = client as { company_name?: string; address?: string } | null;
+        setQuote({
+          ...q,
+          company_name: c?.company_name ?? "",
+          company_address: c?.address ?? "",
+          contact_name: contact?.name ?? "",
+          contact_email: contact?.email ?? "",
+          contact_phone: contact?.phone ?? "",
+        });
+      } catch {
+        if (!cancelled) setError("No se pudo cargar la cotización.");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [quoteId]);
 
   if (loading) {
