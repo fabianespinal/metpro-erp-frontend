@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { api } from "@/lib/api";
 import {
   finalizeQuote,
@@ -63,7 +63,18 @@ function messageFor(err: unknown, fallback: string): string {
 }
 
 export default function DraftEditorPage() {
+  return (
+    <Suspense fallback={<div className="p-6 text-sm text-muted">Loading quote…</div>}>
+      <DraftEditor />
+    </Suspense>
+  );
+}
+
+function DraftEditor() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const fromDuplicate = searchParams.get("duplicated") === "1";
+  const [bannerOpen, setBannerOpen] = useState(true);
   const params = useParams<{ quote_id: string }>();
   const quoteId = params.quote_id;
 
@@ -290,6 +301,19 @@ export default function DraftEditorPage() {
           </Button>
         }
       />
+
+      {fromDuplicate && bannerOpen ? (
+        <Alert className="mb-4 flex items-start justify-between gap-3">
+          <AlertDescription>This is a duplicated quote. Adjust as needed.</AlertDescription>
+          <button
+            type="button"
+            onClick={() => setBannerOpen(false)}
+            className="shrink-0 text-sm text-muted underline hover:text-ink"
+          >
+            Dismiss
+          </button>
+        </Alert>
+      ) : null}
 
       {actionError ? (
         <Alert variant="destructive" className="mb-4">

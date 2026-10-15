@@ -164,9 +164,8 @@ export default function QuotesPage() {
     if (!confirm("Duplicate this quote?")) return
     try {
       const data = await duplicateQuote(quoteId, token)
-      alert(`Quote duplicated! New ID: ${data.quote_id}`)
-      fetchQuotes()
-      fetchInvoices()
+      // Open the new Draft in the editor. The banner tells the user it was duplicated.
+      window.location.assign(`/quotes/${data.quote_id}/edit?duplicated=1`)
     } catch (error) {
       alert("Error duplicating quote: " + error.message)
     }
