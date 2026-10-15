@@ -6,13 +6,15 @@
  * Only included lines are sent to the backend.
  */
 
-import type {
-  DiscountType,
-  ItemType,
-  QuoteLineInput,
-  TemplatePack,
-  TotalsPreviewInput,
-  IncludedCharges,
+import {
+  DEFAULT_INCLUDED_CHARGES,
+  type DiscountType,
+  type IncludedCharges,
+  type ItemType,
+  type QuoteItemOut,
+  type QuoteLineInput,
+  type TemplatePack,
+  type TotalsPreviewInput,
 } from "@/lib/quotingApi";
 
 export type LineSource = "pack" | "product" | "manual";
@@ -143,4 +145,36 @@ export function newProductLine(product: { id: number; name: string; unit_price: 
 export function formatMoney(value: number | null | undefined): string {
   const n = typeof value === "number" && Number.isFinite(value) ? value : 0;
   return `$${n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
+/** Lines from a saved quote (editor load). Product rows keep their product_id. */
+export function linesFromQuote(items: QuoteItemOut[]): TakeOffLine[] {
+  return items.map((item) => ({
+    key: `saved-${item.id}`,
+    source: item.product_id !== null ? "product" : "manual",
+    category: null,
+    include: true,
+    product_id: item.product_id,
+    name: item.product_name ?? "",
+    description: item.description ?? "",
+    quantity: Number(item.quantity),
+    unit_price: Number(item.unit_price),
+    discount_type: item.discount_type ?? "none",
+    discount_value: Number(item.discount_value ?? 0),
+    item_type: item.item_type ?? "product",
+  }));
+}
+
+/** included_charges arrives as stored text or an object. Fall back to defaults. */
+export function parseIncludedCharges(raw: unknown): IncludedCharges {
+  let value: unknown = raw;
+  if (typeof raw === "string") {
+    try {
+      value = raw ? JSON.parse(raw) : {};
+    } catch {
+      value = {};
+    }
+  }
+  const obj = (value && typeof value === "object" ? value : {}) as Partial<IncludedCharges>;
+  return { ...DEFAULT_INCLUDED_CHARGES, ...obj };
 }

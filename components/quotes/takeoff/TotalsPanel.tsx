@@ -1,0 +1,69 @@
+"use client";
+
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import type { IncludedCharges, TotalsPreview } from "@/lib/quotingApi";
+import { TotalRow } from "@/components/quotes/takeoff/LineCard";
+
+const CHARGE_LABELS: { key: keyof IncludedCharges; label: string }[] = [
+  { key: "supervision", label: "Supervision" },
+  { key: "admin", label: "Admin" },
+  { key: "insurance", label: "Insurance" },
+  { key: "transport", label: "Transport" },
+  { key: "contingency", label: "Contingency" },
+];
+
+/** Included charges toggles and the server-computed totals. */
+export function TotalsPanel({
+  charges,
+  onToggleCharge,
+  totals,
+  totalsError,
+  includedCount,
+}: {
+  charges: IncludedCharges;
+  onToggleCharge: (key: keyof IncludedCharges) => void;
+  totals: TotalsPreview | null;
+  totalsError: string | null;
+  includedCount: number;
+}) {
+  return (
+    <>
+      <section className="rounded-lg border border-line bg-surface p-4 shadow-card">
+        <h2 className="mb-3 text-sm font-semibold text-ink">Included charges</h2>
+        <div className="grid grid-cols-2 gap-2">
+          {CHARGE_LABELS.map(({ key, label }) => (
+            <label key={key} className="flex items-center gap-2 text-sm text-ink">
+              <input
+                type="checkbox"
+                checked={Boolean(charges[key])}
+                onChange={() => onToggleCharge(key)}
+                className="h-4 w-4"
+              />
+              {label}
+            </label>
+          ))}
+        </div>
+      </section>
+
+      <section className="rounded-lg border border-line bg-surface p-4 shadow-card">
+        <h2 className="mb-3 text-sm font-semibold text-ink">Totals</h2>
+        {totalsError ? (
+          <Alert variant="destructive" className="mb-3">
+            <AlertDescription>{totalsError}</AlertDescription>
+          </Alert>
+        ) : null}
+        <dl className="space-y-1.5 text-sm">
+          <TotalRow label="Items" value={totals?.items_total} />
+          <TotalRow label="Less discounts" value={totals?.total_discounts} />
+          <TotalRow label="Subtotal" value={totals?.subtotal} />
+          <TotalRow label="ITBIS (18%)" value={totals?.tax_amount} />
+          <div className="my-2 border-t border-line" />
+          <TotalRow label="Grand total" value={totals?.grand_total} strong />
+        </dl>
+        <p className="mt-2 text-xs text-muted">
+          {includedCount} item{includedCount === 1 ? "" : "s"} included. Totals are calculated by the server.
+        </p>
+      </section>
+    </>
+  );
+}

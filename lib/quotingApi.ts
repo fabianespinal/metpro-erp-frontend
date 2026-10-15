@@ -173,6 +173,26 @@ export async function createDraftQuote(input: DraftQuoteInput): Promise<QuoteOut
   });
 }
 
+export async function getQuote(quoteId: string): Promise<QuoteOut> {
+  return call<QuoteOut>(`/quotes/${quoteId}`);
+}
+
+export interface DraftUpdateInput {
+  project_name?: string | null;
+  notes?: string | null;
+  payment_terms?: string | null;
+  items: QuoteLineInput[];
+  included_charges: IncludedCharges;
+}
+
+/** PUT /quotes/{id}. Draft only. The backend returns 400 QUOTE_FINALIZED or QUOTE_NOT_DRAFT otherwise. */
+export async function updateDraftQuote(quoteId: string, input: DraftUpdateInput): Promise<QuoteOut> {
+  return call<QuoteOut>(`/quotes/${quoteId}`, {
+    method: "PUT",
+    body: JSON.stringify(input),
+  });
+}
+
 export async function finalizeQuote(quoteId: string): Promise<QuoteOut> {
   return call<QuoteOut>(`/quotes/${quoteId}/finalize`, {
     method: "POST",
