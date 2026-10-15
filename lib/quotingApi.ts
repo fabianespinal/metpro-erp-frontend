@@ -186,6 +186,37 @@ export async function duplicateQuote(quoteId: string): Promise<QuoteOut> {
 }
 
 // ------------------------------------------------------
+// Totals preview (stateless; backend computes, browser displays)
+// ------------------------------------------------------
+
+export interface TotalsPreview {
+  items_total: number;
+  total_discounts: number;
+  items_after_discount: number;
+  supervision: number;
+  admin: number;
+  insurance: number;
+  transport: number;
+  contingency: number;
+  subtotal: number;
+  tax_rate: number;
+  tax_amount: number;
+  grand_total: number;
+}
+
+export interface TotalsPreviewInput {
+  items: QuoteLineInput[];
+  included_charges: IncludedCharges;
+}
+
+export async function previewQuoteTotals(input: TotalsPreviewInput): Promise<TotalsPreview> {
+  return call<TotalsPreview>("/quotes/totals/preview", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+// ------------------------------------------------------
 // Error helpers
 // ------------------------------------------------------
 
