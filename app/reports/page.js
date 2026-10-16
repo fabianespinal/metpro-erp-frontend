@@ -106,13 +106,13 @@ export default function ReportsPage() {
 
     else if (reportType === 'revenue') {
       filename = 'revenue_report'
-      csvContent = 'Status,Revenue,Quote Count\n'
+      csvContent = 'Concepto,Monto,Cantidad\n'
 
       reportData.revenue_breakdown?.forEach(row => {
-        csvContent += `${row.status},$${(row.total_revenue ?? 0).toFixed(2)},${row.quote_count}\n`
+        csvContent += `${row.status},$${(row.total_revenue ?? 0).toFixed(2)},${row.count ?? row.quote_count}\n`
       })
 
-      csvContent += `\nGrand Total,$${(reportData.grand_total ?? 0).toFixed(2)}`
+      csvContent += `\nCobrado,$${(reportData.grand_total ?? 0).toFixed(2)}`
     }
 
     else if (reportType === 'client-activity') {
@@ -293,23 +293,23 @@ export default function ReportsPage() {
 
                 <div className='rounded-lg border border-line bg-surface p-4 text-center shadow-card'>
                   <div className='text-2xl font-semibold tabular-nums text-emerald-600'>
-                    ${((reportData.revenue_breakdown?.find(r => r.status === 'Approved')?.total_revenue) ?? 0).toFixed(2)}
+                    ${((reportData.revenue_breakdown?.find(r => r.key === 'invoiced')?.total_revenue) ?? 0).toFixed(2)}
                   </div>
-                  <div className='mt-1 text-sm text-muted'>Approved Revenue</div>
+                  <div className='mt-1 text-sm text-muted'>Facturado</div>
                 </div>
 
                 <div className='rounded-lg border border-line bg-surface p-4 text-center shadow-card'>
                   <div className='text-2xl font-semibold tabular-nums text-amber-600'>
-                    ${((reportData.revenue_breakdown?.find(r => r.status === 'Pending (Draft)')?.total_revenue) ?? 0).toFixed(2)}
+                    ${((reportData.revenue_breakdown?.find(r => r.key === 'outstanding')?.total_revenue) ?? 0).toFixed(2)}
                   </div>
-                  <div className='mt-1 text-sm text-muted'>Pending Revenue</div>
+                  <div className='mt-1 text-sm text-muted'>Por cobrar</div>
                 </div>
 
                 <div className='rounded-lg border border-line bg-surface p-4 text-center shadow-card'>
                   <div className='text-2xl font-semibold tabular-nums text-ink'>
                     ${(reportData.grand_total ?? 0).toFixed(2)}
                   </div>
-                  <div className='mt-1 text-sm text-muted'>Grand Total</div>
+                  <div className='mt-1 text-sm text-muted'>Cobrado (pagos recibidos)</div>
                 </div>
 
               </div>
@@ -319,9 +319,9 @@ export default function ReportsPage() {
                 <table className={dt.table}>
                   <thead className={dt.thead}>
                     <tr>
-                      <th className={dt.th}>Status</th>
-                      <th className={dt.thRight}>Revenue</th>
-                      <th className={dt.thRight}>Quote Count</th>
+                      <th className={dt.th}>Concepto</th>
+                      <th className={dt.thRight}>Monto</th>
+                      <th className={dt.thRight}>Cantidad</th>
                     </tr>
                   </thead>
                   <tbody className={dt.tbody}>
@@ -332,7 +332,7 @@ export default function ReportsPage() {
                           ${(row.total_revenue ?? 0).toFixed(2)}
                         </td>
                         <td className={dt.tdRight}>
-                          {row.quote_count}
+                          {row.count ?? row.quote_count}
                         </td>
                       </tr>
                     ))}

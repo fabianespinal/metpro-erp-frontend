@@ -95,7 +95,8 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete }) {
         let errorMessage = "Import failed"
         try {
           const errorData = await response.json()
-          errorMessage = errorData.message || errorData.error || errorMessage
+          // Backend error model is {"detail": ..., "code": ...}.
+          errorMessage = errorData.detail || errorData.message || errorData.error || errorMessage
         } catch {
           // Fallback to text if JSON parsing fails
           const text = await response.text()

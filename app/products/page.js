@@ -103,7 +103,7 @@ const handleUpdateProduct = async (e) => {
     formData.append('file', csvFile)
 
     try {
-      const data = await api('/products/import-csv/', {
+      const data = await api('/products/import-csv', {
         method: 'POST',
         body: formData
       })
