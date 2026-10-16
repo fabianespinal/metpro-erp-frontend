@@ -61,7 +61,7 @@ export default function InvoiceDetailPage() {
   const payments = invoice.payments ?? [];
 
   return (
-    <div className="min-h-screen bg-canvas p-6">
+    <div className="min-h-screen bg-canvas mx-auto max-w-7xl px-4 pt-6 pb-24 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto bg-surface shadow rounded-lg p-6">
 
         <PageHeader title={`Factura #${invoice.invoice_number}`} />

@@ -138,8 +138,8 @@ export default function InvoicesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-canvas p-6">
-      <div className="w-full px-4 lg:px-8">
+    <div className="min-h-screen bg-canvas">
+      <div className="mx-auto max-w-7xl px-4 pt-6 pb-24 sm:px-6 lg:px-8">
         <PageHeader title="Facturas" subtitle="Ver y gestionar todas las facturas" />
 
         <div className="bg-surface shadow rounded-lg overflow-hidden mt-6">
