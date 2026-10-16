@@ -14,6 +14,7 @@ export default function QuoteTable({
   onEdit,
   onDelete,
   onApprove,
+  onReject,
   onConvertToInvoice,
   onViewInvoice,
   sentMap,
@@ -91,6 +92,7 @@ export default function QuoteTable({
                   onEdit={() => onEdit(quote)}
                   onDelete={() => onDelete(quote.quote_id, quote.status)}
                   onApprove={() => onApprove(quote.quote_id)}
+                  onReject={onReject ? () => onReject(quote.quote_id) : undefined}
                   onConvertToInvoice={() => onConvertToInvoice(quote.quote_id)}
                 />
               </div>

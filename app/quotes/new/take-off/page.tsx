@@ -23,7 +23,7 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { LineCard, takeOffInputClass } from "@/components/quotes/takeoff/LineCard";
 import { AddItemBar, type CatalogProduct } from "@/components/quotes/takeoff/AddItemBar";
-import { TotalsPanel } from "@/components/quotes/takeoff/TotalsPanel";
+import { TotalsPanel, type ChargeKey } from "@/components/quotes/takeoff/TotalsPanel";
 import { useTotalsPreview } from "@/components/quotes/takeoff/useTotalsPreview";
 
 /**
@@ -108,6 +108,10 @@ function TakeOffScreen() {
 
   function addLine(line: TakeOffLine) {
     setLines((prev) => [...prev, line]);
+  }
+
+  function setChargePercentage(key: ChargeKey, value: number) {
+    setCharges((prev) => ({ ...prev, [`${key}_percentage`]: value }));
   }
 
   function toggleCharge(key: keyof IncludedCharges) {
@@ -199,6 +203,7 @@ function TakeOffScreen() {
           <TotalsPanel
             charges={charges}
             onToggleCharge={toggleCharge}
+            onChangePercentage={setChargePercentage}
             totals={totals}
             totalsError={totalsError}
             includedCount={includedCount}
