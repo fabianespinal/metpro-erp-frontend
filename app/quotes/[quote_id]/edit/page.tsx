@@ -1,5 +1,6 @@
 "use client";
 
+import ErrorBanner from "@/components/ui/ErrorBanner";
 import { Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
@@ -95,6 +96,8 @@ function DraftEditor() {
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  // Non-blocking load problems (catalog, contact). Shown above the totals.
+  const [catalogError, setCatalogError] = useState<string | null>(null);
 
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [finalizing, setFinalizing] = useState(false);
@@ -141,8 +144,10 @@ function DraftEditor() {
       .then((data) => {
         if (!cancelled) setProducts(Array.isArray(data) ? (data as CatalogProduct[]) : []);
       })
-      .catch(() => {
-        if (!cancelled) setProducts([]);
+      .catch((err: Error) => {
+        if (cancelled) return;
+        setProducts([]);
+        setCatalogError(`Could not load the product catalog: ${err.message}`);
       });
     return () => {
       cancelled = true;
@@ -159,8 +164,10 @@ function DraftEditor() {
         const match = (data as Contact[]).find((c) => c.id === quote.contact_id);
         setContactName(match ? match.name : null);
       })
-      .catch(() => {
-        if (!cancelled) setContactName(null);
+      .catch((err: Error) => {
+        if (cancelled) return;
+        setContactName(null);
+        setCatalogError(`Could not load the contact: ${err.message}`);
       });
     return () => {
       cancelled = true;
@@ -342,6 +349,7 @@ function DraftEditor() {
         </div>
 
         <aside className="space-y-4 lg:sticky lg:top-6 lg:self-start">
+          <ErrorBanner message={catalogError} />
           <TotalsPanel
             charges={charges}
             onToggleCharge={toggleCharge}

@@ -28,6 +28,7 @@ interface Invoice {
   created_by_name?: string | null;
   payments: Payment[];
   items?: InvoiceLine[];
+  payments_error?: string | null;
 }
 
 interface InvoiceLine {
@@ -188,6 +189,11 @@ export default function InvoiceDetailPage() {
 
         <div>
           <h2 className="text-xl font-semibold mb-3">Historial de Pagos</h2>
+          {invoice.payments_error && (
+            <p role="alert" className="mb-3 rounded border border-red-200 bg-red-50 p-2 text-sm text-red-700">
+              No se pudo cargar el historial de pagos: {invoice.payments_error}
+            </p>
+          )}
 
           {payments.length === 0 ? (
             <p className="text-muted">No hay pagos registrados.</p>
