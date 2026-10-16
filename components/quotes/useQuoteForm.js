@@ -13,7 +13,10 @@ export function useQuoteForm() {
   const [notes, setNotes] = useState('')
   const [paymentTerms, setPaymentTerms] = useState('')
   const [validUntil, setValidUntil] = useState('')
-  const [charges, setCharges] = useState(DEFAULT_CHARGES)
+  const [charges, setCharges] = useState({
+    ...DEFAULT_CHARGES,
+    dynamic_charges: []
+  })
 
   useEffect(() => {
   if (!selectedClient?.id) return
@@ -75,7 +78,10 @@ export function useQuoteForm() {
     setNotes('')
     setPaymentTerms('')
     setValidUntil('')
-    setCharges(DEFAULT_CHARGES)
+    setCharges({
+      ...DEFAULT_CHARGES,
+      dynamic_charges: []
+    })
   }
 
   const getFormData = () => {
@@ -107,7 +113,6 @@ export function useQuoteForm() {
     paymentTerms,
     validUntil,
     charges,
-    totals,
 
     setSelectedClient,
     setSelectedContact,

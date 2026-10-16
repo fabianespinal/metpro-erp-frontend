@@ -55,7 +55,10 @@ function TakeOffScreen() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [products, setProducts] = useState<any[]>([]);
   const [quoteItems, setQuoteItems] = useState<QuoteItem[]>([]);
-  const [charges, setCharges] = useState<IncludedCharges>(DEFAULT_INCLUDED_CHARGES);
+  const [charges, setCharges] = useState<IncludedCharges>({
+    ...DEFAULT_INCLUDED_CHARGES,
+    dynamic_charges: [],
+  });
   const [projectName, setProjectName] = useState("");
   const [notes, setNotes] = useState("");
   const [paymentTerms, setPaymentTerms] = useState("");
@@ -225,7 +228,6 @@ function TakeOffScreen() {
         handleItemChange={handleItemChange}
         charges={charges}
         setCharges={setCharges}
-        totals={null}
         notes={notes}
         setNotes={setNotes}
         paymentTerms={paymentTerms}

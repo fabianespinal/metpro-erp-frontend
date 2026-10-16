@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { api } from "@/lib/api"
 import PDFPreviewModal from '@/components/quotes/PDFPreviewModal'
 import DeleteQuoteModal from '@/components/quotes/DeleteQuoteModal'
+import EditQuoteModal from '@/components/quotes/EditQuoteModal'
 import QuoteTable from '@/components/quotes/QuoteTable'
 import { useToken } from '@/components/quotes/useToken'
 import { useRouter } from 'next/navigation'
@@ -36,6 +37,7 @@ export default function QuotesPage() {
 
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, quoteId: null, quoteStatus: null })
   const [previewModal, setPreviewModal] = useState({ isOpen: false, quoteId: null, pdfUrl: null })
+  const [editModal, setEditModal] = useState({ isOpen: false, quote: null })
   const [sentMap, setSentMap] = useState({});
 
   async function fetchClients() {
@@ -204,10 +206,29 @@ export default function QuotesPage() {
     }
   }
 
-  // Only Draft quotes are editable. Editor: /quotes/{id}/edit. Create: /quotes/new.
+  // Only Draft quotes are editable via modal. Can also use /quotes/{id}/edit.
   function handleEdit(quote) {
     if (quote.status !== 'Draft') return
-    router.push(`/quotes/${quote.quote_id}/edit`)
+    const fullQuote = quotes.find(q => q.quote_id === quote.quote_id)
+    setEditModal({ isOpen: true, quote: fullQuote || quote })
+  }
+
+  async function handleSaveEdit(quoteId, updatedData) {
+    try {
+      // Remove client_id if present - not a valid PATCH field
+      const { client_id, ...updatePayload } = updatedData
+      await api(`/quotes/${quoteId}`, {
+        method: "PUT",
+        body: JSON.stringify(updatePayload)
+      })
+      // Refresh quotes after save
+      fetchQuotes()
+      setEditModal({ isOpen: false, quote: null })
+    } catch (error) {
+      console.error("Edit Quote Error:", error)
+      alert("Error updating quote: " + error.message)
+      throw error
+    }
   }
 
   function handleDelete(quoteId, quoteStatus) {
@@ -293,6 +314,14 @@ export default function QuotesPage() {
       onConfirm={handleConfirmDelete}
       quoteId={deleteModal.quoteId}
       quoteStatus={deleteModal.quoteStatus}
+    />
+
+    <EditQuoteModal
+      isOpen={editModal.isOpen}
+      onClose={() => setEditModal({ isOpen: false, quote: null })}
+      quote={editModal.quote}
+      onSave={handleSaveEdit}
+      clients={clients}
     />
 
   </div>

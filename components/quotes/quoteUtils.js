@@ -1,5 +1,7 @@
 /**
  * Default surcharge percentages
+ * 5 static charges: supervision (10%), admin (4%), insurance (1%), transport (3%), contingency (3%)
+ * Dynamic charges: up to 3 additional custom charges per quote
  */
 export const DEFAULT_CHARGES = {
   supervision: true,
@@ -11,7 +13,8 @@ export const DEFAULT_CHARGES = {
   transport: true,
   transport_percentage: 3,
   contingency: true,
-  contingency_percentage: 3
+  contingency_percentage: 3,
+  dynamic_charges: [],
 }
 
 /**
@@ -39,8 +42,28 @@ export function mergeQuotesWithInvoices(quotes, invoices) {
 
 /**
  * Calculate quote totals (SAFE VERSION)
+ * Supports static charges (5 types) and dynamic charges (up to 3 additional)
+ *
+ * @typedef {Object} QuoteTotals  All money values are fixed-2 strings.
+ * @property {string} items_total
+ * @property {string} total_discounts
+ * @property {string} items_after_discount
+ * @property {string} supervision
+ * @property {string} admin
+ * @property {string} insurance
+ * @property {string} transport
+ * @property {string} contingency
+ * @property {string} dynamic_charges_total
+ * @property {string} subtotal_general
+ * @property {string} itbis
+ * @property {string} grand_total
+ *
+ * @param {Array} quoteItems - Quote line items
+ * @param {Object} charges - Charges config with static charges
+ * @param {Array} [dynamicCharges] - Optional array of {id, name, enabled, percentage}
+ * @returns {QuoteTotals} Totals breakdown with all charges
  */
-export function calculateQuoteTotals(quoteItems, charges) {
+export function calculateQuoteTotals(quoteItems, charges, dynamicCharges) {
   const items_total = quoteItems.reduce((sum, item) => {
     const qty = Number(item.quantity ?? 0)
     const price = Number(item.unit_price ?? 0)
@@ -63,6 +86,7 @@ export function calculateQuoteTotals(quoteItems, charges) {
 
   const items_after_discount = items_total - total_discounts
 
+  // Static charges (5 types)
   const supervision = charges.supervision
     ? items_after_discount * (Number(charges.supervision_percentage ?? 0) / 100)
     : 0
@@ -83,13 +107,23 @@ export function calculateQuoteTotals(quoteItems, charges) {
     ? items_after_discount * (Number(charges.contingency_percentage ?? 0) / 100)
     : 0
 
+  // Dynamic charges (up to 3 additional)
+  const dynamic_charges_total = (dynamicCharges ?? []).reduce((sum, dc) => {
+    if (dc.enabled) {
+      return sum + items_after_discount * (Number(dc.percentage ?? 0) / 100)
+    }
+    return sum
+  }, 0)
+
+  // Subtotal general: after discount + all charges
   const subtotal_general =
     items_after_discount +
     supervision +
     admin +
     insurance +
     transport +
-    contingency
+    contingency +
+    dynamic_charges_total
 
   const itbis = subtotal_general * 0.18
   const grand_total = subtotal_general + itbis
@@ -103,6 +137,7 @@ export function calculateQuoteTotals(quoteItems, charges) {
     insurance: insurance.toFixed(2),
     transport: transport.toFixed(2),
     contingency: contingency.toFixed(2),
+    dynamic_charges_total: dynamic_charges_total.toFixed(2),
     subtotal_general: subtotal_general.toFixed(2),
     itbis: itbis.toFixed(2),
     grand_total: grand_total.toFixed(2)

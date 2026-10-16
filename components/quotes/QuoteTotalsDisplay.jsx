@@ -54,7 +54,16 @@ export default function QuoteTotalsDisplay({ totals, charges }) {
           <span>${totals.contingency}</span>
         </div>
       )}
-      
+
+      {(charges.dynamic_charges ?? []).map((dc) => (
+        parseFloat(totals[`dynamic_${dc.id}`] || 0) > 0 && (
+          <div key={dc.id} className='flex justify-between text-sm text-accent'>
+            <span>{dc.name} ({dc.percentage}%):</span>
+            <span>${(parseFloat(totals.items_after_discount || 0) * (dc.percentage / 100)).toFixed(2)}</span>
+          </div>
+        )
+      ))}
+
       <div className='flex justify-between text-sm border-t pt-2'>
         <span>Subtotal General:</span>
         <span className='font-medium'>${totals.subtotal_general}</span>

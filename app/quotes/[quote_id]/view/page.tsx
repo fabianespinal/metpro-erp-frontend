@@ -1,6 +1,7 @@
 "use client";
 import ErrorBanner from "@/components/ui/ErrorBanner";
 import { api } from "@/lib/api";
+import type { DynamicCharge } from "@/lib/quotingApi";
 import { dt } from "@/components/ui/data-table";
 
 import { useEffect, useState } from "react";
@@ -141,6 +142,9 @@ export default function QuotePublicView() {
     charges?.insurance && `Seguro (${charges.insurance_percentage ?? 1}%)`,
     charges?.transport && `Transporte (${charges.transport_percentage ?? 3}%)`,
     charges?.contingency && `Contingencia (${charges.contingency_percentage ?? 3}%)`,
+    ...((charges?.dynamic_charges ?? []) as DynamicCharge[])
+      .filter((dc) => dc.enabled)
+      .map((dc) => `${dc.name} (${dc.percentage}%)`),
   ].filter(Boolean) as string[];
 
   return (

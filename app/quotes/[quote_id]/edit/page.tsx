@@ -35,8 +35,9 @@ import {
 } from "@/components/ui/dialog";
 import { LineCard, takeOffInputClass } from "@/components/quotes/takeoff/LineCard";
 import { AddItemBar, type CatalogProduct } from "@/components/quotes/takeoff/AddItemBar";
-import { TotalsPanel, type ChargeKey } from "@/components/quotes/takeoff/TotalsPanel";
-import { useTotalsPreview } from "@/components/quotes/takeoff/useTotalsPreview";
+import SurchargeControls from "@/components/quotes/SurchargeControls";
+import QuoteTotalsDisplay from "@/components/quotes/QuoteTotalsDisplay";
+import { calculateQuoteTotals } from "@/components/quotes/quoteUtils";
 
 /**
  * Quoting v1, module 7. Draft editor. Edits Draft quotes only.
@@ -102,14 +103,23 @@ function DraftEditor() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [finalizing, setFinalizing] = useState(false);
 
-  const { totals, totalsError } = useTotalsPreview(lines, charges ?? DEFAULT_INCLUDED_CHARGES);
+  // Derived, not stored: recomputed when lines or charges change.
+  const calculatedTotals = useMemo(
+    () => (charges ? calculateQuoteTotals(toQuoteItems(lines), charges, charges.dynamic_charges ?? []) : null),
+    [lines, charges],
+  );
 
   function applyQuote(q: QuoteOut) {
     const loadedLines = linesFromQuote(q.items ?? []);
     const loadedCharges = parseIncludedCharges(q.included_charges);
+    // Legacy quotes have no dynamic_charges: default to none.
+    const chargesWithDynamic: IncludedCharges = {
+      ...loadedCharges,
+      dynamic_charges: loadedCharges.dynamic_charges ?? [],
+    };
     setQuote(q);
     setLines(loadedLines);
-    setCharges(loadedCharges);
+    setCharges(chargesWithDynamic);
     setProjectName(q.project_name ?? "");
     setNotes(q.notes ?? "");
     setPaymentTerms(q.payment_terms ?? "");
@@ -204,12 +214,8 @@ function DraftEditor() {
     setSaveMessage(null);
   }
 
-  function setChargePercentage(key: ChargeKey, value: number) {
-    setCharges((prev) => (prev ? { ...prev, [`${key}_percentage`]: value } : prev));
-  }
-
-  function toggleCharge(key: keyof IncludedCharges) {
-    setCharges((prev) => (prev ? { ...prev, [key]: !prev[key] } : prev));
+  function handleChargesChange(newCharges: IncludedCharges) {
+    setCharges(newCharges);
     setSaveMessage(null);
   }
 
@@ -354,14 +360,13 @@ function DraftEditor() {
 
         <aside className="space-y-4 lg:sticky lg:top-6 lg:self-start">
           <ErrorBanner message={catalogError} />
-          <TotalsPanel
-            charges={charges}
-            onToggleCharge={toggleCharge}
-            onChangePercentage={setChargePercentage}
-            totals={totals}
-            totalsError={totalsError}
-            includedCount={includedCount}
-          />
+
+          {charges && (
+            <>
+              <SurchargeControls charges={charges} setCharges={handleChargesChange} />
+              <QuoteTotalsDisplay totals={calculatedTotals} charges={charges} />
+            </>
+          )}
 
           <section className="rounded-lg border border-line bg-surface p-4 shadow-card space-y-3">
             <h2 className="text-sm font-semibold text-ink">Quote details</h2>
@@ -425,16 +430,16 @@ function DraftEditor() {
               <dd className="text-ink">{includedCount}</dd>
             </div>
             <div className="flex justify-between">
-              <dt className="text-muted">Subtotal</dt>
-              <dd className="text-ink">{totals ? formatMoney(totals.subtotal) : "—"}</dd>
+              <dt className="text-muted">Subtotal General</dt>
+              <dd className="text-ink">{calculatedTotals ? formatMoney(parseFloat(calculatedTotals.subtotal_general)) : "—"}</dd>
             </div>
             <div className="flex justify-between">
               <dt className="text-muted">ITBIS (18%)</dt>
-              <dd className="text-ink">{totals ? formatMoney(totals.tax_amount) : "—"}</dd>
+              <dd className="text-ink">{calculatedTotals ? formatMoney(parseFloat(calculatedTotals.itbis)) : "—"}</dd>
             </div>
             <div className="flex justify-between font-semibold">
               <dt className="text-ink">Grand total</dt>
-              <dd className="text-ink">{totals ? formatMoney(totals.grand_total) : "—"}</dd>
+              <dd className="text-ink">{calculatedTotals ? formatMoney(parseFloat(calculatedTotals.grand_total)) : "—"}</dd>
             </div>
           </dl>
           <DialogFooter>

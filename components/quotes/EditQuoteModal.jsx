@@ -1,5 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { api } from '@/lib/api'
+import SurchargeControls from './SurchargeControls'
+import QuoteTotalsDisplay from './QuoteTotalsDisplay'
+import { calculateQuoteTotals } from './quoteUtils'
+import { DEFAULT_CHARGES } from './quoteUtils'
 
 export default function EditQuoteModal({ isOpen, onClose, quote, onSave, clients }) {
   const [saveError, setSaveError] = useState('')
@@ -14,6 +18,16 @@ export default function EditQuoteModal({ isOpen, onClose, quote, onSave, clients
 
   const [items, setItems] = useState([])
   const [products, setProducts] = useState([])
+  const [charges, setCharges] = useState({
+    ...DEFAULT_CHARGES,
+    dynamic_charges: []
+  })
+
+  // Derived from items and charges, never stored separately.
+  const calculatedTotals = useMemo(
+    () => calculateQuoteTotals(items, charges, charges.dynamic_charges ?? []),
+    [items, charges],
+  )
 
   useEffect(() => {
     if (quote) {
@@ -36,6 +50,23 @@ export default function EditQuoteModal({ isOpen, onClose, quote, onSave, clients
             discount_value: Number(i.discount_value) || 0,
           }))
         )
+        // Load charges including dynamic_charges
+        const loadedCharges = typeof quote.included_charges === 'string'
+          ? JSON.parse(quote.included_charges)
+          : quote.included_charges || {}
+        setCharges({
+          supervision: loadedCharges.supervision !== undefined ? loadedCharges.supervision : true,
+          supervision_percentage: loadedCharges.supervision_percentage || 10,
+          admin: loadedCharges.admin !== undefined ? loadedCharges.admin : true,
+          admin_percentage: loadedCharges.admin_percentage || 4,
+          insurance: loadedCharges.insurance !== undefined ? loadedCharges.insurance : true,
+          insurance_percentage: loadedCharges.insurance_percentage || 1,
+          transport: loadedCharges.transport !== undefined ? loadedCharges.transport : true,
+          transport_percentage: loadedCharges.transport_percentage || 3,
+          contingency: loadedCharges.contingency !== undefined ? loadedCharges.contingency : true,
+          contingency_percentage: loadedCharges.contingency_percentage || 3,
+          dynamic_charges: loadedCharges.dynamic_charges || []
+        })
       })
     }
   }, [quote])
@@ -95,6 +126,7 @@ export default function EditQuoteModal({ isOpen, onClose, quote, onSave, clients
           discount_type: i.discount_type || 'none',
           discount_value: Number(i.discount_value) || 0,
         })),
+        included_charges: charges,
       }
       await onSave(quote.quote_id, payload)
       onClose()
@@ -306,6 +338,12 @@ export default function EditQuoteModal({ isOpen, onClose, quote, onSave, clients
               className='w-full border border-line rounded-lg p-2'
             />
           </div>
+
+          {/* Surcharges */}
+          <SurchargeControls charges={charges} setCharges={setCharges} />
+
+          {/* Totals Display */}
+          {calculatedTotals && <QuoteTotalsDisplay totals={calculatedTotals} charges={charges} />}
 
           {saveError && (
             <p className='text-red-600 text-sm' role='alert'>{saveError}</p>

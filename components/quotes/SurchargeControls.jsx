@@ -7,6 +7,35 @@ export default function SurchargeControls({ charges, setCharges }) {
     setCharges({ ...charges, [field]: parseFloat(value) || 0 })
   }
 
+  const dynamicCharges = charges.dynamic_charges ?? []
+
+  const handleDynamicChargeToggle = (index) => {
+    const updated = dynamicCharges.map((dc, i) => (i === index ? { ...dc, enabled: !dc.enabled } : dc))
+    setCharges({ ...charges, dynamic_charges: updated })
+  }
+
+  const handleDynamicChargeNameChange = (index, name) => {
+    const updated = dynamicCharges.map((dc, i) => (i === index ? { ...dc, name } : dc))
+    setCharges({ ...charges, dynamic_charges: updated })
+  }
+
+  const handleDynamicChargePercentageChange = (index, percentage) => {
+    const updated = dynamicCharges.map((dc, i) => (i === index ? { ...dc, percentage: parseFloat(percentage) || 0 } : dc))
+    setCharges({ ...charges, dynamic_charges: updated })
+  }
+
+  const handleAddDynamicCharge = () => {
+    if (dynamicCharges.length >= 3) return
+    const newId = `dc_${Date.now()}`
+    const updated = [...dynamicCharges, { id: newId, name: '', enabled: true, percentage: 0 }]
+    setCharges({ ...charges, dynamic_charges: updated })
+  }
+
+  const handleRemoveDynamicCharge = (index) => {
+    const updated = dynamicCharges.filter((_, i) => i !== index)
+    setCharges({ ...charges, dynamic_charges: updated })
+  }
+
   return (
     <div className='mb-4'>
       <label className='block text-sm font-medium mb-3'>Additional Charges</label>
@@ -130,7 +159,61 @@ export default function SurchargeControls({ charges, setCharges }) {
             <span className='text-sm'>%</span>
           </div>
         </div>
+
+        {/* Dynamic Charges */}
+        {dynamicCharges.length > 0 && (
+          <div className='border-t pt-3'>
+            <div className='text-xs font-medium text-muted mb-2'>Custom Charges</div>
+            <div className='space-y-2'>
+              {dynamicCharges.map((dc, index) => (
+                <div key={dc.id} className='flex items-center gap-2'>
+                  <input
+                    type='checkbox'
+                    checked={dc.enabled}
+                    onChange={() => handleDynamicChargeToggle(index)}
+                    className='w-4 h-4'
+                  />
+                  <input
+                    type='text'
+                    value={dc.name}
+                    onChange={(e) => handleDynamicChargeNameChange(index, e.target.value)}
+                    placeholder='Charge name'
+                    className='flex-1 border rounded px-2 py-1 text-sm'
+                  />
+                  <input
+                    type='number'
+                    value={dc.percentage}
+                    onChange={(e) => handleDynamicChargePercentageChange(index, e.target.value)}
+                    disabled={!dc.enabled}
+                    className='w-20 border rounded px-2 py-1 text-sm'
+                    min='0'
+                    step='0.1'
+                  />
+                  <span className='text-sm'>%</span>
+                  <button
+                    type='button'
+                    onClick={() => handleRemoveDynamicCharge(index)}
+                    className='text-red-600 hover:text-red-700 text-sm font-bold'
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
+
+      {/* Add Dynamic Charge Button */}
+      {dynamicCharges.length < 3 && (
+        <button
+          type='button'
+          onClick={handleAddDynamicCharge}
+          className='mt-3 w-full text-sm text-accent hover:text-accent-strong py-1 border border-dashed border-accent rounded'
+        >
+          + Add custom charge
+        </button>
+      )}
     </div>
   )
 }

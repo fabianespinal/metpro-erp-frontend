@@ -1,6 +1,8 @@
+import { useMemo } from 'react'
 import SurchargeControls from './SurchargeControls'
 import QuoteItemRow from './QuoteItemRow'
 import QuoteTotalsDisplay from './QuoteTotalsDisplay'
+import { calculateQuoteTotals } from './quoteUtils'
 
 export default function QuoteForm({ 
   clients,
@@ -17,7 +19,6 @@ export default function QuoteForm({
   handleItemChange,
   charges,
   setCharges,
-  totals,
   notes,
   setNotes,
   paymentTerms,
@@ -28,6 +29,12 @@ export default function QuoteForm({
   loading,
   onOpenProductModal
 }) {
+  // Derived from items and charges, never stored separately.
+  const calculatedTotals = useMemo(
+    () => calculateQuoteTotals(quoteItems, charges, charges.dynamic_charges ?? []),
+    [quoteItems, charges],
+  )
+
   return (
     <div className='bg-surface rounded-lg shadow p-6 mb-8'>
       <h2 className='text-xl font-semibold mb-4'>Create New Quote</h2>
@@ -142,7 +149,7 @@ export default function QuoteForm({
       <SurchargeControls charges={charges} setCharges={setCharges} />
 
       {/* TOTALS */}
-      <QuoteTotalsDisplay totals={totals} charges={charges} />
+      <QuoteTotalsDisplay totals={calculatedTotals} charges={charges} />
 
       {/* NOTES */}
       <div className='mb-4 mt-4'>

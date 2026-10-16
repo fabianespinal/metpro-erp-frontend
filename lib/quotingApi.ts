@@ -57,6 +57,14 @@ export interface TemplatePack {
   updated_at: string | null;
 }
 
+/** User-defined charge (max 3 per quote), percent of items after discount. */
+export interface DynamicCharge {
+  id?: string;
+  name: string;
+  enabled: boolean;
+  percentage: number;
+}
+
 export interface IncludedCharges {
   supervision: boolean;
   supervision_percentage: number;
@@ -68,6 +76,8 @@ export interface IncludedCharges {
   transport_percentage: number;
   contingency: boolean;
   contingency_percentage: number;
+  /** Optional: legacy quotes omit it. */
+  dynamic_charges?: DynamicCharge[];
 }
 
 export interface QuoteLineInput {
