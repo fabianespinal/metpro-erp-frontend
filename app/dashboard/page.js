@@ -1,20 +1,14 @@
 'use client'
-import { unwrapEnvelope } from "@/lib/api"
+import { api, unwrapEnvelope } from "@/lib/api"
 
-import { useEffect, useState, useSyncExternalStore } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { PageHeader } from '@/components/ui/page-header'
 import { useCurrentRole } from '@/lib/currentRole'
 
-const noopSubscribe = () => () => {}
-
 export default function DashboardPage() {
-  // Read once from localStorage. Server snapshot is 'User' for prerender.
-  const username = useSyncExternalStore(
-    noopSubscribe,
-    () => localStorage.getItem('username') || 'User',
-    () => 'User'
-  )
+  // Display name from GET /auth/me (name claim). Falls back to username, then 'User'.
+  const [displayName, setDisplayName] = useState('User')
   const { isAdmin } = useCurrentRole()
   const [stats, setStats] = useState({
     clients: 0,
@@ -29,6 +23,19 @@ export default function DashboardPage() {
   const [recentQuotes, setRecentQuotes] = useState([])
   const [recentInvoices, setRecentInvoices] = useState([])
   const [recentExpenses, setRecentExpenses] = useState([])
+
+  useEffect(() => {
+    let cancelled = false
+    api('/auth/me')
+      .then((me) => {
+        if (cancelled || !me) return
+        setDisplayName(me.name || me.username || 'User')
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   // Load dashboard data
   useEffect(() => {
@@ -216,7 +223,7 @@ export default function DashboardPage() {
       <PageHeader
         title="Dashboard"
         subtitle="Metpro ERP System"
-        actions={<span className="text-sm font-medium text-ink">Welcome, {username}</span>}
+        actions={<span className="text-sm font-medium text-ink">Welcome, {displayName}</span>}
       />
 
       {/* MODULE GRID */}
