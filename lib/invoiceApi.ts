@@ -47,13 +47,19 @@ export async function fetchInvoicePayments(invoiceId: number) {
 }
 
 export async function fetchInvoiceWithPayments(invoiceId: number) {
+  let paymentsError: string | null = null;
   const [invoice, payments] = await Promise.all([
     api.get(`/invoices/${invoiceId}`),
-    api.get(`/invoices/${invoiceId}/payments`).catch(() => []),
+    api.get(`/invoices/${invoiceId}/payments`).catch((err: Error) => {
+      // The invoice still renders; the page shows that history could not load.
+      paymentsError = err.message || "No se pudo cargar el historial de pagos.";
+      return [];
+    }),
   ]);
 
   return {
     ...(invoice as Record<string, unknown>),
     payments: Array.isArray(payments) ? payments : [],
+    payments_error: paymentsError,
   };
 }

@@ -4,6 +4,7 @@ export const dynamic = "force-dynamic";
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { api } from '@/lib/api'
+import { clearSession, isTokenExpired } from '@/lib/auth'
 import { Button } from '@/components/ui/button'
 import { fb } from '@/components/ui/filter-bar'
 
@@ -28,7 +29,14 @@ export default function LoginPage() {
 
   useEffect(() => {
     const token = localStorage.getItem("token")
-    if (token) router.push('/dashboard')
+    if (token && !isTokenExpired(token)) {
+      router.push('/dashboard')
+      return
+    }
+    if (token) clearSession()
+    if (new URLSearchParams(window.location.search).get("expired") === "1") {
+      setError("Your session expired. Please sign in again.")
+    }
   }, [router])
 
   const handleLogin = async (e) => {

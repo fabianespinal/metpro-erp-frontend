@@ -1,4 +1,5 @@
 "use client";
+import ErrorBanner from "@/components/ui/ErrorBanner";
 import { api } from "@/lib/api";
 import { dt } from "@/components/ui/data-table";
 
@@ -65,6 +66,7 @@ export default function QuotePublicView() {
   const [quote, setQuote] = useState<Quote | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [warning, setWarning] = useState<string | null>(null);
 
   useEffect(() => {
     if (!quoteId) return;
@@ -73,10 +75,20 @@ export default function QuotePublicView() {
     (async () => {
       try {
         const q = (await api(`/quotes/${quoteId}`)) as Quote & { client_id: number; contact_id: number };
+        const missing: string[] = [];
         const [client, contacts] = await Promise.all([
-          api(`/clients/${q.client_id}`).catch(() => null),
-          api(`/contacts/company/${q.client_id}`).catch(() => []),
+          api(`/clients/${q.client_id}`).catch(() => {
+            missing.push("cliente");
+            return null;
+          }),
+          api(`/contacts/company/${q.client_id}`).catch(() => {
+            missing.push("contacto");
+            return [];
+          }),
         ]);
+        if (!cancelled && missing.length) {
+          setWarning(`No se pudieron cargar los datos de: ${missing.join(", ")}.`);
+        }
         const contact = Array.isArray(contacts)
           ? (contacts as Array<{ id: number; name: string; email?: string; phone?: string }>).find(
               (c) => c.id === q.contact_id
@@ -134,6 +146,8 @@ export default function QuotePublicView() {
   return (
     <div className="min-h-screen bg-canvas px-2 py-6 text-ink sm:px-4 sm:py-10 print:bg-white print:py-0">
       <div className="mx-auto max-w-[860px] rounded-lg border border-line bg-surface p-4 shadow-card sm:p-10 print:border-0 print:p-0 print:shadow-none">
+
+        <ErrorBanner message={warning} />
 
         {/* Header */}
         <div className="flex flex-col gap-6 border-b border-line pb-6 sm:flex-row sm:items-start sm:justify-between">

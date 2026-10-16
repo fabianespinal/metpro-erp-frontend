@@ -1,5 +1,6 @@
 "use client";
 
+import ErrorBanner from "@/components/ui/ErrorBanner";
 import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -61,6 +62,8 @@ function TakeOffScreen() {
 
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  // Non-blocking load problems (catalog, contact). Shown above the totals.
+  const [catalogError, setCatalogError] = useState<string | null>(null);
 
   // Load the template pack and seed lines from it.
   useEffect(() => {
@@ -87,8 +90,10 @@ function TakeOffScreen() {
       .then((data) => {
         if (!cancelled) setProducts(Array.isArray(data) ? (data as CatalogProduct[]) : []);
       })
-      .catch(() => {
-        if (!cancelled) setProducts([]);
+      .catch((err: Error) => {
+        if (cancelled) return;
+        setProducts([]);
+        setCatalogError(`Could not load the product catalog: ${err.message}`);
       });
     return () => {
       cancelled = true;
@@ -200,6 +205,7 @@ function TakeOffScreen() {
         </div>
 
         <aside className="space-y-4 lg:sticky lg:top-6 lg:self-start">
+          <ErrorBanner message={catalogError} />
           <TotalsPanel
             charges={charges}
             onToggleCharge={toggleCharge}

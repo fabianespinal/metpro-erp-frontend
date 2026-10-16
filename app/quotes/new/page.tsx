@@ -65,8 +65,10 @@ export default function NewQuotePage() {
       .then((data) => {
         if (!cancelled) setContacts(Array.isArray(data) ? (data as Contact[]) : []);
       })
-      .catch(() => {
-        if (!cancelled) setContacts([]);
+      .catch((err: Error) => {
+        if (cancelled) return;
+        setContacts([]);
+        setClientError(`Could not load contacts for this client: ${err.message}`);
       });
     return () => {
       cancelled = true;

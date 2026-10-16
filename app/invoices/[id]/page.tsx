@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useParams } from "next/navigation";
 import { fetchInvoiceWithPayments } from "@/lib/invoiceApi";
 import RecordPaymentModal from "@/components/invoices/RecordPaymentModal";
@@ -26,6 +27,16 @@ interface Invoice {
   amount_due: number;
   created_by_name?: string | null;
   payments: Payment[];
+  items?: InvoiceLine[];
+  payments_error?: string | null;
+}
+
+interface InvoiceLine {
+  product_name: string;
+  quantity: number;
+  unit_price: number;
+  discount_value?: number;
+  total?: number;
 }
 
 export default function InvoiceDetailPage() {
@@ -34,6 +45,7 @@ export default function InvoiceDetailPage() {
 
   const [invoice, setInvoice] = useState<Invoice | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [paymentOpen, setPaymentOpen] = useState(false);
 
   const loadInvoice = async () => {
@@ -42,6 +54,7 @@ export default function InvoiceDetailPage() {
       setInvoice(data as Invoice);
     } catch (err) {
       console.error("Error loading invoice:", err);
+      setError(err instanceof Error ? err.message : "No se pudo cargar la factura.");
     } finally {
       setLoading(false);
     }
@@ -51,13 +64,28 @@ export default function InvoiceDetailPage() {
     loadInvoice();
   }, []);
 
-  if (loading || !invoice) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <p className="text-muted">Cargando factura...</p>
       </div>
     );
   }
+
+  if (error || !invoice) {
+    return (
+      <div className="mx-auto max-w-xl p-6">
+        <p role="alert" className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          No se pudo cargar la factura: {error || "no encontrada"}
+        </p>
+        <Link href="/invoices" className="mt-4 inline-block text-sm text-accent underline">
+          Volver a facturas
+        </Link>
+      </div>
+    );
+  }
+
+  const lines = invoice.items ?? [];
 
   const payments = invoice.payments ?? [];
 
@@ -89,6 +117,40 @@ export default function InvoiceDetailPage() {
             <p className="text-muted">Creado por</p>
             <p className="font-medium">{invoice.created_by_name || "—"}</p>
           </div>
+        </div>
+
+        <div className="mb-6">
+          <h2 className="text-xl font-semibold mb-3">Detalle</h2>
+          {lines.length === 0 ? (
+            <p className="text-muted">Sin líneas.</p>
+          ) : (
+            <table className="min-w-full divide-y divide-line bg-surface text-sm">
+              <thead className="bg-canvas">
+                <tr>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-muted uppercase">Descripción</th>
+                  <th className="px-4 py-2 text-right text-xs font-medium text-muted uppercase">Cant.</th>
+                  <th className="px-4 py-2 text-right text-xs font-medium text-muted uppercase">Precio</th>
+                  <th className="px-4 py-2 text-right text-xs font-medium text-muted uppercase">Desc.</th>
+                  <th className="px-4 py-2 text-right text-xs font-medium text-muted uppercase">Total</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-line">
+                {lines.map((l, i) => {
+                  const gross = Number(l.quantity || 0) * Number(l.unit_price || 0);
+                  const total = l.total ?? gross - Number(l.discount_value || 0);
+                  return (
+                    <tr key={i}>
+                      <td className="px-4 py-2">{l.product_name}</td>
+                      <td className="px-4 py-2 text-right">{Number(l.quantity || 0)}</td>
+                      <td className="px-4 py-2 text-right">${Number(l.unit_price || 0).toFixed(2)}</td>
+                      <td className="px-4 py-2 text-right">${Number(l.discount_value || 0).toFixed(2)}</td>
+                      <td className="px-4 py-2 text-right font-medium">${Number(total).toFixed(2)}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
         </div>
 
         <div className="bg-canvas p-4 rounded-lg mb-6">
@@ -127,6 +189,11 @@ export default function InvoiceDetailPage() {
 
         <div>
           <h2 className="text-xl font-semibold mb-3">Historial de Pagos</h2>
+          {invoice.payments_error && (
+            <p role="alert" className="mb-3 rounded border border-red-200 bg-red-50 p-2 text-sm text-red-700">
+              No se pudo cargar el historial de pagos: {invoice.payments_error}
+            </p>
+          )}
 
           {payments.length === 0 ? (
             <p className="text-muted">No hay pagos registrados.</p>

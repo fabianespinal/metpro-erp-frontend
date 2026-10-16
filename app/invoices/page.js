@@ -1,4 +1,5 @@
 "use client";
+import ErrorBanner from "@/components/ui/ErrorBanner";
 import { dt } from "@/components/ui/data-table";
 
 import { useState, useEffect } from "react";
@@ -21,6 +22,7 @@ const MANUAL_NEXT = {
 
 export default function InvoicesPage() {
   const [invoices, setInvoices] = useState([]);
+  const [loadError, setLoadError] = useState(null)
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("all");
   const [sentMap, setSentMap] = useState({});
@@ -41,6 +43,7 @@ export default function InvoicesPage() {
     } catch (error) {
       console.error("Failed to fetch invoices:", error);
       setInvoices([]);
+      setLoadError(`No se pudieron cargar las facturas: ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -152,6 +155,7 @@ export default function InvoicesPage() {
     <div className="min-h-screen bg-canvas p-6">
       <div className="w-full px-4 lg:px-8">
         <PageHeader title="Facturas" subtitle="Ver y gestionar todas las facturas" />
+        <ErrorBanner message={loadError} />
 
         <div className="bg-surface shadow rounded-lg overflow-hidden mt-6">
           <table className={dt.table}>

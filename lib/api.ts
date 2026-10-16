@@ -1,5 +1,12 @@
 "use client";
 
+import { handleUnauthorized } from "@/lib/auth";
+
+/** For raw fetch() callers: route a 401 to the login page like api() does. */
+export function checkUnauthorized(res: Response): void {
+  if (res.status === 401) handleUnauthorized();
+}
+
 /**
  * Success responses are {"data": payload, "success": true}.
  * Return the payload. Any other body is returned unchanged (errors, legacy shapes).
@@ -41,6 +48,8 @@ export async function api(endpoint: string, options: RequestInit = {}) {
   });
 
   if (!res.ok) {
+    // Expired or revoked session: clear it and go to login (not for the login call itself).
+    if (res.status === 401 && !endpoint.startsWith("/auth/login")) handleUnauthorized();
     const text = await res.text().catch(() => "");
     let message = `API error ${res.status}`;
     let code: string | undefined;
