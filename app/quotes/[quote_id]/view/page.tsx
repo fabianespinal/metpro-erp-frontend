@@ -19,6 +19,7 @@ interface Quote {
   project_name: string;
   notes: string;
   status: string;
+  created_by_name?: string | null;
   created_at: string;
   valid_until?: string;
   payment_terms?: string;
@@ -167,6 +168,9 @@ export default function QuotePublicView() {
             </div>
             <div>
               <span className="font-semibold">Teléfono:</span> {quote.contact_phone}
+            </div>
+            <div>
+              <span className="font-semibold">Creado por:</span> {quote.created_by_name || "—"}
             </div>
             {quote.project_name && (
               <div className="sm:col-span-2">
