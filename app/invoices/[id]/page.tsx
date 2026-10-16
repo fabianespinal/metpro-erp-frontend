@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useParams } from "next/navigation";
 import { fetchInvoiceWithPayments } from "@/lib/invoiceApi";
 import RecordPaymentModal from "@/components/invoices/RecordPaymentModal";
@@ -76,9 +77,9 @@ export default function InvoiceDetailPage() {
         <p role="alert" className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700">
           No se pudo cargar la factura: {error || "no encontrada"}
         </p>
-        <a href="/invoices" className="mt-4 inline-block text-sm text-accent underline">
+        <Link href="/invoices" className="mt-4 inline-block text-sm text-accent underline">
           Volver a facturas
-        </a>
+        </Link>
       </div>
     );
   }
