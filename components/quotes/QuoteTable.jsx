@@ -31,7 +31,7 @@ export default function QuoteTable({
     <table className={dt.table}>
       <thead className={dt.thead}>
         <tr>
-          <th className={dt.th}>Quote ID</th>
+          <th className={dt.th}>No.</th>
           <th className={dt.th}>Client</th>
           <th className={dt.th}>Project</th>
           <th className={dt.th}>Date</th>
@@ -44,13 +44,13 @@ export default function QuoteTable({
       <tbody className={dt.tbody}>
         {quotes.map((quote) => (
           <tr key={quote.quote_id} className={dt.tr}>
-            <td className={dt.td}>{quote.quote_id}</td>
+            <td className={dt.td}>{quote.quote_number ?? '—'}</td>
             <td className={dt.td}>{quote.client_name}</td>
             <td className={dt.td}>{quote.project_name || '-'}</td>
-            <td className={dt.td}>{quote.date}</td>
+            <td className={dt.td}>{quote.created_at ? String(quote.created_at).slice(0, 10) : '—'}</td>
 
             <td className={dt.tdRight}>
-              ${ (quote.total_amount ?? 0).toFixed(2) }
+              ${ Number(quote.grand_total ?? quote.total_amount ?? 0).toFixed(2) }
             </td>
 
             <td className={dt.td}>

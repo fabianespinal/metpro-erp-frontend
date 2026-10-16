@@ -17,6 +17,7 @@ interface PublicQuoteItem {
 
 interface PublicQuote {
   quote_id: string;
+  quote_number?: number | null;
   project_name?: string | null;
   notes?: string | null;
   status: string;
@@ -95,7 +96,7 @@ export default function PublicQuotePage() {
       <div className="mx-auto max-w-2xl rounded-lg border border-line bg-surface p-8 shadow-card">
         <div className="flex items-start justify-between gap-4">
           <h1 className="text-lg font-semibold tracking-tight">
-            Cotización #{quote.quote_id}
+            Cotización #{quote.quote_number ?? "—"}
           </h1>
           <a
             href={pdfUrl}

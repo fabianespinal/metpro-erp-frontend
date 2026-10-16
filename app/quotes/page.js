@@ -101,7 +101,8 @@ export default function QuotesPage() {
       const url = window.URL.createObjectURL(blob)
       const link = document.createElement("a")
       link.href = url
-      link.download = `Q-${quoteId}.pdf`
+      const q = mergedQuotes.find(x => x.quote_id === quoteId)
+      link.download = `COT-${q?.quote_number ?? quoteId}.pdf`
       document.body.appendChild(link)
       link.click()
       window.URL.revokeObjectURL(url)
