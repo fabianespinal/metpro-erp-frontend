@@ -16,8 +16,14 @@ function fmt(n: unknown) {
   }).format(Number(n) || 0);
 }
 
+interface PublicInvoice {
+  invoice_number: string;
+  client_name?: string | null;
+  total_amount?: number | string | null;
+}
+
 export default function InvoicePublicView({ invoiceId }: InvoicePublicViewProps) {
-  const [invoice, setInvoice] = useState<any>(null);
+  const [invoice, setInvoice] = useState<PublicInvoice | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 

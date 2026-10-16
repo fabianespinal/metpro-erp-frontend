@@ -39,7 +39,7 @@ interface Quote {
   contact_email: string;
   contact_phone: string;
   items: QuoteItem[];
-  included_charges: any;
+  included_charges: string | Record<string, unknown> | null;
 }
 
 function fmt(n: number) {

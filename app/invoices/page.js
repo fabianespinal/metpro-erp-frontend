@@ -3,7 +3,7 @@ import ErrorBanner from "@/components/ui/ErrorBanner";
 import { dt } from "@/components/ui/data-table";
 
 import { useState, useEffect } from "react";
-import { api, sendInvoiceToClient } from "@/lib/api";
+import { api } from "@/lib/api";
 import StatusPill from "@/components/ui/StatusPill";
 import RecordPaymentModal from "@/components/invoices/RecordPaymentModal";
 import SendToClientButton from "@/components/SendToClientButton";
@@ -24,7 +24,7 @@ export default function InvoicesPage() {
   const [invoices, setInvoices] = useState([]);
   const [loadError, setLoadError] = useState(null)
   const [loading, setLoading] = useState(true);
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [statusFilter] = useState("all");
   const [sentMap, setSentMap] = useState({});
   const { isAdmin } = useCurrentRole();
 
