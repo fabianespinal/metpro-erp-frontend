@@ -8,10 +8,8 @@ import { useToken } from '@/components/quotes/useToken'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { mergeQuotesWithInvoices, filterQuotesByStatus } from '@/components/quotes/quoteUtils'
-import SentBadge from "@/components/SentBadge";
 import { PageHeader } from "@/components/ui/page-header";
 import { fb } from "@/components/ui/filter-bar";
-import SendToClientButton from "@/components/SendToClientButton";
 import {
   previewPDF,
   downloadPDF,
@@ -36,13 +34,6 @@ export default function QuotesPage() {
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, quoteId: null, quoteStatus: null })
   const [previewModal, setPreviewModal] = useState({ isOpen: false, quoteId: null, pdfUrl: null })
   const [sentMap, setSentMap] = useState({});
-
-  useEffect(() => {
-    fetchClients()
-    fetchQuotes()
-    fetchInvoices()
-    fetchProducts()
-  }, [])
 
   async function fetchClients() {
   try {
@@ -83,6 +74,16 @@ export default function QuotesPage() {
       setProducts([])
     }
   }
+
+  // Initial loads, declared after the loaders they call. Each loader sets state
+  // only after its request resolves, so nothing updates synchronously here.
+  useEffect(() => {
+    const load = async () => {
+      await Promise.resolve()
+      await Promise.all([fetchClients(), fetchQuotes(), fetchInvoices(), fetchProducts()])
+    }
+    load()
+  }, [])
 
   async function handlePreviewPDF(quoteId) {
     try {

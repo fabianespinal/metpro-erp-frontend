@@ -81,26 +81,6 @@ export async function downloadPDF(quoteId, token) {
 }
 
 /**
- * Approve quote
- */
-export async function approveQuote(quoteId, token) {
-  try {
-    const url = API_URL + "/quotes/" + quoteId + "/approve";
-    const response = await fetch(url, {
-      method: "POST",
-      headers: getHeaders(token, true),
-    });
-
-    await handleResponse(response);
-    const data = unwrapEnvelope(await response.json());
-    return data;
-  } catch (error) {
-    console.error("Approve quote error:", error);
-    throw error;
-  }
-}
-
-/**
  * Duplicate quote
  */
 export async function duplicateQuote(quoteId, token) {
@@ -150,27 +130,6 @@ export async function deleteQuote(quoteId, token) {
     return data;
   } catch (error) {
     console.error("Delete quote error:", error);
-    throw error;
-  }
-}
-
-/**
- * Edit quote
- */
-export async function editQuote(quoteId, token, payload) {
-  try {
-    const url = API_URL + "/quotes/" + quoteId;
-    const response = await fetch(url, {
-      method: "PUT",
-      headers: getHeaders(token, true),
-      body: JSON.stringify(payload),
-    });
-
-    await handleResponse(response);
-    const data = unwrapEnvelope(await response.json());
-    return data;
-  } catch (error) {
-    console.error("Edit quote error:", error);
     throw error;
   }
 }
@@ -236,70 +195,3 @@ export async function generateConduce(invoiceId, token) {
   }
 }
 
-/**
- * Fetch all quotes (optional helper)
- */
-export async function fetchQuotes(token, params) {
-  try {
-    let url = API_URL + "/quotes";
-    if (params) {
-      const queryString = new URLSearchParams(params).toString();
-      if (queryString) {
-        url = url + "?" + queryString;
-      }
-    }
-    
-    const response = await fetch(url, {
-      method: "GET",
-      headers: getHeaders(token, true),
-    });
-
-    await handleResponse(response);
-    const data = unwrapEnvelope(await response.json());
-    return data;
-  } catch (error) {
-    console.error("Fetch quotes error:", error);
-    throw error;
-  }
-}
-
-/**
- * Fetch single quote (optional helper)
- */
-export async function fetchQuote(quoteId, token) {
-  try {
-    const url = API_URL + "/quotes/" + quoteId;
-    const response = await fetch(url, {
-      method: "GET",
-      headers: getHeaders(token, true),
-    });
-
-    await handleResponse(response);
-    const data = unwrapEnvelope(await response.json());
-    return data;
-  } catch (error) {
-    console.error("Fetch quote error:", error);
-    throw error;
-  }
-}
-
-/**
- * Create new quote (optional helper)
- */
-export async function createQuote(token, payload) {
-  try {
-    const url = API_URL + "/quotes";
-    const response = await fetch(url, {
-      method: "POST",
-      headers: getHeaders(token, true),
-      body: JSON.stringify(payload),
-    });
-
-    await handleResponse(response);
-    const data = unwrapEnvelope(await response.json());
-    return data;
-  } catch (error) {
-    console.error("Create quote error:", error);
-    throw error;
-  }
-}

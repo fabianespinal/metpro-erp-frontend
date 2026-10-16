@@ -58,11 +58,11 @@ export default function SendToClientModal({
 
       if (onSent) onSent();
       onClose();
-    } catch (err: any) {
+    } catch (err) {
       console.error("Send-to-client error:", err);
 
       const backendMessage =
-        err?.message ||
+        (err instanceof Error ? err.message : "") ||
         "Error al enviar. Intente nuevamente.";
 
       toast.error(backendMessage);

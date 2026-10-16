@@ -1,21 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
+// Mounted fresh on each open (parent renders it only while modalOpen),
+// so the form is initialised once from the contact being edited.
 export default function ContactModal({ contact, onClose, onSubmit }) {
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    phone: "",
-  });
-
-  useEffect(() => {
-    if (contact) {
-      setForm({
-        name: contact.name || "",
-        email: contact.email || "",
-        phone: contact.phone || "",
-      });
-    }
-  }, [contact]);
+  const [form, setForm] = useState(() => ({
+    name: contact?.name || "",
+    email: contact?.email || "",
+    phone: contact?.phone || "",
+  }));
 
   function handleChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value });
