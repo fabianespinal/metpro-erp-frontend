@@ -3,12 +3,10 @@ import { useState, useEffect } from 'react'
 import { api } from "@/lib/api"
 import PDFPreviewModal from '@/components/quotes/PDFPreviewModal'
 import DeleteQuoteModal from '@/components/quotes/DeleteQuoteModal'
-import EditQuoteModal from '@/components/quotes/EditQuoteModal'
-import ProductSelectionModal from '@/components/quotes/ProductSelectionModal'
-import QuoteForm from '@/components/quotes/QuoteForm'
 import QuoteTable from '@/components/quotes/QuoteTable'
 import { useToken } from '@/components/quotes/useToken'
-import { useQuoteForm } from '@/components/quotes/useQuoteForm'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { mergeQuotesWithInvoices, filterQuotesByStatus } from '@/components/quotes/quoteUtils'
 import SentBadge from "@/components/SentBadge";
 import { PageHeader } from "@/components/ui/page-header";
@@ -26,7 +24,7 @@ import {
 
 export default function QuotesPage() {
   const token = useToken()
-  const quoteForm = useQuoteForm()
+  const router = useRouter()
 
   const [clients, setClients] = useState([])
   const [quotes, setQuotes] = useState([])
@@ -36,9 +34,7 @@ export default function QuotesPage() {
   const [loading, setLoading] = useState(false)
 
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, quoteId: null, quoteStatus: null })
-  const [editModal, setEditModal] = useState({ isOpen: false, quote: null })
   const [previewModal, setPreviewModal] = useState({ isOpen: false, quoteId: null, pdfUrl: null })
-  const [productModal, setProductModal] = useState({ isOpen: false, itemIndex: null })
   const [sentMap, setSentMap] = useState({});
 
   useEffect(() => {
@@ -85,26 +81,6 @@ export default function QuotesPage() {
     } catch (error) {
       console.error('Failed to fetch products:', error)
       setProducts([])
-    }
-  }
-
-  async function handleCreateQuote(e) {
-    e.preventDefault()
-    setLoading(true)
-    try {
-      // getFormData() now includes payment_terms and valid_until
-      const formData = quoteForm.getFormData()
-      const data = await api("/quotes/", {
-        method: "POST",
-        body: JSON.stringify(formData)
-      })
-      alert(`Quote created successfully! ID: ${data.quote_id}`)
-      fetchQuotes()
-      quoteForm.resetForm()
-    } catch (error) {
-      alert(error.message || 'Error creating quote')
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -211,23 +187,6 @@ export default function QuotesPage() {
     setDeleteModal({ isOpen: false, quoteId: null, quoteStatus: null })
   }
 
-  async function handleSaveEdit(quoteId, updatedData) {
-    try {
-      // client_id is not a valid field for PUT — strip it
-      const { client_id, ...updatePayload } = updatedData
-      await api(`/quotes/${quoteId}`, {
-        method: "PUT",
-        body: JSON.stringify(updatePayload)
-        // updatePayload now includes payment_terms and valid_until from EditQuoteModal
-      })
-      fetchQuotes()
-    } catch (error) {
-      console.error("Edit Quote Error:", error)
-      alert("Error updating quote: " + error.message)
-      throw error
-    }
-  }
-
   function handleViewInvoice(quote) {
     if (quote.has_invoice) {
       window.location.href = `/invoices?invoice_id=${quote.invoice_id}`
@@ -236,22 +195,14 @@ export default function QuotesPage() {
     }
   }
 
+  // Only Draft quotes are editable. Editor: /quotes/{id}/edit. Create: /quotes/new.
   function handleEdit(quote) {
-    const fullQuote = quotes.find(q => q.quote_id === quote.quote_id)
-    setEditModal({ isOpen: true, quote: fullQuote })
+    if (quote.status !== 'Draft') return
+    router.push(`/quotes/${quote.quote_id}/edit`)
   }
 
   function handleDelete(quoteId, quoteStatus) {
     setDeleteModal({ isOpen: true, quoteId, quoteStatus })
-  }
-
-  function handleOpenProductModal(itemIndex) {
-    setProductModal({ isOpen: true, itemIndex })
-  }
-
-  function handleSelectProduct(product) {
-    quoteForm.selectProduct(product, productModal.itemIndex)
-    setProductModal({ isOpen: false, itemIndex: null })
   }
 
   const mergedQuotes = mergeQuotesWithInvoices(quotes, invoices)
@@ -262,36 +213,15 @@ export default function QuotesPage() {
   <div className="w-full px-4 lg:px-8 py-6">
     <PageHeader title="Cotizar" />
 
-    <QuoteForm
-      clients={clients}
-      selectedClient={quoteForm.selectedClient}
-      setSelectedClient={quoteForm.setSelectedClient}
-      selectedContact={quoteForm.selectedContact}
-      setSelectedContact={quoteForm.setSelectedContact}
-      contacts={quoteForm.contacts}
-      projectName={quoteForm.projectName}
-      setProjectName={quoteForm.setProjectName}
-      quoteItems={quoteForm.quoteItems}
-      handleAddItem={quoteForm.handleAddItem}
-      handleRemoveItem={quoteForm.handleRemoveItem}
-      handleItemChange={quoteForm.handleItemChange}
-      charges={quoteForm.charges}
-      setCharges={quoteForm.setCharges}
-      totals={quoteForm.totals}
-      notes={quoteForm.notes}
-      setNotes={quoteForm.setNotes}
-      paymentTerms={quoteForm.paymentTerms}
-      setPaymentTerms={quoteForm.setPaymentTerms}
-      validUntil={quoteForm.validUntil}
-      setValidUntil={quoteForm.setValidUntil}
-      onSubmit={handleCreateQuote}
-      loading={loading}
-      onOpenProductModal={handleOpenProductModal}
-    />
-
     <div className="bg-surface rounded-lg shadow p-6">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-semibold">Existing Quotes</h2>
+        <Link
+          href="/quotes/new"
+          className="rounded-md bg-ink px-4 py-2 text-sm font-medium text-surface"
+        >
+          Nueva cotización
+        </Link>
 
         <select
           value={statusFilter}
@@ -350,20 +280,6 @@ export default function QuotesPage() {
       quoteStatus={deleteModal.quoteStatus}
     />
 
-    <EditQuoteModal
-      isOpen={editModal.isOpen}
-      onClose={() => setEditModal({ isOpen: false, quote: null })}
-      quote={editModal.quote}
-      onSave={handleSaveEdit}
-      clients={clients}
-    />
-
-    <ProductSelectionModal
-      isOpen={productModal.isOpen}
-      onClose={() => setProductModal({ isOpen: false, itemIndex: null })}
-      onSelect={handleSelectProduct}
-      products={products}
-    />
   </div>
 );
 }

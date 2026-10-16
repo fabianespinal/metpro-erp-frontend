@@ -23,6 +23,13 @@ interface Quote {
   valid_until?: string;
   payment_terms?: string;
   total_amount: number;
+  subtotal?: number | null;
+  discount_total?: number | null;
+  tax_amount?: number | null;
+  grand_total?: number | null;
+  terms?: string | null;
+  finalized_at?: string | null;
+  public_token?: string | null;
   company_name: string;
   company_address?: string;
   contact_name: string;
@@ -39,59 +46,15 @@ function fmt(n: number) {
   }).format(n);
 }
 
-function calcTotals(items: QuoteItem[], charges: any) {
-  const itemsTotal = items.reduce(
-    (sum, i) => sum + i.quantity * i.unit_price,
-    0
-  );
-  let totalDiscounts = 0;
-  for (const item of items) {
-    const subtotal = item.quantity * item.unit_price;
-    if (item.discount_type === "percentage") {
-      totalDiscounts += subtotal * ((item.discount_value || 0) / 100);
-    } else if (item.discount_type === "fixed") {
-      totalDiscounts += item.discount_value || 0;
-    }
-  }
-  const afterDiscount = itemsTotal - totalDiscounts;
-  const supervision = charges?.supervision
-    ? afterDiscount * ((charges.supervision_percentage || 10) / 100)
-    : 0;
-  const admin = charges?.admin
-    ? afterDiscount * ((charges.admin_percentage || 4) / 100)
-    : 0;
-  const insurance = charges?.insurance
-    ? afterDiscount * ((charges.insurance_percentage || 1) / 100)
-    : 0;
-  const transport = charges?.transport
-    ? afterDiscount * ((charges.transport_percentage || 3) / 100)
-    : 0;
-  const contingency = charges?.contingency
-    ? afterDiscount * ((charges.contingency_percentage || 3) / 100)
-    : 0;
-  const subtotalGeneral =
-    afterDiscount + supervision + admin + insurance + transport + contingency;
-  const itbis = subtotalGeneral * 0.18;
-  const grandTotal = subtotalGeneral + itbis;
+// Stored totals (set at finalize) are the only source for the summary.
+// Legacy rows with no stored totals show a dash. No client-side tax math.
+function money(n: number | null | undefined) {
+  return n === null || n === undefined ? "—" : fmt(Number(n));
+}
 
-  return {
-    itemsTotal,
-    totalDiscounts,
-    afterDiscount,
-    supervision,
-    supervisionPct: charges?.supervision_percentage || 10,
-    admin,
-    adminPct: charges?.admin_percentage || 4,
-    insurance,
-    insurancePct: charges?.insurance_percentage || 1,
-    transport,
-    transportPct: charges?.transport_percentage || 3,
-    contingency,
-    contingencyPct: charges?.contingency_percentage || 3,
-    subtotalGeneral,
-    itbis,
-    grandTotal,
-  };
+// Sum of line amounts before any discount or charge. Display only.
+function itemsSubtotal(items: QuoteItem[]) {
+  return items.reduce((sum, i) => sum + i.quantity * i.unit_price, 0);
 }
 
 export default function QuotePublicView() {
@@ -158,7 +121,13 @@ export default function QuotePublicView() {
     ? JSON.parse(quote.included_charges)
     : quote.included_charges || {};
 
-  const t = calcTotals(quote.items || [], charges);
+  const enabledCharges = [
+    charges?.supervision && `Supervisión (${charges.supervision_percentage ?? 10}%)`,
+    charges?.admin && `Administración (${charges.admin_percentage ?? 4}%)`,
+    charges?.insurance && `Seguro (${charges.insurance_percentage ?? 1}%)`,
+    charges?.transport && `Transporte (${charges.transport_percentage ?? 3}%)`,
+    charges?.contingency && `Contingencia (${charges.contingency_percentage ?? 3}%)`,
+  ].filter(Boolean) as string[];
 
   return (
     <div className="min-h-screen bg-canvas px-2 py-6 text-ink sm:px-4 sm:py-10 print:bg-white print:py-0">
@@ -257,55 +226,31 @@ export default function QuotePublicView() {
             </div>
             <div className="flex justify-between border-b border-line py-1.5 text-sm tabular-nums">
               <span className="text-muted">Subtotal de Items</span>
-              <span>{fmt(t.itemsTotal)}</span>
+              <span>{fmt(itemsSubtotal(quote.items || []))}</span>
             </div>
-            {t.totalDiscounts > 0 && (
+            {Number(quote.discount_total ?? 0) > 0 && (
               <div className="flex justify-between border-b border-line py-1.5 text-sm tabular-nums">
                 <span className="text-muted">Descuentos</span>
-                <span>-{fmt(t.totalDiscounts)}</span>
+                <span>-{money(quote.discount_total)}</span>
               </div>
             )}
-            {charges?.supervision && (
-              <div className="flex justify-between border-b border-line py-1.5 text-sm tabular-nums">
-                <span className="text-muted">Supervisión ({t.supervisionPct}%)</span>
-                <span>{fmt(t.supervision)}</span>
-              </div>
-            )}
-            {charges?.admin && (
-              <div className="flex justify-between border-b border-line py-1.5 text-sm tabular-nums">
-                <span className="text-muted">Administración ({t.adminPct}%)</span>
-                <span>{fmt(t.admin)}</span>
-              </div>
-            )}
-            {charges?.insurance && (
-              <div className="flex justify-between border-b border-line py-1.5 text-sm tabular-nums">
-                <span className="text-muted">Seguro ({t.insurancePct}%)</span>
-                <span>{fmt(t.insurance)}</span>
-              </div>
-            )}
-            {charges?.transport && (
-              <div className="flex justify-between border-b border-line py-1.5 text-sm tabular-nums">
-                <span className="text-muted">Transporte ({t.transportPct}%)</span>
-                <span>{fmt(t.transport)}</span>
-              </div>
-            )}
-            {charges?.contingency && (
-              <div className="flex justify-between border-b border-line py-1.5 text-sm tabular-nums">
-                <span className="text-muted">Contingencia ({t.contingencyPct}%)</span>
-                <span>{fmt(t.contingency)}</span>
+            {enabledCharges.length > 0 && (
+              <div className="border-b border-line py-1.5 text-sm">
+                <span className="text-muted">Cargos incluidos: </span>
+                <span>{enabledCharges.join(", ")}</span>
               </div>
             )}
             <div className="flex justify-between border-b border-line py-1.5 text-sm tabular-nums">
               <span className="text-muted">Subtotal General</span>
-              <span>{fmt(t.subtotalGeneral)}</span>
+              <span>{money(quote.subtotal)}</span>
             </div>
             <div className="flex justify-between border-b border-line py-1.5 text-sm tabular-nums">
               <span className="text-muted">ITBIS (18%)</span>
-              <span>{fmt(t.itbis)}</span>
+              <span>{money(quote.tax_amount)}</span>
             </div>
             <div className="mt-1 flex justify-between border-t-2 border-ink pt-3 text-base font-semibold tabular-nums">
               <span>TOTAL GENERAL</span>
-              <span>{fmt(t.grandTotal)}</span>
+              <span>{money(quote.grand_total)}</span>
             </div>
           </div>
         </div>
