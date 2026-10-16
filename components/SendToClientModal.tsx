@@ -78,7 +78,7 @@ export default function SendToClientModal({
           Enviar {type === "quote" ? "Cotización" : "Factura"}
         </h2>
 
-        <p className="text-ink mb-6">
+        <p className="text-ink mb-6 break-words whitespace-normal">
           ¿Desea enviar este documento al cliente?
           Se adjuntará el PDF y se incluirá el enlace público.
         </p>

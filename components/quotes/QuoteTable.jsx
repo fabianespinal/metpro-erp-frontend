@@ -65,11 +65,13 @@ export default function QuoteTable({
             <td className={dt.tdRight}>
               <div className='flex items-center gap-2 justify-end'>
                 {sentMap[quote.quote_id] && <SentBadge />}
-                <SendToClientButton
-                  id={quote.quote_id}
-                  type="quote"
-                  onSent={() => setSentMap(prev => ({ ...prev, [quote.quote_id]: true }))}
-                />
+                {quote.status !== 'Draft' && (
+                  <SendToClientButton
+                    id={quote.quote_id}
+                    type="quote"
+                    onSent={() => setSentMap(prev => ({ ...prev, [quote.quote_id]: true }))}
+                  />
+                )}
                 <PrimaryActionButton
                   quote={quote}
                   onApprove={() => onApprove(quote.quote_id)}
