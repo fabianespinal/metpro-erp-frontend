@@ -1,9 +1,10 @@
 /**
  * Customer-facing routes. No login, no app Header.
- * Quote view and invoice view only. Any other route is protected.
+ * Public quote (by token) and invoice view only. Any other route is protected.
+ * /quotes/[id]/view is internal and requires login.
  */
 const PUBLIC_PATTERNS: RegExp[] = [
-  /^\/quotes\/[^/]+\/view\/?$/,
+  /^\/q\/[^/]+\/?$/,
   /^\/inv\/[^/]+\/?$/,
 ];
 

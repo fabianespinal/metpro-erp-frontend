@@ -115,15 +115,17 @@ export default function OverflowMenu({
               <span>Duplicate</span>
             </button>
 
-            <button
-              onClick={() => {
-                onEdit()
-                setIsOpen(false)
-              }}
-              className='w-full text-left px-4 py-2 hover:bg-canvas flex items-center gap-2'
-            >
-              <span>Edit</span>
-            </button>
+            {quote.status === 'Draft' && (
+              <button
+                onClick={() => {
+                  onEdit()
+                  setIsOpen(false)
+                }}
+                className='w-full text-left px-4 py-2 hover:bg-canvas flex items-center gap-2'
+              >
+                <span>Edit</span>
+              </button>
+            )}
 
             {isAdmin && (
               <>
