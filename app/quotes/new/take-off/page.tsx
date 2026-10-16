@@ -1,6 +1,5 @@
 "use client";
 
-import ErrorBanner from "@/components/ui/ErrorBanner";
 import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -13,23 +12,16 @@ import {
   type IncludedCharges,
   type TemplatePack,
 } from "@/lib/quotingApi";
-import {
-  canSave,
-  linesFromPack,
-  toQuoteItems,
-  type TakeOffLine,
-} from "@/lib/takeOffLines";
+import { linesFromPack } from "@/lib/takeOffLines";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { LineCard, takeOffInputClass } from "@/components/quotes/takeoff/LineCard";
-import { AddItemBar, type CatalogProduct } from "@/components/quotes/takeoff/AddItemBar";
-import { TotalsPanel, type ChargeKey } from "@/components/quotes/takeoff/TotalsPanel";
-import { useTotalsPreview } from "@/components/quotes/takeoff/useTotalsPreview";
+import QuoteForm from "@/components/quotes/QuoteForm";
+import ProductSelectionModal from "@/components/quotes/ProductSelectionModal";
 
 /**
  * Quoting v1, module 6c. Take-off: items from the template pack, the catalog,
- * or entered by hand. Totals come from the backend preview (no browser math).
+ * or entered by hand. Uses restored QuoteForm for full item builder.
  * Save creates a Draft and opens the draft editor (module 7).
  */
 
@@ -39,6 +31,15 @@ export default function TakeOffPage() {
       <TakeOffScreen />
     </Suspense>
   );
+}
+
+interface QuoteItem {
+  product_name: string;
+  quantity: number;
+  unit_price: number;
+  discount_type: "none" | "percentage" | "fixed";
+  discount_value: number;
+  item_type?: "product" | "service";
 }
 
 function TakeOffScreen() {
@@ -51,21 +52,21 @@ function TakeOffScreen() {
 
   const [pack, setPack] = useState<TemplatePack | null>(null);
   const [packError, setPackError] = useState<string | null>(null);
-  const [products, setProducts] = useState<CatalogProduct[]>([]);
-  const [lines, setLines] = useState<TakeOffLine[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [products, setProducts] = useState<any[]>([]);
+  const [quoteItems, setQuoteItems] = useState<QuoteItem[]>([]);
   const [charges, setCharges] = useState<IncludedCharges>(DEFAULT_INCLUDED_CHARGES);
   const [projectName, setProjectName] = useState("");
   const [notes, setNotes] = useState("");
   const [paymentTerms, setPaymentTerms] = useState("");
-
-  const { totals, totalsError } = useTotalsPreview(lines, charges);
+  const [validUntil, setValidUntil] = useState("");
+  const [productModalOpen, setProductModalOpen] = useState(false);
 
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-  // Non-blocking load problems (catalog, contact). Shown above the totals.
   const [catalogError, setCatalogError] = useState<string | null>(null);
 
-  // Load the template pack and seed lines from it.
+  // Load the template pack and seed items from it.
   useEffect(() => {
     if (!packId) return;
     let cancelled = false;
@@ -73,7 +74,18 @@ function TakeOffScreen() {
       .then((p) => {
         if (cancelled) return;
         setPack(p);
-        setLines(linesFromPack(p));
+        const lines = linesFromPack(p);
+        setQuoteItems(
+          lines
+            .filter((line) => line.include) // Only include selected items
+            .map((line) => ({
+              product_name: line.name || "",
+              quantity: line.quantity,
+              unit_price: line.unit_price,
+              discount_type: line.discount_type as "none" | "percentage" | "fixed",
+              discount_value: line.discount_value,
+            }))
+        );
       })
       .catch((err: Error) => {
         if (!cancelled) setPackError(err.message || "Could not load the template pack.");
@@ -88,7 +100,7 @@ function TakeOffScreen() {
     let cancelled = false;
     api("/products/")
       .then((data) => {
-        if (!cancelled) setProducts(Array.isArray(data) ? (data as CatalogProduct[]) : []);
+        if (!cancelled) setProducts(Array.isArray(data) ? data : []);
       })
       .catch((err: Error) => {
         if (cancelled) return;
@@ -100,27 +112,31 @@ function TakeOffScreen() {
     };
   }, []);
 
-  const includedCount = lines.filter((l) => l.include).length;
-  const saveAllowed = canSave(lines) && paramsOk && !saving;
+  const saveAllowed = quoteItems.length > 0 && paramsOk && !saving;
 
-  function updateLine(key: string, patch: Partial<TakeOffLine>) {
-    setLines((prev) => prev.map((l) => (l.key === key ? { ...l, ...patch } : l)));
+  function handleAddItem() {
+    setQuoteItems([
+      ...quoteItems,
+      { product_name: "", quantity: 1, unit_price: 0, discount_type: "none", discount_value: 0 },
+    ]);
   }
 
-  function removeLine(key: string) {
-    setLines((prev) => prev.filter((l) => l.key !== key));
+  function handleRemoveItem(index: number) {
+    setQuoteItems((prev) => prev.filter((_, i) => i !== index));
   }
 
-  function addLine(line: TakeOffLine) {
-    setLines((prev) => [...prev, line]);
+  function handleItemChange(index: number, patch: Partial<QuoteItem>) {
+    setQuoteItems((prev) =>
+      prev.map((item, i) => (i === index ? { ...item, ...patch } : item))
+    );
   }
 
-  function setChargePercentage(key: ChargeKey, value: number) {
-    setCharges((prev) => ({ ...prev, [`${key}_percentage`]: value }));
-  }
-
-  function toggleCharge(key: keyof IncludedCharges) {
+  function handleChargeToggle(key: keyof IncludedCharges) {
     setCharges((prev) => ({ ...prev, [key]: !prev[key] }));
+  }
+
+  function handleChargePercentageChange(key: string, value: number) {
+    setCharges((prev) => ({ ...prev, [`${key}_percentage`]: value }));
   }
 
   async function handleSave() {
@@ -134,8 +150,12 @@ function TakeOffScreen() {
         project_name: projectName.trim() || null,
         notes: notes.trim() || null,
         payment_terms: paymentTerms.trim() || null,
-        valid_until: null,
-        items: toQuoteItems(lines),
+        valid_until: validUntil || null,
+        items: quoteItems.map((item) => ({
+          ...item,
+          discount_type: item.discount_type || "none",
+          item_type: item.item_type || "product",
+        })),
         included_charges: charges,
       });
       router.push(`/quotes/${quote.quote_id}/edit`);
@@ -167,10 +187,10 @@ function TakeOffScreen() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6">
+    <div className="mx-auto w-full max-w-4xl px-4 py-6 sm:px-6">
       <PageHeader
-        title="Take-off"
-        subtitle={pack ? `Template: ${pack.name}` : "Select the items for this quote"}
+        title="Build Quote"
+        subtitle={pack ? `Template: ${pack.name}` : "Add items and charges"}
         actions={
           <Button asChild variant="outline">
             <Link href="/quotes/new">Change template</Link>
@@ -184,79 +204,69 @@ function TakeOffScreen() {
         </Alert>
       ) : null}
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
-        <div className="min-w-0 space-y-6">
-          <AddItemBar products={products} onAdd={addLine} />
+      {catalogError ? (
+        <Alert variant="destructive" className="mb-4">
+          <AlertDescription>{catalogError}</AlertDescription>
+        </Alert>
+      ) : null}
 
-          {lines.length === 0 ? (
-            <p className="text-sm text-muted">No items yet. Add items from the template or the catalog.</p>
-          ) : (
-            <ul className="space-y-3">
-              {lines.map((line) => (
-                <LineCard
-                  key={line.key}
-                  line={line}
-                  onChange={(patch) => updateLine(line.key, patch)}
-                  onRemove={line.source === "pack" ? undefined : () => removeLine(line.key)}
-                />
-              ))}
-            </ul>
-          )}
-        </div>
+      <QuoteForm
+        clients={[]} // Not used in this flow - client already selected
+        selectedClient={null}
+        setSelectedClient={() => {}}
+        selectedContact={null}
+        setSelectedContact={() => {}}
+        contacts={[]}
+        projectName={projectName}
+        setProjectName={setProjectName}
+        quoteItems={quoteItems}
+        handleAddItem={handleAddItem}
+        handleRemoveItem={handleRemoveItem}
+        handleItemChange={handleItemChange}
+        charges={charges}
+        setCharges={setCharges}
+        totals={null}
+        notes={notes}
+        setNotes={setNotes}
+        paymentTerms={paymentTerms}
+        setPaymentTerms={setPaymentTerms}
+        validUntil={validUntil}
+        setValidUntil={setValidUntil}
+        onSubmit={handleSave}
+        loading={saving}
+        onOpenProductModal={() => setProductModalOpen(true)}
+      />
 
-        <aside className="space-y-4 lg:sticky lg:top-6 lg:self-start">
-          <ErrorBanner message={catalogError} />
-          <TotalsPanel
-            charges={charges}
-            onToggleCharge={toggleCharge}
-            onChangePercentage={setChargePercentage}
-            totals={totals}
-            totalsError={totalsError}
-            includedCount={includedCount}
-          />
+      {saveError ? (
+        <Alert variant="destructive" className="mt-4">
+          <AlertDescription>{saveError}</AlertDescription>
+        </Alert>
+      ) : null}
 
-          <section className="rounded-lg border border-line bg-surface p-4 shadow-card space-y-3">
-            <h2 className="text-sm font-semibold text-ink">Quote details</h2>
-            <input
-              type="text"
-              value={projectName}
-              onChange={(e) => setProjectName(e.target.value)}
-              placeholder="Project name"
-              className={takeOffInputClass}
-              aria-label="Project name"
-            />
-            <textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Notes"
-              rows={3}
-              className={takeOffInputClass}
-              aria-label="Notes"
-            />
-            <input
-              type="text"
-              value={paymentTerms}
-              onChange={(e) => setPaymentTerms(e.target.value)}
-              placeholder="Payment terms"
-              className={takeOffInputClass}
-              aria-label="Payment terms"
-            />
-          </section>
-
-          {saveError ? (
-            <Alert variant="destructive">
-              <AlertDescription>{saveError}</AlertDescription>
-            </Alert>
-          ) : null}
-
-          <Button onClick={handleSave} disabled={!saveAllowed} className="w-full">
-            {saving ? "Saving draft…" : "Save draft"}
-          </Button>
-          {includedCount === 0 ? (
-            <p className="text-xs text-muted">Include at least one item to save.</p>
-          ) : null}
-        </aside>
+      <div className="mt-6 flex gap-2">
+        <Button onClick={handleSave} disabled={!saveAllowed}>
+          {saving ? "Saving draft…" : "Save draft"}
+        </Button>
+        <Button asChild variant="outline">
+          <Link href="/quotes/new">Cancel</Link>
+        </Button>
       </div>
+
+      <ProductSelectionModal
+        isOpen={productModalOpen}
+        onClose={() => setProductModalOpen(false)}
+        products={products}
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        onSelect={(product: any) => {
+          handleAddItem();
+          const newIndex = quoteItems.length;
+          handleItemChange(newIndex, {
+            product_name: product.product_name,
+            unit_price: product.unit_price || 0,
+          });
+          setProductModalOpen(false);
+        }}
+      />
     </div>
   );
 }
