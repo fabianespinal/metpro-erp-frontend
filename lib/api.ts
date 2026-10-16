@@ -80,6 +80,12 @@ api.put = (endpoint: string, data?: any) =>
     body: data instanceof FormData ? data : JSON.stringify(data),
   });
 
+api.patch = (endpoint: string, data?: any) =>
+  api(endpoint, {
+    method: "PATCH",
+    body: data instanceof FormData ? data : JSON.stringify(data),
+  });
+
 api.delete = (endpoint: string) =>
   api(endpoint, { method: "DELETE" });
 

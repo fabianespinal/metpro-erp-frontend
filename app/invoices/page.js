@@ -8,12 +8,23 @@ import RecordPaymentModal from "@/components/invoices/RecordPaymentModal";
 import SendToClientButton from "@/components/SendToClientButton";
 import SentBadge from "@/components/SentBadge";
 import { PageHeader } from "@/components/ui/page-header";
+import { useCurrentRole } from "@/lib/currentRole";
+
+// Mirrors the backend manual matrix. Paid is reached only by recording payments.
+const STATUS_LABELS = { Pending: "Pendiente", Paid: "Pagado", Cancelled: "Cancelado", Overdue: "Vencido" };
+const MANUAL_NEXT = {
+  Pending: ["Overdue", "Cancelled"],
+  Overdue: ["Pending", "Cancelled"],
+  Paid: [],
+  Cancelled: [],
+};
 
 export default function InvoicesPage() {
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("all");
   const [sentMap, setSentMap] = useState({});
+  const { isAdmin } = useCurrentRole();
 
   const [paymentOpen, setPaymentOpen] = useState(false);
   const [selectedInvoiceId, setSelectedInvoiceId] = useState(null);
@@ -104,7 +115,7 @@ export default function InvoicesPage() {
 
   async function handleUpdateStatus(invoiceId, newStatus) {
     try {
-      await api.put(`/invoices/${invoiceId}/status`, {
+      await api.patch(`/invoices/${invoiceId}/status`, {
         status: newStatus,
       });
 
@@ -214,16 +225,19 @@ export default function InvoicesPage() {
                       Pago
                     </button>
 
-                    <select
-                      className="border rounded px-2 py-1 text-sm"
-                      value={inv.status}
-                      onChange={(e) => handleUpdateStatus(inv.id, e.target.value)}
-                    >
-                      <option value="Pending">Pendiente</option>
-                      <option value="Paid">Pagado</option>
-                      <option value="Cancelled">Cancelado</option>
-                      <option value="Overdue">Vencido</option>
-                    </select>
+                    {isAdmin && (MANUAL_NEXT[inv.status] || []).length > 0 && (
+                      <select
+                        className="border rounded px-2 py-1 text-sm"
+                        value={inv.status}
+                        onChange={(e) => handleUpdateStatus(inv.id, e.target.value)}
+                        aria-label="Cambiar estado"
+                      >
+                        <option value={inv.status}>{STATUS_LABELS[inv.status] || inv.status}</option>
+                        {MANUAL_NEXT[inv.status].map((s) => (
+                          <option key={s} value={s}>{STATUS_LABELS[s]}</option>
+                        ))}
+                      </select>
+                    )}
                   </td>
                 </tr>
               ))}

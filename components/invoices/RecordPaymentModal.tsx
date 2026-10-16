@@ -26,6 +26,7 @@ const [form, setForm] = useState({
 });
 
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   if (!open) return null;
 
@@ -35,11 +36,17 @@ const [form, setForm] = useState({
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setError(null);
+    const amount = Number(form.amount);
+    if (!Number.isFinite(amount) || amount <= 0) {
+      setError("El monto debe ser mayor que cero.");
+      return;
+    }
     setLoading(true);
 
     try {
       await createPayment(invoiceId, {
-        amount: Number(form.amount),
+        amount,
         method: form.method,
         notes: form.notes,
         payment_date: form.payment_date,  // ← added
@@ -49,7 +56,9 @@ const [form, setForm] = useState({
       onSuccess();
       onClose();
     } catch (err) {
+      // Show the backend reason (e.g. overpayment, closed invoice). The payment was NOT recorded.
       console.error("Payment error:", err);
+      setError(err instanceof Error ? err.message : "No se pudo registrar el pago.");
       setLoading(false);
     }
   }
@@ -65,6 +74,8 @@ const [form, setForm] = useState({
             <input
               type="number"
               name="amount"
+              min="0.01"
+              step="0.01"
               value={form.amount}
               onChange={handleChange}
               className="border p-2 rounded w-full"
@@ -106,6 +117,12 @@ const [form, setForm] = useState({
               className="border p-2 rounded w-full"
             />
           </div>
+
+          {error && (
+            <p role="alert" className="rounded border border-red-200 bg-red-50 p-2 text-sm text-red-700">
+              {error}
+            </p>
+          )}
 
           <div className="flex justify-end gap-2 mt-4">
             <button
