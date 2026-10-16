@@ -1,20 +1,19 @@
 'use client'
-import { unwrapEnvelope } from "@/lib/api"
+import { api } from "@/lib/api"
 
-import { useEffect, useState, useSyncExternalStore } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { PageHeader } from '@/components/ui/page-header'
 import { useCurrentRole } from '@/lib/currentRole'
 
-const noopSubscribe = () => () => {}
+// Counts follow the quote and invoice status matrices.
+const PENDING_QUOTE_STATUSES = ['Draft', 'Final', 'Sent']
+const OPEN_INVOICE_STATUSES = ['Pending', 'Overdue']
 
 export default function DashboardPage() {
-  // Read once from localStorage. Server snapshot is 'User' for prerender.
-  const username = useSyncExternalStore(
-    noopSubscribe,
-    () => localStorage.getItem('username') || 'User',
-    () => 'User'
-  )
+  // Display name from GET /auth/me: full name, then username, then 'User'.
+  const [displayName, setDisplayName] = useState('User')
+  const [loadErrors, setLoadErrors] = useState([])
   const { isAdmin } = useCurrentRole()
   const [stats, setStats] = useState({
     clients: 0,
@@ -30,80 +29,71 @@ export default function DashboardPage() {
   const [recentInvoices, setRecentInvoices] = useState([])
   const [recentExpenses, setRecentExpenses] = useState([])
 
-  // Load dashboard data
+  // Display name
   useEffect(() => {
+    let cancelled = false
+    api('/auth/me')
+      .then((me) => {
+        if (!cancelled && me) setDisplayName(me.name || me.username || 'User')
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  // Load dashboard data. Each source loads independently; a failure is shown, not zeroed silently.
+  useEffect(() => {
+    let cancelled = false
     async function loadDashboardData() {
-      try {
-        const token = localStorage.getItem('token')
-        const API = process.env.NEXT_PUBLIC_API_URL
+      const sources = [
+        ['Clientes', '/clients/'],
+        ['Cotizaciones', '/quotes/'],
+        ['Facturas', '/invoices/'],
+        ['Gastos', '/expenses/'],
+      ]
+      const results = await Promise.allSettled(sources.map(([, path]) => api(path)))
+      if (cancelled) return
 
-        const [clientsRes, quotesRes, invoicesRes, expensesRes] = await Promise.all([
-          fetch(`${API}/clients`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`${API}/quotes`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`${API}/invoices`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`${API}/expenses`, { headers: { Authorization: `Bearer ${token}` } })
-        ])
+      const errors = []
+      const data = results.map((r, i) => {
+        if (r.status === 'fulfilled' && Array.isArray(r.value)) return r.value
+        errors.push(`${sources[i][0]}: ${r.status === 'rejected' ? r.reason?.message || 'error' : 'respuesta inválida'}`)
+        return null
+      })
+      setLoadErrors(errors)
+      const [clients, quotes, invoices, expenses] = data
 
-        const clients = unwrapEnvelope(await clientsRes.json())
-        const quotes = unwrapEnvelope(await quotesRes.json())
-        const invoices = unwrapEnvelope(await invoicesRes.json())
-        const expenses = unwrapEnvelope(await expensesRes.json())
+      const sumBy = (rows, f) => (rows || []).reduce((acc, x) => acc + Number(f(x) || 0), 0)
+      const currentMonth = new Date().toISOString().slice(0, 7)
 
-        // Compute stats
-        const activeClients = clients.length
-        const pendingQuotes = quotes.filter(
-          q => q.status !== 'Approved' && q.status !== 'Invoiced'
-        ).length
-        const openInvoices = invoices.filter(inv => inv.status !== 'Paid').length
+      const totalExpenses = sumBy(expenses, e => e.amount)
+      const monthlyExpenses = sumBy((expenses || []).filter(e => String(e.date || '').startsWith(currentMonth)), e => e.amount)
+      // Collected money: payments recorded on invoices, excluding cancelled ones.
+      const revenue = sumBy((invoices || []).filter(inv => inv.status !== 'Cancelled'), inv => inv.amount_paid)
 
-        // Expenses totals
-        const totalExpenses = expenses.reduce((sum, e) => sum + Number(e.amount), 0)
+      setStats({
+        clients: clients ? clients.length : 0,
+        pendingQuotes: (quotes || []).filter(q => PENDING_QUOTE_STATUSES.includes(q.status)).length,
+        openInvoices: (invoices || []).filter(inv => OPEN_INVOICE_STATUSES.includes(inv.status)).length,
+        totalExpenses,
+        monthlyExpenses,
+        revenue,
+        profit: revenue - totalExpenses
+      })
 
-        const currentMonth = new Date().toISOString().slice(0, 7)
-        const monthlyExpenses = expenses
-          .filter(e => e.date.startsWith(currentMonth))
-          .reduce((sum, e) => sum + Number(e.amount), 0)
-
-        // Revenue (paid invoices)
-        const revenue = invoices
-          .filter(inv => inv.status === 'Paid')
-          .reduce((sum, inv) => sum + Number(inv.total_amount || 0), 0)
-
-        const profit = revenue - totalExpenses
-
-        // Recent activity
-        const lastQuotes = [...quotes]
-          .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-          .slice(0, 5)
-
-        const lastInvoices = [...invoices]
-          .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-          .slice(0, 5)
-
-        const lastExpenses = [...expenses]
-          .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-          .slice(0, 5)
-
-        setStats({
-          clients: activeClients,
-          pendingQuotes,
-          openInvoices,
-          totalExpenses,
-          monthlyExpenses,
-          revenue,
-          profit
-        })
-
-        setRecentQuotes(lastQuotes)
-        setRecentInvoices(lastInvoices)
-        setRecentExpenses(lastExpenses)
-
-      } catch (err) {
-        console.error('Dashboard load error:', err)
-      }
+      const recent = (rows) => [...(rows || [])]
+        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+        .slice(0, 5)
+      setRecentQuotes(recent(quotes))
+      setRecentInvoices(recent(invoices))
+      setRecentExpenses(recent(expenses))
     }
 
     loadDashboardData()
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   const modules = [
@@ -216,8 +206,17 @@ export default function DashboardPage() {
       <PageHeader
         title="Dashboard"
         subtitle="Metpro ERP System"
-        actions={<span className="text-sm font-medium text-ink">Welcome, {username}</span>}
+        actions={<span className="text-sm font-medium text-ink">Welcome, {displayName}</span>}
       />
+
+      {loadErrors.length > 0 && (
+        <div role="alert" className="mb-6 rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          No se pudieron cargar algunos datos; las cifras pueden estar incompletas.
+          <ul className="mt-1 list-disc pl-5">
+            {loadErrors.map((e) => <li key={e}>{e}</li>)}
+          </ul>
+        </div>
+      )}
 
       {/* MODULE GRID */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -270,7 +269,7 @@ export default function DashboardPage() {
       <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
 
         <div className="bg-surface border border-line rounded-xl p-6 shadow-card">
-          <div className="text-sm text-muted mb-1">Ingresos (Facturas Pagadas)</div>
+          <div className="text-sm text-muted mb-1">Cobrado (pagos recibidos)</div>
           <div className="text-3xl font-bold text-emerald-600">${stats.revenue.toFixed(2)}</div>
         </div>
 
@@ -280,7 +279,7 @@ export default function DashboardPage() {
         </div>
 
         <div className="bg-surface border border-line rounded-xl p-6 shadow-card">
-          <div className="text-sm text-muted mb-1">Ganancia Neta</div>
+          <div className="text-sm text-muted mb-1">Ganancia Neta (cobrado − gastos)</div>
           <div className={`text-3xl font-bold ${stats.profit >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
             ${stats.profit.toFixed(2)}
           </div>

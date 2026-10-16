@@ -1,5 +1,6 @@
 'use client'
-import { unwrapEnvelope } from "@/lib/api"
+import ErrorBanner from "@/components/ui/ErrorBanner";
+import { unwrapEnvelope, checkUnauthorized } from "@/lib/api"
 import { PageHeader } from "@/components/ui/page-header"
 import { Button } from "@/components/ui/button"
 import { fb } from "@/components/ui/filter-bar"
@@ -9,6 +10,7 @@ import { useState, useEffect } from 'react'
 
 export default function ReportsPage() {
   const [reportType, setReportType] = useState('quotes-summary')
+  const [loadError, setLoadError] = useState(null)
   const [filters, setFilters] = useState({
     start_date: '',
     end_date: '',
@@ -43,9 +45,13 @@ export default function ReportsPage() {
       if (res.ok) {
         const data = unwrapEnvelope(await res.json())
         setClients(Array.isArray(data) ? data : [])
+      } else {
+        checkUnauthorized(res)
+        setLoadError(`No se pudieron cargar los clientes (error ${res.status}).`)
       }
     } catch (error) {
       console.error('Fetch clients error:', error)
+      setLoadError(`No se pudieron cargar los clientes: ${error.message}`)
     }
   }
 
@@ -74,6 +80,7 @@ export default function ReportsPage() {
       )
 
       if (!res.ok) {
+        checkUnauthorized(res)
         const errText = await res.text()
         throw new Error(`Server error: ${errText || res.status}`)
       }
@@ -138,6 +145,7 @@ export default function ReportsPage() {
   return (
     <div className="w-full px-4 lg:px-8 py-8 text-ink">
       <PageHeader title="Reportes" subtitle="Análisis de cotizaciones, ingresos y actividad de clientes" />
+      <ErrorBanner message={loadError} />
 
       {/* Report Type Selector */}
       <div className={`${fb.bar} mb-6 items-center justify-between`}>

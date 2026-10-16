@@ -1,5 +1,6 @@
 'use client';
 
+import ErrorBanner from "@/components/ui/ErrorBanner";
 import { useState, useEffect } from "react";
 import ExpenseForm from "@/components/expenses/ExpenseForm";
 import ExpensesTable from "@/components/expenses/ExpensesTable";
@@ -11,6 +12,7 @@ import { PageHeader } from "@/components/ui/page-header";
 
 export default function ExpensesPage() {
   const [clients, setClients] = useState([]);
+  const [loadError, setLoadError] = useState(null)
   const [expenses, setExpenses] = useState([]);
   const [filtered, setFiltered] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -30,6 +32,7 @@ export default function ExpensesPage() {
     } catch (err) {
       console.error("Error loading clients:", err);
       setClients([]);
+      setLoadError(`No se pudieron cargar los clientes: ${err.message}`);
     }
   }
 
@@ -45,6 +48,7 @@ export default function ExpensesPage() {
       console.error("Error loading expenses:", err);
       setExpenses([]);
       setFiltered([]);
+      setLoadError(`No se pudieron cargar los gastos: ${err.message}`);
     }
   }
 
@@ -166,6 +170,7 @@ export default function ExpensesPage() {
   return (
     <div className="w-full px-4 lg:px-8 py-6">
       <PageHeader title="Expenses" />
+      <ErrorBanner message={loadError} />
 
       <ExpenseForm
         clients={clients}

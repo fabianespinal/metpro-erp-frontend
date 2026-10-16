@@ -1,4 +1,5 @@
 'use client'
+import ErrorBanner from "@/components/ui/ErrorBanner";
 import { useState, useEffect } from 'react'
 import { api } from "@/lib/api"
 import PDFPreviewModal from '@/components/quotes/PDFPreviewModal'
@@ -27,6 +28,8 @@ export default function QuotesPage() {
   const router = useRouter()
 
   const [clients, setClients] = useState([])
+
+  const [loadError, setLoadError] = useState(null)
   const [quotes, setQuotes] = useState([])
   const [invoices, setInvoices] = useState([])
   const [products, setProducts] = useState([])
@@ -51,6 +54,7 @@ export default function QuotesPage() {
   } catch (error) {
     console.error("Failed to fetch clients:", error);
     setClients([]);
+    setLoadError(`No se pudieron cargar los clientes: ${error.message}`);
   }
 }
 
@@ -61,6 +65,7 @@ export default function QuotesPage() {
     } catch (error) {
       console.error('Failed to fetch quotes:', error)
       setQuotes([])
+      setLoadError(`No se pudieron cargar las cotizaciones: ${error.message}`)
     }
   }
 
@@ -71,6 +76,7 @@ export default function QuotesPage() {
     } catch (error) {
       console.error('Failed to fetch invoices:', error)
       setInvoices([])
+      setLoadError(`No se pudieron cargar las facturas: ${error.message}`)
     }
   }
 
@@ -81,6 +87,7 @@ export default function QuotesPage() {
     } catch (error) {
       console.error('Failed to fetch products:', error)
       setProducts([])
+      setLoadError(`No se pudieron cargar los productos: ${error.message}`)
     }
   }
 
@@ -212,6 +219,7 @@ export default function QuotesPage() {
   return (
   <div className="w-full px-4 lg:px-8 py-6">
     <PageHeader title="Cotizar" />
+    <ErrorBanner message={loadError} />
 
     <div className="bg-surface rounded-lg shadow p-6">
       <div className="flex justify-between items-center mb-6">

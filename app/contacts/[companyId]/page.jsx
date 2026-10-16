@@ -1,5 +1,6 @@
 "use client";
 
+import ErrorBanner from "@/components/ui/ErrorBanner";
 import { useParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import { api } from "@/lib/api";
@@ -12,6 +13,8 @@ export default function ContactsPage() {
   const { companyId } = useParams();
 
   const [contacts, setContacts] = useState([]);
+
+  const [loadError, setLoadError] = useState(null)
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingContact, setEditingContact] = useState(null);
@@ -23,6 +26,7 @@ export default function ContactsPage() {
         setContacts(Array.isArray(res) ? res : []);
       } catch (err) {
         console.error("Error loading contacts:", err);
+        setLoadError(`No se pudieron cargar los contactos: ${err.message}`);
       } finally {
         setLoading(false);
       }
@@ -64,6 +68,7 @@ export default function ContactsPage() {
           </Button>
         }
       />
+      <ErrorBanner message={loadError} />
 
       {loading ? (
         <div>Cargando contactos...</div>

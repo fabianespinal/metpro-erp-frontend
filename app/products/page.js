@@ -1,4 +1,5 @@
 'use client'
+import ErrorBanner from "@/components/ui/ErrorBanner";
 import { dt } from "@/components/ui/data-table";
 
 import { useState, useEffect } from 'react'
@@ -11,6 +12,7 @@ import { fb } from '@/components/ui/filter-bar'
 export default function ProductsPage() {
   const { isAdmin } = useCurrentRole()
   const [products, setProducts] = useState([])
+  const [loadError, setLoadError] = useState(null)
   const [newProduct, setNewProduct] = useState({ name: '', description: '', unit_price: 0 })
   const [editingProduct, setEditingProduct] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -29,6 +31,7 @@ export default function ProductsPage() {
     } catch (error) {
       console.error('Failed to fetch products:', error)
       setProducts([])
+      setLoadError(`No se pudieron cargar los productos: ${error.message}`)
     }
   }
 
@@ -122,6 +125,7 @@ const handleUpdateProduct = async (e) => {
   return (
     <div className="w-full px-4 lg:px-8 py-8">
       <PageHeader title="Productos" />
+      <ErrorBanner message={loadError} />
 
       {/* Import CSV */}
       <div className='rounded-lg border border-line bg-surface p-6 shadow-card mb-8'>

@@ -1,5 +1,6 @@
 'use client'
-import { unwrapEnvelope } from "@/lib/api"
+import ErrorBanner from "@/components/ui/ErrorBanner";
+import { unwrapEnvelope, checkUnauthorized } from "@/lib/api"
 
 import { useState, useEffect } from 'react'
 import StatusPill from '@/components/ui/StatusPill'
@@ -41,6 +42,7 @@ const STATUS_OPTIONS = [
 
 export default function ProjectsPage() {
   const [projects, setProjects] = useState([])
+  const [loadError, setLoadError] = useState(null)
   const [clients, setClients] = useState([])
   const [newProject, setNewProject] = useState({
     client_id: '',
@@ -84,6 +86,8 @@ export default function ProjectsPage() {
 
       if (!res.ok) {
         console.error('Failed to fetch projects:', res.status)
+        checkUnauthorized(res)
+        setLoadError(`No se pudieron cargar los proyectos (error ${res.status}).`)
         return
       }
 
@@ -106,6 +110,7 @@ export default function ProjectsPage() {
 
     } catch (err) {
       console.error('Fetch projects error:', err)
+      setLoadError(`No se pudieron cargar los proyectos: ${err.message}`)
     }
   }
 
@@ -121,9 +126,13 @@ export default function ProjectsPage() {
 
       if (res.ok) {
         setClients(unwrapEnvelope(await res.json()))
+      } else {
+        checkUnauthorized(res)
+        setLoadError(`No se pudieron cargar los clientes (error ${res.status}).`)
       }
     } catch (err) {
       console.error('Fetch clients error:', err)
+      setLoadError(`No se pudieron cargar los clientes: ${err.message}`)
     }
   }
 
@@ -298,9 +307,15 @@ export default function ProjectsPage() {
 
       if (res.ok) {
         await fetchProjects()
+      } else {
+        checkUnauthorized(res)
+        let detail = `error ${res.status}`
+        try { detail = (await res.json()).detail || detail } catch {}
+        alert(`No se pudo eliminar el proyecto: ${detail}`)
       }
     } catch (err) {
       console.error('Delete project error:', err)
+      alert(`No se pudo eliminar el proyecto: ${err.message}`)
     }
   }
 
@@ -403,6 +418,7 @@ export default function ProjectsPage() {
   return (
     <div className="w-full px-4 lg:px-8 py-6">
       <PageHeader title="Gestion Proyectos" />
+      <ErrorBanner message={loadError} />
 
       {/* ============================================================
            FILTER DROPDOWN (BACKEND-SAFE VALUES)

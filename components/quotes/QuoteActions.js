@@ -1,4 +1,4 @@
-import { unwrapEnvelope } from "@/lib/api";
+import { unwrapEnvelope, checkUnauthorized } from "@/lib/api";
 /**
  * QuoteActions.js
  * Centralized module for all quote-related API operations
@@ -26,10 +26,12 @@ function getHeaders(token, isJSON) {
  */
 async function handleResponse(response) {
   if (!response.ok) {
+    checkUnauthorized(response);
     let errorMessage = "Request failed with status " + response.status;
     try {
       const errorData = await response.json();
-      errorMessage = errorData.message || errorData.error || errorMessage;
+      // Backend error model is {"detail": ..., "code": ...}.
+      errorMessage = errorData.detail || errorData.message || errorData.error || errorMessage;
     } catch (e) {
       // Response wasn't JSON, use default message
     }
