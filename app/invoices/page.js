@@ -181,6 +181,11 @@ export default function InvoicesPage() {
 
                   <td className={dt.td}>
                     <StatusPill status={inv.status} />
+                    {inv.created_by_name && (
+                      <div className="text-xs text-muted mt-1">
+                        Creado por {inv.created_by_name}
+                      </div>
+                    )}
                   </td>
 
                   <td className={dt.tdRight}>

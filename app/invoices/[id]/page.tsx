@@ -24,6 +24,7 @@ interface Invoice {
   total_amount: number;
   amount_paid: number;
   amount_due: number;
+  created_by_name?: string | null;
   payments: Payment[];
 }
 
@@ -82,6 +83,11 @@ export default function InvoiceDetailPage() {
           <div>
             <p className="text-muted">Estado</p>
             <StatusPill status={invoice.status} />
+          </div>
+
+          <div>
+            <p className="text-muted">Creado por</p>
+            <p className="font-medium">{invoice.created_by_name || "—"}</p>
           </div>
         </div>
 
