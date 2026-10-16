@@ -34,7 +34,7 @@ import {
 } from "@/components/ui/dialog";
 import { LineCard, takeOffInputClass } from "@/components/quotes/takeoff/LineCard";
 import { AddItemBar, type CatalogProduct } from "@/components/quotes/takeoff/AddItemBar";
-import { TotalsPanel } from "@/components/quotes/takeoff/TotalsPanel";
+import { TotalsPanel, type ChargeKey } from "@/components/quotes/takeoff/TotalsPanel";
 import { useTotalsPreview } from "@/components/quotes/takeoff/useTotalsPreview";
 
 /**
@@ -197,6 +197,10 @@ function DraftEditor() {
     setSaveMessage(null);
   }
 
+  function setChargePercentage(key: ChargeKey, value: number) {
+    setCharges((prev) => (prev ? { ...prev, [`${key}_percentage`]: value } : prev));
+  }
+
   function toggleCharge(key: keyof IncludedCharges) {
     setCharges((prev) => (prev ? { ...prev, [key]: !prev[key] } : prev));
     setSaveMessage(null);
@@ -345,6 +349,7 @@ function DraftEditor() {
           <TotalsPanel
             charges={charges}
             onToggleCharge={toggleCharge}
+            onChangePercentage={setChargePercentage}
             totals={totals}
             totalsError={totalsError}
             includedCount={includedCount}

@@ -250,6 +250,11 @@ export default function QuotesPage() {
           onEdit={handleEdit}
           onDelete={handleDelete}
           onApprove={(id) => handleUpdateStatus(id, "Approved")}
+          onReject={(id) => {
+            if (confirm("Reject this quote? Rejected quotes cannot be reopened; use Duplicate to rework.")) {
+              handleUpdateStatus(id, "Rejected")
+            }
+          }}
           onConvertToInvoice={handleConvertToInvoice}
           onViewInvoice={handleViewInvoice}
           sentMap={sentMap}

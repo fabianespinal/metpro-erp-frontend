@@ -10,6 +10,7 @@ export default function OverflowMenu({
   onEdit,
   onDelete,
   onApprove,
+  onReject,
   onConvertToInvoice,
 }) {
   const [isOpen, setIsOpen] = useState(false)
@@ -67,7 +68,8 @@ export default function OverflowMenu({
               <span>Download PDF</span>
             </button>
 
-            {quote.status === 'Draft' && (
+            {/* Mirrors the backend matrix: approve from Final or Sent; reject from Final, Sent or Approved (no invoice). */}
+            {(quote.status === 'Final' || quote.status === 'Sent') && (
               <button
                 onClick={() => {
                   onApprove()
@@ -76,6 +78,18 @@ export default function OverflowMenu({
                 className='w-full text-left px-4 py-2 hover:bg-canvas flex items-center gap-2 text-emerald-700'
               >
                 <span>Approve Quote</span>
+              </button>
+            )}
+
+            {onReject && ['Final', 'Sent', 'Approved'].includes(quote.status) && !quote.has_invoice && (
+              <button
+                onClick={() => {
+                  onReject()
+                  setIsOpen(false)
+                }}
+                className='w-full text-left px-4 py-2 hover:bg-canvas flex items-center gap-2 text-red-600'
+              >
+                <span>Reject Quote</span>
               </button>
             )}
 
@@ -127,7 +141,8 @@ export default function OverflowMenu({
               </button>
             )}
 
-            {isAdmin && (
+            {/* Only Draft or Rejected quotes without an invoice can be deleted (backend rule). */}
+            {isAdmin && (quote.status === 'Draft' || quote.status === 'Rejected') && !quote.has_invoice && (
               <>
                 <hr className='my-1' />
 

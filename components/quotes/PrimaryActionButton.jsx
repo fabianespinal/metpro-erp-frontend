@@ -1,6 +1,6 @@
 export default function PrimaryActionButton({ quote, onApprove, onConvert, onViewInvoice }) {
-  // Approve only after finalize. A Draft has no public_token and cannot be approved.
-  if (quote.status === 'Final') {
+  // Approve after finalize: Final or Sent. A Draft has no public_token and cannot be approved.
+  if (quote.status === 'Final' || quote.status === 'Sent') {
     return (
       <button
         onClick={onApprove}
