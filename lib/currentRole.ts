@@ -32,7 +32,8 @@ export function fetchCurrentRole(): Promise<string | null> {
 }
 
 export function isAdminRole(role: string | null | undefined): boolean {
-  return role === "admin";
+  // superadmin passes every admin gate. Backend require_role("admin") also accepts superadmin.
+  return role === "admin" || role === "superadmin";
 }
 
 export function useCurrentRole() {

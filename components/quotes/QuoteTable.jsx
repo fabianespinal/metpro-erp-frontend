@@ -55,11 +55,9 @@ export default function QuoteTable({
 
             <td className={dt.td}>
               <StatusPill status={quote.status} />
-              {quote.created_by_name && (
-                <div className='text-xs text-muted mt-1'>
-                  Created by {quote.created_by_name}
-                </div>
-              )}
+              <div className='text-xs text-muted mt-1'>
+                Created by {quote.created_by_name || '—'}
+              </div>
               {quote.has_invoice && (
                 <div className='text-xs text-accent mt-1'>
                   Invoice: {quote.invoice_number}

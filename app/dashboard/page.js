@@ -4,6 +4,7 @@ import { unwrapEnvelope } from "@/lib/api"
 import { useEffect, useState, useSyncExternalStore } from 'react'
 import Link from 'next/link'
 import { PageHeader } from '@/components/ui/page-header'
+import { useCurrentRole } from '@/lib/currentRole'
 
 const noopSubscribe = () => () => {}
 
@@ -14,6 +15,7 @@ export default function DashboardPage() {
     () => localStorage.getItem('username') || 'User',
     () => 'User'
   )
+  const { isAdmin } = useCurrentRole()
   const [stats, setStats] = useState({
     clients: 0,
     pendingQuotes: 0,
@@ -191,6 +193,22 @@ export default function DashboardPage() {
     }
   ]
 
+  // Admin-only modules. Shown only when isAdmin is true.
+  const adminModules = [
+    {
+      name: 'Users',
+      description: 'Gestionar usuarios, contraseñas y accesos',
+      href: '/users',
+      icon: (
+        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+            d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+          />
+        </svg>
+      )
+    }
+  ]
+
   return (
     <div className="text-ink">
 
@@ -203,7 +221,7 @@ export default function DashboardPage() {
 
       {/* MODULE GRID */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {modules.map((module) => (
+        {[...modules, ...(isAdmin ? adminModules : [])].map((module) => (
           <Link
             key={module.name}
             href={module.href}
