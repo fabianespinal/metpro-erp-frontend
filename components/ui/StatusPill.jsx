@@ -17,12 +17,14 @@ const DANGER = "bg-red-50 text-red-700 ring-red-200";
 
 const STATUS_STYLES = {
   // PROJECT STATUSES
+  pending: NEUTRAL,
   planning: NEUTRAL,
   active: ACCENT,
   in_progress: ACCENT,
   completed: SUCCESS,
   on_hold: WARNING,
   cancelled: DANGER,
+  overdue: DANGER,
 
   // INVOICE STATUSES
   draft: NEUTRAL,
@@ -32,13 +34,15 @@ const STATUS_STYLES = {
 };
 
 const STATUS_LABELS = {
-  // PROJECT LABELS
-  planning: "Planning",
-  active: "Active",
-  in_progress: "In Progress",
-  completed: "Completed",
-  on_hold: "On Hold",
-  cancelled: "Cancelled",
+  // PROJECT LABELS (Spanish)
+  pending: "Pendiente",
+  planning: "Planificación",
+  active: "Activo",
+  in_progress: "En progreso",
+  completed: "Completado",
+  on_hold: "En pausa",
+  cancelled: "Cancelado",
+  overdue: "Vencido",
 
   // INVOICE LABELS
   draft: "Draft",
