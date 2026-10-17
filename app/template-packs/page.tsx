@@ -65,14 +65,14 @@ export default function TemplatePacksPage() {
 
     setCreating(true);
     try {
-      const newPack = await api("/template-packs", {
+      const newPack = (await api("/template-packs", {
         method: "POST",
         body: JSON.stringify({
           name: formData.name,
           description: formData.description || null,
           categories: [],
         }),
-      });
+      })) as TemplatePack;
       setPacks([...packs, newPack]);
       setFormData({ name: "", description: "" });
       setShowForm(false);
@@ -104,7 +104,7 @@ export default function TemplatePacksPage() {
         title="Template Packs"
         subtitle="Create and manage quote template packs"
         actions={
-          <Button onClick={() => setShowForm(!showForm)} variant="primary">
+          <Button onClick={() => setShowForm(!showForm)}>
             {showForm ? "Cancel" : "Create Pack"}
           </Button>
         }
