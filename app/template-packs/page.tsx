@@ -104,8 +104,8 @@ export default function TemplatePacksPage() {
         title="Template Packs"
         subtitle="Create and manage quote template packs"
         actions={
-          <Button onClick={() => setShowForm(!showForm)}>
-            {showForm ? "Cancel" : "Create Pack"}
+          <Button asChild>
+            <Link href="/template-packs/new">Create pack</Link>
           </Button>
         }
       />
@@ -173,6 +173,9 @@ export default function TemplatePacksPage() {
             <div key={pack.id} className="flex items-center justify-between rounded-lg border border-line bg-surface p-4">
               <div>
                 <h4 className="font-semibold text-ink">{pack.name}</h4>
+                {pack.item_count === 0 && (
+                  <p className="text-xs font-medium text-amber-700">Empty pack. Quotes from it start with no items.</p>
+                )}
                 {pack.description && <p className="text-sm text-muted">{pack.description}</p>}
                 <p className="mt-1 text-xs text-muted">
                   {pack.category_count} categories · {pack.item_count} items
@@ -180,7 +183,7 @@ export default function TemplatePacksPage() {
               </div>
 
               <div className="flex gap-2">
-                <Link href={`/template-packs/${pack.id}`}>
+                <Link href={`/template-packs/${pack.id}/edit`}>
                   <Button variant="outline" size="sm">
                     Edit
                   </Button>
