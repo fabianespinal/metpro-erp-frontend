@@ -6,14 +6,15 @@
  * Backend contract (template_packs/models.py, PackIn):
  *   { name, description, categories: [{ name, sort_order, items: [{ product_id, default_qty, optional, sort_order }] }] }
  * PUT replaces the whole category/item tree in one transaction.
- * Unit price is read from the product catalog. The pack does not store a price override.
+ * Items may carry pack_price_override (null = catalog price). The pack may carry up to
+ * MAX_PACK_CHARGES percentage charges, copied into a new quote's dynamic charges.
  * Writes are admin-only (enforced by the backend).
  */
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
-import { getTemplatePack } from "@/lib/quotingApi";
+import { getTemplatePack, MAX_PACK_CHARGES } from "@/lib/quotingApi";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
@@ -29,6 +30,21 @@ interface DraftItem {
   product_id: number;
   default_qty: number;
   optional: boolean;
+  /** Raw input text. Empty = no override (catalog price). */
+  override: string;
+}
+
+interface DraftCharge {
+  key: string;
+  name: string;
+  value: number;
+  enabled_by_default: boolean;
+}
+
+/** Parsed override, or null when blank. NaN when the text is not a valid number. */
+function parseOverride(text: string): number | null {
+  if (text.trim() === "") return null;
+  return Number(text);
 }
 
 interface DraftCategory {
@@ -61,6 +77,7 @@ export default function TemplatePackBuilder({ packId }: { packId?: number }) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [categories, setCategories] = useState<DraftCategory[]>([]);
+  const [charges, setCharges] = useState<DraftCharge[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
 
   const [loading, setLoading] = useState(true);
@@ -95,7 +112,16 @@ export default function TemplatePackBuilder({ packId }: { packId?: number }) {
                 product_id: i.product_id,
                 default_qty: Number(i.default_qty),
                 optional: i.optional,
+                override: i.pack_price_override == null ? "" : String(i.pack_price_override),
               })),
+            }))
+          );
+          setCharges(
+            (pack.charges ?? []).map((c) => ({
+              key: newKey("chg"),
+              name: c.name,
+              value: Number(c.value),
+              enabled_by_default: c.enabled_by_default,
             }))
           );
         }
@@ -132,6 +158,12 @@ export default function TemplatePackBuilder({ packId }: { packId?: number }) {
     return list.slice(0, 50);
   }, [products, search]);
 
+  const effectivePrice = (item: DraftItem): number => {
+    const o = parseOverride(item.override);
+    if (o !== null && !Number.isNaN(o)) return o;
+    return Number(productById.get(item.product_id)?.unit_price ?? 0);
+  };
+
   const totals = useMemo(() => {
     let required = 0;
     let optional = 0;
@@ -139,13 +171,13 @@ export default function TemplatePackBuilder({ packId }: { packId?: number }) {
     for (const c of categories) {
       for (const i of c.items) {
         itemCount += 1;
-        const price = Number(productById.get(i.product_id)?.unit_price ?? 0);
-        const line = price * i.default_qty;
+        const line = effectivePrice(i) * i.default_qty;
         if (i.optional) optional += line;
         else required += line;
       }
     }
     return { required, optional, itemCount };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [categories, productById]);
 
   // ---------- mutations ----------
@@ -174,7 +206,10 @@ export default function TemplatePackBuilder({ packId }: { packId?: number }) {
     update(
       categories.map((c) =>
         c.key === catKey
-          ? { ...c, items: [...c.items, { key: newKey("item"), product_id: productId, default_qty: 1, optional: false }] }
+          ? {
+              ...c,
+              items: [...c.items, { key: newKey("item"), product_id: productId, default_qty: 1, optional: false, override: "" }],
+            }
           : c
       )
     );
@@ -195,6 +230,20 @@ export default function TemplatePackBuilder({ packId }: { packId?: number }) {
   const moveItem = (catKey: string, index: number, delta: number) =>
     update(categories.map((c) => (c.key === catKey ? { ...c, items: move(c.items, index, delta) } : c)));
 
+  const addCharge = () => {
+    if (charges.length >= MAX_PACK_CHARGES) return;
+    setCharges([...charges, { key: newKey("chg"), name: "", value: 0, enabled_by_default: true }]);
+    setDirty(true);
+  };
+  const patchCharge = (key: string, patch: Partial<DraftCharge>) => {
+    setCharges(charges.map((c) => (c.key === key ? { ...c, ...patch } : c)));
+    setDirty(true);
+  };
+  const removeCharge = (key: string) => {
+    setCharges(charges.filter((c) => c.key !== key));
+    setDirty(true);
+  };
+
   // ---------- validation + save ----------
   const validationError = useMemo(() => {
     if (!name.trim()) return "Pack name is required.";
@@ -202,10 +251,20 @@ export default function TemplatePackBuilder({ packId }: { packId?: number }) {
       if (!c.name.trim()) return "Every category needs a name.";
       for (const i of c.items) {
         if (!(i.default_qty > 0)) return `Quantity must be greater than 0 in "${c.name}".`;
+        const o = parseOverride(i.override);
+        if (o !== null && (Number.isNaN(o) || o < 0)) {
+          return `Override price must be a number of 0 or more in "${c.name}".`;
+        }
       }
     }
+    if (charges.length > MAX_PACK_CHARGES) return `At most ${MAX_PACK_CHARGES} pack charges.`;
+    for (const ch of charges) {
+      if (!ch.name.trim()) return "Every pack charge needs a name.";
+      if (ch.name.trim().length > 60) return "Charge names are limited to 60 characters.";
+      if (!(ch.value >= 0 && ch.value <= 100)) return `Charge "${ch.name}" must be between 0 and 100%.`;
+    }
     return null;
-  }, [name, categories]);
+  }, [name, categories, charges]);
 
   const handleSave = async () => {
     if (validationError) {
@@ -225,7 +284,15 @@ export default function TemplatePackBuilder({ packId }: { packId?: number }) {
           default_qty: i.default_qty,
           optional: i.optional,
           sort_order: ii,
+          pack_price_override: parseOverride(i.override),
         })),
+      })),
+      charges: charges.map((ch, i) => ({
+        name: ch.name.trim(),
+        type: "percentage" as const,
+        value: ch.value,
+        enabled_by_default: ch.enabled_by_default,
+        sort_order: i,
       })),
     };
     try {
@@ -359,7 +426,8 @@ export default function TemplatePackBuilder({ packId }: { packId?: number }) {
                   <thead>
                     <tr className="border-b border-line text-left text-xs uppercase text-muted">
                       <th className="py-2 pr-2">Product</th>
-                      <th className="py-2 pr-2 text-right">Unit price</th>
+                      <th className="py-2 pr-2 text-right">Catalog price</th>
+                      <th className="py-2 pr-2 text-right">Override price</th>
                       <th className="py-2 pr-2 text-right">Default qty</th>
                       <th className="py-2 pr-2 text-right">Line</th>
                       <th className="py-2 pr-2 text-center">Optional</th>
@@ -369,13 +437,32 @@ export default function TemplatePackBuilder({ packId }: { packId?: number }) {
                   <tbody className="divide-y divide-line">
                     {cat.items.map((item, ii) => {
                       const product = productById.get(item.product_id);
-                      const price = Number(product?.unit_price ?? 0);
+                      const catalog = Number(product?.unit_price ?? 0);
+                      const price = effectivePrice(item);
+                      const overridden = parseOverride(item.override) !== null;
                       return (
                         <tr key={item.key}>
                           <td className="py-2 pr-2">
                             {product ? product.name : <span className="text-red-600">Missing product #{item.product_id}</span>}
                           </td>
-                          <td className="py-2 pr-2 text-right">${money(price)}</td>
+                          <td className={`py-2 pr-2 text-right ${overridden ? "text-muted line-through" : ""}`}>
+                            ${money(catalog)}
+                          </td>
+                          <td className="py-2 pr-2 text-right">
+                            <input
+                              type="number"
+                              min={0}
+                              step="0.01"
+                              inputMode="decimal"
+                              placeholder={money(catalog)}
+                              className="w-28 rounded-md border border-line bg-canvas px-2 py-1 text-right text-sm"
+                              value={item.override}
+                              onChange={(e) => patchItem(cat.key, item.key, { override: e.target.value })}
+                              aria-label="Override price (blank uses catalog price)"
+                              title="Blank uses the catalog price"
+                              disabled={saving}
+                            />
+                          </td>
                           <td className="py-2 pr-2 text-right">
                             <input
                               type="number"
@@ -485,10 +572,77 @@ export default function TemplatePackBuilder({ packId }: { packId?: number }) {
         ))}
       </section>
 
+      {/* PACK CHARGES */}
+      <section className="rounded-lg border border-line bg-surface p-5">
+        <div className="mb-3 flex items-center justify-between">
+          <div>
+            <h2 className="text-base font-semibold text-ink">
+              Pack charges ({charges.length}/{MAX_PACK_CHARGES})
+            </h2>
+            <p className="text-xs text-muted">
+              Percent of items after discount. Copied into the quote&apos;s dynamic charges when a quote starts from this pack.
+            </p>
+          </div>
+          <Button variant="outline" size="sm" onClick={addCharge} disabled={saving || charges.length >= MAX_PACK_CHARGES}>
+            Add charge
+          </Button>
+        </div>
+        {charges.length === 0 ? (
+          <p className="text-sm text-muted">No pack charges.</p>
+        ) : (
+          <div className="space-y-2">
+            {charges.map((ch) => (
+              <div key={ch.key} className="flex flex-wrap items-center gap-2">
+                <input
+                  className={`${inputClass} min-w-[12rem] flex-1`}
+                  placeholder="Charge name, e.g. Izaje"
+                  maxLength={60}
+                  value={ch.name}
+                  onChange={(e) => patchCharge(ch.key, { name: e.target.value })}
+                  aria-label="Charge name"
+                  disabled={saving}
+                />
+                <div className="flex items-center gap-1">
+                  <input
+                    type="number"
+                    min={0}
+                    max={100}
+                    step="0.01"
+                    className="w-24 rounded-md border border-line bg-canvas px-2 py-2 text-right text-sm"
+                    value={ch.value}
+                    onChange={(e) => patchCharge(ch.key, { value: Number(e.target.value) })}
+                    aria-label="Charge percentage"
+                    disabled={saving}
+                  />
+                  <span className="text-sm text-muted">%</span>
+                </div>
+                <label className="flex items-center gap-1 text-sm text-ink">
+                  <input
+                    type="checkbox"
+                    checked={ch.enabled_by_default}
+                    onChange={(e) => patchCharge(ch.key, { enabled_by_default: e.target.checked })}
+                    disabled={saving}
+                  />
+                  On by default
+                </label>
+                <button
+                  type="button"
+                  onClick={() => removeCharge(ch.key)}
+                  disabled={saving}
+                  className="rounded px-3 py-1 text-sm font-medium text-red-600 hover:bg-red-50"
+                >
+                  Remove
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
       {/* SUMMARY + SAVE */}
       <section className="flex flex-col gap-4 border-t border-line pt-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="text-sm text-muted">
-          Required items at catalog price: <span className="font-semibold text-ink">${money(totals.required)}</span>
+          Required items at pack prices: <span className="font-semibold text-ink">${money(totals.required)}</span>
           {totals.optional > 0 && <> · Optional: ${money(totals.optional)}</>}
           <div className="text-xs">Before discounts, charges and ITBIS. Final totals are computed on the quote.</div>
         </div>

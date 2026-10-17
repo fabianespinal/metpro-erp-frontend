@@ -9,6 +9,7 @@
 import {
   DEFAULT_INCLUDED_CHARGES,
   type DiscountType,
+  type DynamicCharge,
   type IncludedCharges,
   type ItemType,
   type QuoteItemOut,
@@ -32,6 +33,19 @@ export interface TakeOffLine {
   discount_type: DiscountType;
   discount_value: number;
   item_type: ItemType;
+}
+
+/**
+ * Pack charges as quote dynamic charges. Percentage only (matches the backend
+ * DynamicCharge model). Capped at 3, the quote maximum.
+ */
+export function dynamicChargesFromPack(pack: TemplatePack): DynamicCharge[] {
+  return (pack.charges ?? []).slice(0, 3).map((c) => ({
+    id: `pack_${c.id}`,
+    name: c.name,
+    enabled: c.enabled_by_default,
+    percentage: Number(c.value),
+  }));
 }
 
 /** Build lines from a template pack. Optional items start excluded. */
