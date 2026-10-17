@@ -11,8 +11,7 @@ import SentBadge from "@/components/SentBadge";
 import { PageHeader } from "@/components/ui/page-header";
 import { useCurrentRole } from "@/lib/currentRole";
 import { Button } from "@/components/ui/button";
-import { downloadInvoiceDoc } from "@/lib/invoiceDocs";
-import toast from "react-hot-toast";
+import InvoiceDocPreviewModal from "@/components/invoices/InvoiceDocPreviewModal";
 
 // Mirrors the backend manual matrix. Paid is reached only by recording payments.
 const STATUS_LABELS = { Pending: "Pendiente", Paid: "Pagado", Cancelled: "Cancelado", Overdue: "Vencido" };
@@ -29,7 +28,8 @@ export default function InvoicesPage() {
   const [loading, setLoading] = useState(true);
   const [statusFilter] = useState("all");
   const [sentMap, setSentMap] = useState({});
-  const [downloadingKey, setDownloadingKey] = useState(null);
+  // { kind: "factura" | "conduce", id, number } while a preview is open
+  const [preview, setPreview] = useState(null);
   const { isAdmin } = useCurrentRole();
 
   const [paymentOpen, setPaymentOpen] = useState(false);
@@ -56,21 +56,6 @@ export default function InvoicesPage() {
   useEffect(() => {
     fetchInvoices();
   }, []);
-
-  // Factura and conduce PDFs from the backend generators (shared with the invoice detail page).
-  async function handleDownloadDoc(kind, invoiceId, invoiceNumber) {
-    const key = `${kind}-${invoiceId}`;
-    setDownloadingKey(key);
-    try {
-      await downloadInvoiceDoc(kind, invoiceId, invoiceNumber);
-    } catch (error) {
-      toast.error(
-        `No se pudo descargar ${kind === "factura" ? "la factura" : "el conduce"}: ${error.message}`
-      );
-    } finally {
-      setDownloadingKey(null);
-    }
-  }
 
   async function handleUpdateStatus(invoiceId, newStatus) {
     try {
@@ -165,18 +150,12 @@ export default function InvoicesPage() {
                       type="invoice"
                       onSent={() => setSentMap(prev => ({ ...prev, [inv.id]: true }))}
                     />
-                    <Button
-                      onClick={() => handleDownloadDoc("factura", inv.id, inv.invoice_number)}
-                      disabled={downloadingKey !== null}
-                    >
-                      {downloadingKey === `factura-${inv.id}` ? "Generando…" : "PDF"}
+                    <Button onClick={() => setPreview({ kind: "factura", id: inv.id, number: inv.invoice_number })}>
+                      Vista previa Factura
                     </Button>
 
-                    <Button
-                      onClick={() => handleDownloadDoc("conduce", inv.id, inv.invoice_number)}
-                      disabled={downloadingKey !== null}
-                    >
-                      {downloadingKey === `conduce-${inv.id}` ? "Generando…" : "Conduce"}
+                    <Button onClick={() => setPreview({ kind: "conduce", id: inv.id, number: inv.invoice_number })}>
+                      Vista previa Conduce
                     </Button>
 
                     <Button onClick={() => openPaymentModal(inv.id)}>
@@ -204,6 +183,17 @@ export default function InvoicesPage() {
           </table>
         </div>
       </div>
+
+      {preview && (
+        <InvoiceDocPreviewModal
+          key={`${preview.kind}-${preview.id}`}
+          open
+          kind={preview.kind}
+          invoiceId={preview.id}
+          invoiceNumber={preview.number}
+          onClose={() => setPreview(null)}
+        />
+      )}
 
       {selectedInvoiceId && (
         <RecordPaymentModal

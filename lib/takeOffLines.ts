@@ -92,6 +92,7 @@ export function toQuoteItems(lines: TakeOffLine[]): QuoteLineInput[] {
       discount_value: l.discount_value,
       item_type: l.item_type,
       description: l.description.trim() || null,
+      category: l.category,
     }));
 }
 
@@ -152,7 +153,7 @@ export function linesFromQuote(items: QuoteItemOut[]): TakeOffLine[] {
   return items.map((item) => ({
     key: `saved-${item.id}`,
     source: item.product_id !== null ? "product" : "manual",
-    category: null,
+    category: item.category ?? null,
     include: true,
     product_id: item.product_id,
     name: item.product_name ?? "",

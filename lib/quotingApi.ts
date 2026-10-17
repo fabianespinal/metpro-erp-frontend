@@ -89,6 +89,7 @@ export interface QuoteLineInput {
   discount_value: number;
   item_type: ItemType;
   description?: string | null;
+  category?: string | null;
 }
 
 export interface DraftQuoteInput {
@@ -113,6 +114,7 @@ export interface QuoteItemOut {
   discount_value: number | null;
   item_type?: ItemType;
   description?: string | null;
+  category?: string | null;
 }
 
 export interface QuoteOut {

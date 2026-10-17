@@ -45,7 +45,7 @@ export default function QuoteTable({
       <tbody className={dt.tbody}>
         {quotes.map((quote) => (
           <tr key={quote.quote_id} className={dt.tr}>
-            <td className={dt.td}>{quote.quote_number ?? '—'}</td>
+            <td className={dt.td}>{quote.quote_number != null ? `Q-${quote.quote_number}` : '—'}</td>
             <td className={dt.td}>{quote.client_name}</td>
             <td className={dt.td}>{quote.project_name || '-'}</td>
             <td className={dt.td}>{quote.created_at ? String(quote.created_at).slice(0, 10) : '—'}</td>

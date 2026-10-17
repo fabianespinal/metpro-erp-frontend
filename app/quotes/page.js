@@ -3,6 +3,7 @@ import ErrorBanner from "@/components/ui/ErrorBanner";
 import { useState, useEffect } from 'react'
 import { api } from "@/lib/api"
 import PDFPreviewModal from '@/components/quotes/PDFPreviewModal'
+import InvoiceDocPreviewModal from '@/components/invoices/InvoiceDocPreviewModal'
 import DeleteQuoteModal from '@/components/quotes/DeleteQuoteModal'
 import QuoteTable from '@/components/quotes/QuoteTable'
 import { useToken } from '@/components/quotes/useToken'
@@ -16,7 +17,6 @@ import {
   downloadPDF,
   convertToInvoice,
   updateQuoteStatus,
-  generateConduce,
   duplicateQuote,
   deleteQuote,
 } from '@/components/quotes/QuoteActions'
@@ -35,6 +35,7 @@ export default function QuotesPage() {
   const [loading, setLoading] = useState(false)
 
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, quoteId: null, quoteStatus: null })
+  const [conduceModal, setConduceModal] = useState(null)
   const [previewModal, setPreviewModal] = useState({ isOpen: false, quoteId: null, pdfUrl: null })
   const [sentMap, setSentMap] = useState({});
 
@@ -110,7 +111,7 @@ export default function QuotesPage() {
       const link = document.createElement("a")
       link.href = url
       const q = mergedQuotes.find(x => x.quote_id === quoteId)
-      link.download = `COT-${q?.quote_number ?? quoteId}.pdf`
+      link.download = `Q-${q?.quote_number ?? quoteId}.pdf`
       document.body.appendChild(link)
       link.click()
       window.URL.revokeObjectURL(url)
@@ -129,20 +130,7 @@ export default function QuotesPage() {
       return
     }
 
-    try {
-      const blob = await generateConduce(quote.invoice_id, token)
-      const url = window.URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `CD-${quote.invoice_number}_conduce.pdf`
-      document.body.appendChild(a)
-      a.click()
-      window.URL.revokeObjectURL(url)
-      document.body.removeChild(a)
-    } catch (error) {
-      console.error('Conduce Error:', error)
-      alert('Error generating conduce: ' + error.message)
-    }
+    setConduceModal({ id: quote.invoice_id, number: quote.invoice_number })
   }
 
   async function handleDuplicateQuote(quoteId) {
@@ -284,6 +272,17 @@ export default function QuotesPage() {
       quoteId={previewModal.quoteId}
       pdfUrl={previewModal.pdfUrl}
     />
+
+    {conduceModal && (
+      <InvoiceDocPreviewModal
+        key={conduceModal.id}
+        open
+        kind="conduce"
+        invoiceId={conduceModal.id}
+        invoiceNumber={conduceModal.number}
+        onClose={() => setConduceModal(null)}
+      />
+    )}
 
     <DeleteQuoteModal
       isOpen={deleteModal.isOpen}

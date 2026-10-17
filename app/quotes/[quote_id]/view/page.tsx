@@ -163,7 +163,7 @@ export default function QuotePublicView() {
           </div>
           <div className="sm:text-right">
             <div className="text-xl font-semibold uppercase tracking-widest">COTIZACIÓN</div>
-            <div className="mt-1 text-sm text-muted">No. {quote.quote_number ?? "—"}</div>
+            <div className="mt-1 text-sm text-muted">No. {quote.quote_number != null ? `Q-${quote.quote_number}` : "—"}</div>
             <div className="mt-0.5 text-sm text-muted">
               {quote.created_at?.slice(0, 10)}
             </div>

@@ -40,6 +40,7 @@ interface QuoteItem {
   discount_type: "none" | "percentage" | "fixed";
   discount_value: number;
   item_type?: "product" | "service";
+  category?: string | null;
 }
 
 function TakeOffScreen() {
@@ -87,6 +88,7 @@ function TakeOffScreen() {
               unit_price: line.unit_price,
               discount_type: line.discount_type as "none" | "percentage" | "fixed",
               discount_value: line.discount_value,
+              category: line.category,
             }))
         );
       })

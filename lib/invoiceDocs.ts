@@ -16,8 +16,14 @@ const PATHS: Record<InvoiceDocKind, (id: number) => string> = {
   conduce: (id) => `/pdf/invoices/${id}/conduce`,
 };
 
+/** F-10002 -> C-10002. Legacy INV-<timestamp> -> CD-<timestamp>. */
+export function conduceNumber(invoiceNumber: string | number): string {
+  const n = String(invoiceNumber);
+  return n.startsWith("F-") ? `C-${n.slice(2)}` : n.replace("INV-", "CD-");
+}
+
 export function invoiceDocFilename(kind: InvoiceDocKind, invoiceNumber: string | number): string {
-  return kind === "factura" ? `${invoiceNumber}_factura.pdf` : `CD-${invoiceNumber}_conduce.pdf`;
+  return kind === "factura" ? `${invoiceNumber}_factura.pdf` : `${conduceNumber(invoiceNumber)}_conduce.pdf`;
 }
 
 export async function fetchInvoiceDoc(kind: InvoiceDocKind, invoiceId: number): Promise<Blob> {

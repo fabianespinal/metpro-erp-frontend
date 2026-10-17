@@ -10,8 +10,8 @@ import {
 } from "@/lib/invoiceDocs";
 
 const TITLES: Record<InvoiceDocKind, string> = {
-  factura: "Vista previa de factura",
-  conduce: "Vista previa de conduce",
+  factura: "Vista previa Factura",
+  conduce: "Vista previa Conduce",
 };
 
 interface Props {

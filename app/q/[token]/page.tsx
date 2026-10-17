@@ -96,7 +96,7 @@ export default function PublicQuotePage() {
       <div className="mx-auto max-w-2xl rounded-lg border border-line bg-surface p-8 shadow-card">
         <div className="flex items-start justify-between gap-4">
           <h1 className="text-lg font-semibold tracking-tight">
-            Cotización #{quote.quote_number ?? "—"}
+            Cotización {quote.quote_number != null ? `Q-${quote.quote_number}` : "—"}
           </h1>
           <a
             href={pdfUrl}
