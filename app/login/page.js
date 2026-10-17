@@ -7,6 +7,9 @@ import { api } from '@/lib/api'
 import { clearSession, isTokenExpired } from '@/lib/auth'
 import { Button } from '@/components/ui/button'
 import { fb } from '@/components/ui/filter-bar'
+import { es } from '@/lib/i18n/es'
+
+const t = es.login
 
 export default function LoginPage() {
   const [username, setUsername] = useState('')
@@ -35,7 +38,7 @@ export default function LoginPage() {
     }
     if (token) clearSession()
     if (new URLSearchParams(window.location.search).get("expired") === "1") {
-      setError("Your session expired. Please sign in again.")
+      setError(t.sesionExpirada)
     }
   }, [router])
 
@@ -45,7 +48,7 @@ export default function LoginPage() {
 
     const now = Date.now()
     if (now - lastAttemptRef.current < 2000) {
-      setError("Please wait a moment before trying again.")
+      setError(t.espere)
       return
     }
     lastAttemptRef.current = now
@@ -67,9 +70,9 @@ export default function LoginPage() {
       }
 
       if (window.toast) {
-        window.toast("Login successful!", {
-          title: "Welcome back",
-          description: `Logged in as ${username}`,
+        window.toast(t.exito, {
+          title: t.bienvenido,
+          description: `${t.sesionIniciadaComo} ${username}`,
         })
       }
 
@@ -81,8 +84,8 @@ export default function LoginPage() {
       setError(err.message)
 
       if (window.toast) {
-        window.toast("Login failed", {
-          title: "Error",
+        window.toast(t.fallo, {
+          title: es.comun.error,
           description: err.message,
         })
       }
@@ -101,13 +104,13 @@ export default function LoginPage() {
         <div className="flex flex-col items-center mb-6">
           <img
             src="/logo.png"
-            alt="METPRO Logo"
+            alt={es.nav.logoAlt}
             className="h-16 w-auto mb-3"
           />
         </div>
 
         <h1 className="text-xl font-semibold tracking-tight text-ink mb-6 text-center">
-          Login
+          {t.titulo}
         </h1>
 
         {error && (
@@ -116,7 +119,7 @@ export default function LoginPage() {
           </div>
         )}
 
-        <label className="block text-sm font-medium text-ink mb-1">Username</label>
+        <label className="block text-sm font-medium text-ink mb-1">{t.usuario}</label>
         <input
           type="text"
           value={username}
@@ -125,7 +128,7 @@ export default function LoginPage() {
           required
         />
 
-        <label className="block text-sm font-medium text-ink mb-1">Password</label>
+        <label className="block text-sm font-medium text-ink mb-1">{t.contrasena}</label>
         <div className="relative mb-4">
           <input
             type={showPassword ? "text" : "password"}
@@ -139,7 +142,7 @@ export default function LoginPage() {
             onClick={() => setShowPassword(!showPassword)}
             className="absolute right-2 top-1/2 -translate-y-1/2 px-2 text-xs font-medium text-muted hover:text-ink"
           >
-            {showPassword ? "Ocultar" : "Mostrar"}
+            {showPassword ? t.ocultar : t.mostrar}
           </button>
         </div>
 
@@ -149,7 +152,7 @@ export default function LoginPage() {
             checked={rememberMe}
             onChange={() => setRememberMe(!rememberMe)}
           />
-          Remember me
+          {t.recordarme}
         </label>
 
         <Button
@@ -160,10 +163,10 @@ export default function LoginPage() {
           {loading ? (
             <span className="flex items-center justify-center gap-2">
               <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></span>
-              Logging in...
+              {t.entrando}
             </span>
           ) : (
-            "Login"
+            t.entrar
           )}
         </Button>
       </form>

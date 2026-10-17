@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { PageHeader } from '@/components/ui/page-header'
 import { useCurrentRole } from '@/lib/currentRole'
+import { es } from '@/lib/i18n/es'
 
 // Counts follow the quote and invoice status matrices.
 const PENDING_QUOTE_STATUSES = ['Draft', 'Final', 'Sent']
@@ -12,7 +13,7 @@ const OPEN_INVOICE_STATUSES = ['Pending', 'Overdue']
 
 export default function DashboardPage() {
   // Display name from GET /auth/me: full name, then username, then 'User'.
-  const [displayName, setDisplayName] = useState('User')
+  const [displayName, setDisplayName] = useState('Usuario')
   const [loadErrors, setLoadErrors] = useState([])
   const { isAdmin } = useCurrentRole()
   const [stats, setStats] = useState({
@@ -58,7 +59,7 @@ export default function DashboardPage() {
       const errors = []
       const data = results.map((r, i) => {
         if (r.status === 'fulfilled' && Array.isArray(r.value)) return r.value
-        errors.push(`${sources[i][0]}: ${r.status === 'rejected' ? r.reason?.message || 'error' : 'respuesta inválida'}`)
+        errors.push(`${sources[i][0]}: ${r.status === 'rejected' ? r.reason?.message || 'error' : es.dashboard.respuestaInvalida}`)
         return null
       })
       setLoadErrors(errors)
@@ -110,7 +111,7 @@ export default function DashboardPage() {
       )
     },
     {
-      name: 'Products',
+      name: 'Productos',
       description: 'Gestionar catálogo y precios de productos',
       href: '/products',
       icon: (
@@ -147,7 +148,7 @@ export default function DashboardPage() {
     },
     {
       name: 'Proyectos',
-      description: 'Rastrear proyectos y hitos',
+      description: 'Dar seguimiento a proyectos y trabajos aprobados',
       href: '/proyectos',
       icon: (
         <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -158,7 +159,7 @@ export default function DashboardPage() {
       )
     },
     {
-      name: 'Expenses',
+      name: 'Gastos',
       description: 'Registrar y analizar gastos operativos',
       href: '/expenses',
       icon: (
@@ -186,7 +187,7 @@ export default function DashboardPage() {
   // Admin-only modules. Shown only when isAdmin is true.
   const adminModules = [
     {
-      name: 'Template Packs',
+      name: 'Plantillas de Cotización',
       description: 'Crear y gestionar plantillas de cotización',
       href: '/template-packs',
       icon: (
@@ -222,7 +223,7 @@ export default function DashboardPage() {
       )
     },
     {
-      name: 'Users',
+      name: 'Usuarios',
       description: 'Gestionar usuarios, contraseñas y accesos',
       href: '/users',
       icon: (
@@ -240,9 +241,9 @@ export default function DashboardPage() {
 
       {/* HEADER */}
       <PageHeader
-        title="Dashboard"
-        subtitle="Metpro ERP System"
-        actions={<span className="text-sm font-medium text-ink">Welcome, {displayName}</span>}
+        title="Panel"
+        subtitle="Sistema ERP Metpro"
+        actions={<span className="text-sm font-medium text-ink">Bienvenido, {displayName}</span>}
       />
 
       {loadErrors.length > 0 && (
@@ -336,7 +337,7 @@ export default function DashboardPage() {
             {recentQuotes.map((q) => (
               <li key={q.id} className="flex justify-between text-sm">
                 <span className="text-ink">#{q.id} — {q.client_name}</span>
-                <span className="text-muted">{new Date(q.created_at).toLocaleDateString()}</span>
+                <span className="text-muted">{new Date(q.created_at).toLocaleDateString("es-DO")}</span>
               </li>
             ))}
           </ul>
@@ -352,7 +353,7 @@ export default function DashboardPage() {
             {recentInvoices.map((inv) => (
               <li key={inv.id} className="flex justify-between text-sm">
                 <span className="text-ink">#{inv.invoice_number} — {inv.client_name}</span>
-                <span className="text-muted">{new Date(inv.created_at).toLocaleDateString()}</span>
+                <span className="text-muted">{new Date(inv.created_at).toLocaleDateString("es-DO")}</span>
               </li>
             ))}
           </ul>
@@ -368,7 +369,7 @@ export default function DashboardPage() {
             {recentExpenses.map((exp) => (
               <li key={exp.expense_id} className="flex justify-between text-sm">
                 <span className="text-ink">{exp.category} — ${Number(exp.amount).toFixed(2)}</span>
-                <span className="text-muted">{new Date(exp.created_at).toLocaleDateString()}</span>
+                <span className="text-muted">{new Date(exp.created_at).toLocaleDateString("es-DO")}</span>
               </li>
             ))}
           </ul>

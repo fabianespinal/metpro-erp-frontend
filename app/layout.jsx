@@ -15,7 +15,7 @@ export default function RootLayout({ children }) {
   const showHeader = !isPublicPath(pathname) && pathname !== "/login";
 
   return (
-    <html lang="en">
+    <html lang="es">
       <body className="bg-canvas text-ink min-h-screen flex flex-col">
 
         <GlobalLoader />

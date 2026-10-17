@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSyncExternalStore } from "react";
 import { clearCurrentRoleCache } from "@/lib/currentRole";
+import { es } from "@/lib/i18n/es";
 
 const noopSubscribe = () => () => {};
 
@@ -30,14 +31,14 @@ export default function Header() {
           <Link href="/dashboard" className="flex items-center gap-3">
             <img
               src="/logo.png"
-              alt="METPRO Logo"
+              alt={es.nav.logoAlt}
               className="h-8 w-auto object-contain"
               onError={(e) => {
                 e.target.style.display = "none";
               }}
             />
             <span className="text-sm font-semibold text-ink">
-              Home
+              {es.nav.inicio}
             </span>
           </Link>
 
@@ -48,7 +49,7 @@ export default function Header() {
               onClick={handleLogout}
               className="text-sm font-medium text-muted hover:text-ink transition-colors"
             >
-              Logout
+              {es.nav.cerrarSesion}
             </button>
 
           </div>

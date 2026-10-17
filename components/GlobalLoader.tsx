@@ -60,7 +60,7 @@ export default function GlobalLoader() {
   return (
     <div
       role="progressbar"
-      aria-label="Loading"
+      aria-label="Cargando"
       aria-busy="true"
       className="pointer-events-none fixed inset-x-0 top-0 z-[60] h-0.5 overflow-hidden bg-line"
     >

@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { es } from "@/lib/i18n/es";
 
 /**
  * Unified status styles for all ERP modules.
@@ -26,36 +27,25 @@ const STATUS_STYLES = {
   cancelled: DANGER,
   overdue: DANGER,
 
-  // INVOICE STATUSES
+  // QUOTE AND INVOICE STATUSES
   draft: NEUTRAL,
+  final: ACCENT,
+  sent: ACCENT,
   approved: ACCENT,
+  rejected: DANGER,
   invoiced: SUCCESS,
   paid: SUCCESS,
+  partial: WARNING,
 };
 
-const STATUS_LABELS = {
-  // PROJECT LABELS (Spanish)
-  pending: "Pendiente",
-  planning: "Planificación",
-  active: "Activo",
-  in_progress: "En progreso",
-  completed: "Completado",
-  on_hold: "En pausa",
-  cancelled: "Cancelado",
-  overdue: "Vencido",
-
-  // INVOICE LABELS
-  draft: "Draft",
-  approved: "Approved",
-  invoiced: "Invoiced",
-  paid: "Paid",
-};
+// Labels come from the Spanish dictionary (single source of truth).
+const STATUS_LABELS = es.estados;
 
 export default function StatusPill({ status }) {
   const normalized = status?.toLowerCase() || "planning";
 
   const style = STATUS_STYLES[normalized] || NEUTRAL;
-  const label = STATUS_LABELS[normalized] || status || "Unknown";
+  const label = STATUS_LABELS[normalized] || status || es.estados.unknown;
 
   return (
     <span
