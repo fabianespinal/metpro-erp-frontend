@@ -8,6 +8,7 @@ export default function QuoteForm({
   clients,
   selectedClient,
   setSelectedClient,
+  clientLocked = false,
   selectedContact,
   setSelectedContact,
   contacts,
@@ -39,22 +40,28 @@ export default function QuoteForm({
     <div className='bg-surface rounded-lg shadow p-6 mb-8'>
       <h2 className='text-xl font-semibold mb-4'>Create New Quote</h2>
       
-      {/* COMPANY SELECT */}
+      {/* CLIENT. Locked (read-only) when Step 1 already chose it. */}
       <div className='mb-4'>
-        <label className='block text-sm font-medium mb-2'>Select Client *</label>
-        <select
-          value={selectedClient ? selectedClient.id : ''}
-          onChange={(e) => setSelectedClient(clients.find(c => c.id == e.target.value) || null)}
-          className='w-full border p-2 rounded'
-          required
-        >
-          <option value=''>-- Select Client --</option>
-          {clients.map(client => (
-            <option key={client.id} value={client.id}>
-              {client.company_name} - {client.contact_name || 'No contact'}
-            </option>
-          ))}
-        </select>
+        <label className='block text-sm font-medium mb-2'>Client</label>
+        {clientLocked ? (
+          <div className='w-full border p-2 rounded bg-canvas text-sm'>
+            {selectedClient ? selectedClient.company_name : 'Loading client…'}
+          </div>
+        ) : (
+          <select
+            value={selectedClient ? selectedClient.id : ''}
+            onChange={(e) => setSelectedClient(clients.find(c => c.id == e.target.value) || null)}
+            className='w-full border p-2 rounded'
+            required
+          >
+            <option value=''>-- Select Client --</option>
+            {clients.map(client => (
+              <option key={client.id} value={client.id}>
+                {client.company_name} - {client.contact_name || 'No contact'}
+              </option>
+            ))}
+          </select>
+        )}
       </div>
 
       {/* CONTACT SELECT — only shows after company is picked */}

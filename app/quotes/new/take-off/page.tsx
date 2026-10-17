@@ -13,6 +13,7 @@ import {
   type TemplatePack,
 } from "@/lib/quotingApi";
 import { linesFromPack } from "@/lib/takeOffLines";
+import { applyItemChange } from "@/lib/quoteItemEdit";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -51,6 +52,11 @@ function TakeOffScreen() {
   const packId = params.get("pack_id") ?? "";
   const paramsOk = Boolean(clientId && contactId && packId);
 
+  const [client, setClient] = useState<{ id: number; company_name: string } | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [contacts, setContacts] = useState<any[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [selectedContact, setSelectedContact] = useState<any | null>(null);
   const [pack, setPack] = useState<TemplatePack | null>(null);
   const [packError, setPackError] = useState<string | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -69,6 +75,32 @@ function TakeOffScreen() {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [catalogError, setCatalogError] = useState<string | null>(null);
+
+  // Step 1 already chose the client and contact. Load both here so nothing is re-selected.
+  useEffect(() => {
+    if (!clientId) return;
+    let cancelled = false;
+    api(`/clients/${clientId}`)
+      .then((data) => {
+        if (!cancelled) setClient(data as { id: number; company_name: string });
+      })
+      .catch((err: Error) => {
+        if (!cancelled) setSaveError(`Could not load the client: ${err.message}`);
+      });
+    api(`/contacts/company/${clientId}`)
+      .then((data) => {
+        if (cancelled) return;
+        const list = Array.isArray(data) ? data : [];
+        setContacts(list);
+        setSelectedContact(list.find((c: { id: number }) => String(c.id) === contactId) ?? null);
+      })
+      .catch((err: Error) => {
+        if (!cancelled) setSaveError(`Could not load the client contacts: ${err.message}`);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [clientId, contactId]);
 
   // Load the template pack and seed items from it.
   useEffect(() => {
@@ -130,9 +162,11 @@ function TakeOffScreen() {
     setQuoteItems((prev) => prev.filter((_, i) => i !== index));
   }
 
-  function handleItemChange(index: number, patch: Partial<QuoteItem>) {
+  // Accepts (index, patch) and (index, "field", value). Local state only, so discounts
+  // and totals update instantly, before anything is saved.
+  function handleItemChange(index: number, fieldOrPatch: string | Partial<QuoteItem>, value?: unknown) {
     setQuoteItems((prev) =>
-      prev.map((item, i) => (i === index ? { ...item, ...patch } : item))
+      prev.map((item, i) => (i === index ? applyItemChange(item, fieldOrPatch, value) : item))
     );
   }
 
@@ -151,7 +185,7 @@ function TakeOffScreen() {
     try {
       const quote = await createDraftQuote({
         client_id: Number(clientId),
-        contact_id: Number(contactId),
+        contact_id: selectedContact?.id ?? Number(contactId),
         project_name: projectName.trim() || null,
         notes: notes.trim() || null,
         payment_terms: paymentTerms.trim() || null,
@@ -216,12 +250,13 @@ function TakeOffScreen() {
       ) : null}
 
       <QuoteForm
-        clients={[]} // Not used in this flow - client already selected
-        selectedClient={null}
+        clients={client ? [client] : []}
+        selectedClient={client}
         setSelectedClient={() => {}}
-        selectedContact={null}
-        setSelectedContact={() => {}}
-        contacts={[]}
+        clientLocked
+        selectedContact={selectedContact}
+        setSelectedContact={setSelectedContact}
+        contacts={contacts}
         projectName={projectName}
         setProjectName={setProjectName}
         quoteItems={quoteItems}
