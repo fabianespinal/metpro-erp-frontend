@@ -187,6 +187,51 @@ export default function InvoiceDetailPage() {
           </button>
         </div>
 
+        <div className="bg-canvas p-4 rounded-lg mb-6">
+          <h2 className="text-xl font-semibold mb-3">Acciones</h2>
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => {
+                console.log("Downloading PDF for invoice", invoiceId);
+                // TODO: Implement PDF download
+              }}
+              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm font-medium"
+            >
+              Descargar PDF
+            </button>
+
+            <button
+              onClick={() => {
+                console.log("Creating conduce for invoice", invoiceId);
+                // TODO: Implement conduce creation
+              }}
+              className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 text-sm font-medium"
+            >
+              Crear Conduce
+            </button>
+
+            <button
+              onClick={() => {
+                console.log("Opening payment link for invoice", invoiceId);
+                // TODO: Implement payment link / payment portal
+              }}
+              className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 text-sm font-medium"
+            >
+              Link de Pago
+            </button>
+
+            <button
+              onClick={() => {
+                console.log("Sending invoice to client", invoiceId);
+                // TODO: Implement send to client (email)
+              }}
+              className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 text-sm font-medium"
+            >
+              Enviar al Cliente
+            </button>
+          </div>
+        </div>
+
         <div>
           <h2 className="text-xl font-semibold mb-3">Historial de Pagos</h2>
           {invoice.payments_error && (

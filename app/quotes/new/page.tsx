@@ -50,11 +50,19 @@ export default function NewQuotePage() {
   useEffect(() => {
     api("/clients")
       .then((data) => setClients(Array.isArray(data) ? (data as Client[]) : []))
-      .catch(() => setClientError("Could not load clients. Refresh to try again."));
+      .catch((err: any) => {
+        const msg = err?.message || "Could not load clients. Refresh to try again.";
+        setClientError(msg);
+        console.error("Failed to load clients:", err);
+      });
 
     listTemplatePacks()
       .then((data) => setPacks(Array.isArray(data) ? data : []))
-      .catch((err: Error) => setPackError(err.message || "Could not load template packs."))
+      .catch((err: Error) => {
+        const msg = err.message || "Could not load template packs.";
+        setPackError(msg);
+        console.error("Failed to load template packs:", err);
+      })
       .finally(() => setLoadingPacks(false));
   }, []);
 
