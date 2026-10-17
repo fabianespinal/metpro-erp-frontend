@@ -7,6 +7,11 @@ import { fetchInvoiceWithPayments } from "@/lib/invoiceApi";
 import RecordPaymentModal from "@/components/invoices/RecordPaymentModal";
 import StatusPill from "@/components/ui/StatusPill";
 import { PageHeader } from "@/components/ui/page-header";
+import { Button } from "@/components/ui/button";
+import SendToClientButton from "@/components/SendToClientButton";
+import InvoiceDocPreviewModal from "@/components/invoices/InvoiceDocPreviewModal";
+import { downloadInvoiceDoc, type InvoiceDocKind } from "@/lib/invoiceDocs";
+import toast from "react-hot-toast";
 
 interface Payment {
   id: number;
@@ -47,6 +52,21 @@ export default function InvoiceDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [paymentOpen, setPaymentOpen] = useState(false);
+  const [preview, setPreview] = useState<InvoiceDocKind | null>(null);
+  const [downloading, setDownloading] = useState<InvoiceDocKind | null>(null);
+
+  const handleDownload = async (kind: InvoiceDocKind) => {
+    if (!invoice) return;
+    setDownloading(kind);
+    try {
+      await downloadInvoiceDoc(kind, invoiceId, invoice.invoice_number);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Error desconocido";
+      toast.error(`No se pudo descargar ${kind === "factura" ? "la factura" : "el conduce"}: ${msg}`);
+    } finally {
+      setDownloading(null);
+    }
+  };
 
   const loadInvoice = async () => {
     try {
@@ -178,57 +198,21 @@ export default function InvoiceDetailPage() {
               </p>
             </div>
           </div>
-
-          <button
-            onClick={() => setPaymentOpen(true)}
-            className="mt-4 bg-accent text-white px-4 py-2 rounded hover:bg-accent-strong"
-          >
-            Registrar Pago
-          </button>
         </div>
 
         <div className="bg-canvas p-4 rounded-lg mb-6">
           <h2 className="text-xl font-semibold mb-3">Acciones</h2>
           <div className="flex flex-wrap gap-2">
-            <button
-              onClick={() => {
-                console.log("Downloading PDF for invoice", invoiceId);
-                // TODO: Implement PDF download
-              }}
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm font-medium"
-            >
-              Descargar PDF
-            </button>
-
-            <button
-              onClick={() => {
-                console.log("Creating conduce for invoice", invoiceId);
-                // TODO: Implement conduce creation
-              }}
-              className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 text-sm font-medium"
-            >
-              Crear Conduce
-            </button>
-
-            <button
-              onClick={() => {
-                console.log("Opening payment link for invoice", invoiceId);
-                // TODO: Implement payment link / payment portal
-              }}
-              className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 text-sm font-medium"
-            >
-              Link de Pago
-            </button>
-
-            <button
-              onClick={() => {
-                console.log("Sending invoice to client", invoiceId);
-                // TODO: Implement send to client (email)
-              }}
-              className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 text-sm font-medium"
-            >
-              Enviar al Cliente
-            </button>
+            <SendToClientButton id={invoiceId} type="invoice" />
+            <Button onClick={() => handleDownload("factura")} disabled={downloading !== null}>
+              {downloading === "factura" ? "Generando…" : "PDF"}
+            </Button>
+            <Button onClick={() => setPreview("factura")}>Vista previa PDF</Button>
+            <Button onClick={() => handleDownload("conduce")} disabled={downloading !== null}>
+              {downloading === "conduce" ? "Generando…" : "Conduce"}
+            </Button>
+            <Button onClick={() => setPreview("conduce")}>Vista previa Conduce</Button>
+            <Button onClick={() => setPaymentOpen(true)}>Pago</Button>
           </div>
         </div>
 
@@ -279,6 +263,17 @@ export default function InvoiceDetailPage() {
           )}
         </div>
       </div>
+
+      {preview && (
+        <InvoiceDocPreviewModal
+          key={preview}
+          open
+          kind={preview}
+          invoiceId={invoiceId}
+          invoiceNumber={invoice.invoice_number}
+          onClose={() => setPreview(null)}
+        />
+      )}
 
       <RecordPaymentModal
         invoiceId={invoiceId}

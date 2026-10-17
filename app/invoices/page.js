@@ -10,6 +10,9 @@ import SendToClientButton from "@/components/SendToClientButton";
 import SentBadge from "@/components/SentBadge";
 import { PageHeader } from "@/components/ui/page-header";
 import { useCurrentRole } from "@/lib/currentRole";
+import { Button } from "@/components/ui/button";
+import { downloadInvoiceDoc } from "@/lib/invoiceDocs";
+import toast from "react-hot-toast";
 
 // Mirrors the backend manual matrix. Paid is reached only by recording payments.
 const STATUS_LABELS = { Pending: "Pendiente", Paid: "Pagado", Cancelled: "Cancelado", Overdue: "Vencido" };
@@ -26,6 +29,7 @@ export default function InvoicesPage() {
   const [loading, setLoading] = useState(true);
   const [statusFilter] = useState("all");
   const [sentMap, setSentMap] = useState({});
+  const [downloadingKey, setDownloadingKey] = useState(null);
   const { isAdmin } = useCurrentRole();
 
   const [paymentOpen, setPaymentOpen] = useState(false);
@@ -53,66 +57,18 @@ export default function InvoicesPage() {
     fetchInvoices();
   }, []);
 
-  async function handleDownloadPDF(invoiceId, invoiceNumber) {
+  // Factura and conduce PDFs from the backend generators (shared with the invoice detail page).
+  async function handleDownloadDoc(kind, invoiceId, invoiceNumber) {
+    const key = `${kind}-${invoiceId}`;
+    setDownloadingKey(key);
     try {
-      const token = localStorage.getItem("token");
-
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/pdf/invoices/${invoiceId}`,
-        {
-          method: "GET",
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
-      if (!response.ok) throw new Error(`PDF download failed: ${response.status}`);
-
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${invoiceNumber}_factura.pdf`;
-      document.body.appendChild(a);
-      a.click();
-
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
+      await downloadInvoiceDoc(kind, invoiceId, invoiceNumber);
     } catch (error) {
-      console.error("PDF Download Error:", error);
-      alert("Error downloading PDF: " + error.message);
-    }
-  }
-
-  async function handleDownloadConduce(invoiceId, invoiceNumber) {
-    try {
-      const token = localStorage.getItem("token");
-
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/pdf/invoices/${invoiceId}/conduce`,
-        {
-          method: "GET",
-          headers: { Authorization: `Bearer ${token}` },
-        }
+      toast.error(
+        `No se pudo descargar ${kind === "factura" ? "la factura" : "el conduce"}: ${error.message}`
       );
-
-      if (!response.ok)
-        throw new Error(`Conduce download failed: ${response.status}`);
-
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `CD-${invoiceNumber}_conduce.pdf`;
-      document.body.appendChild(a);
-      a.click();
-
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-    } catch (error) {
-      console.error("Conduce Download Error:", error);
-      alert("Error downloading conduce: " + error.message);
+    } finally {
+      setDownloadingKey(null);
     }
   }
 
@@ -202,32 +158,30 @@ export default function InvoicesPage() {
                   </td>
 
                   <td className={dt.tdRight}>
+                    <div className="flex flex-wrap items-center justify-end gap-2">
                     {sentMap[inv.id] && <SentBadge />}
                     <SendToClientButton
                       id={inv.id}
                       type="invoice"
                       onSent={() => setSentMap(prev => ({ ...prev, [inv.id]: true }))}
                     />
-                    <button
-                      onClick={() => handleDownloadPDF(inv.id, inv.invoice_number)}
-                      className="text-accent hover:underline"
+                    <Button
+                      onClick={() => handleDownloadDoc("factura", inv.id, inv.invoice_number)}
+                      disabled={downloadingKey !== null}
                     >
-                      PDF
-                    </button>
+                      {downloadingKey === `factura-${inv.id}` ? "Generando…" : "PDF"}
+                    </Button>
 
-                    <button
-                      onClick={() => handleDownloadConduce(inv.id, inv.invoice_number)}
-                      className="text-emerald-600 hover:underline"
+                    <Button
+                      onClick={() => handleDownloadDoc("conduce", inv.id, inv.invoice_number)}
+                      disabled={downloadingKey !== null}
                     >
-                      Conduce
-                    </button>
+                      {downloadingKey === `conduce-${inv.id}` ? "Generando…" : "Conduce"}
+                    </Button>
 
-                    <button
-                      onClick={() => openPaymentModal(inv.id)}
-                      className="text-purple-600 hover:underline"
-                    >
+                    <Button onClick={() => openPaymentModal(inv.id)}>
                       Pago
-                    </button>
+                    </Button>
 
                     {isAdmin && (MANUAL_NEXT[inv.status] || []).length > 0 && (
                       <select
@@ -242,6 +196,7 @@ export default function InvoicesPage() {
                         ))}
                       </select>
                     )}
+                    </div>
                   </td>
                 </tr>
               ))}

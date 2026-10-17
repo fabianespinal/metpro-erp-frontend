@@ -1,0 +1,70 @@
+"use client";
+
+/**
+ * Invoice documents: factura PDF and conduce PDF from the backend generators.
+ *   GET /pdf/invoices/{id}          -> factura
+ *   GET /pdf/invoices/{id}/conduce  -> conduce (delivery note)
+ * Both require the Bearer token, so they are fetched as blobs (a plain link cannot send the header).
+ */
+
+import { checkUnauthorized } from "@/lib/api";
+
+export type InvoiceDocKind = "factura" | "conduce";
+
+const PATHS: Record<InvoiceDocKind, (id: number) => string> = {
+  factura: (id) => `/pdf/invoices/${id}`,
+  conduce: (id) => `/pdf/invoices/${id}/conduce`,
+};
+
+export function invoiceDocFilename(kind: InvoiceDocKind, invoiceNumber: string | number): string {
+  return kind === "factura" ? `${invoiceNumber}_factura.pdf` : `CD-${invoiceNumber}_conduce.pdf`;
+}
+
+export async function fetchInvoiceDoc(kind: InvoiceDocKind, invoiceId: number): Promise<Blob> {
+  const rawBase = process.env.NEXT_PUBLIC_API_URL;
+  if (!rawBase) throw new Error("Backend URL missing");
+  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+
+  const res = await fetch(`${rawBase.replace(/\/+$/, "")}${PATHS[kind](invoiceId)}`, {
+    method: "GET",
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    checkUnauthorized(res);
+    let message = `Error ${res.status}`;
+    try {
+      const body = await res.json();
+      if (body && typeof body.detail === "string") message = body.detail;
+    } catch {
+      /* non-JSON error body */
+    }
+    console.error(`Invoice ${kind} PDF failed`, { invoiceId, status: res.status, message });
+    throw new Error(message);
+  }
+
+  // Force the PDF type so the browser renders it inline in the preview.
+  return new Blob([await res.arrayBuffer()], { type: "application/pdf" });
+}
+
+export function saveBlob(blob: Blob, filename: string): void {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  // Give the download a moment to start before releasing the URL.
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+export async function downloadInvoiceDoc(
+  kind: InvoiceDocKind,
+  invoiceId: number,
+  invoiceNumber: string | number
+): Promise<void> {
+  const blob = await fetchInvoiceDoc(kind, invoiceId);
+  saveBlob(blob, invoiceDocFilename(kind, invoiceNumber));
+}
