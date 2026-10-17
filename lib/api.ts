@@ -103,14 +103,24 @@ api.delete = (endpoint: string) =>
 // SEND TO CLIENT (Quotes + Invoices)
 // ------------------------------------------------------
 
-export async function sendQuoteToClient(quoteId: string | number) {
+/** Optional files are sent as multipart "files" parts, attached to the email and discarded by the backend. */
+function sendBody(files?: File[]): FormData | undefined {
+  if (!files || files.length === 0) return undefined;
+  const fd = new FormData();
+  files.forEach((f) => fd.append("files", f, f.name));
+  return fd;
+}
+
+export async function sendQuoteToClient(quoteId: string | number, files?: File[]) {
   return api(`/quotes/${quoteId}/send`, {
     method: "POST",
+    body: sendBody(files),
   });
 }
 
-export async function sendInvoiceToClient(invoiceId: string | number) {
+export async function sendInvoiceToClient(invoiceId: string | number, files?: File[]) {
   return api(`/invoices/${invoiceId}/send`, {
     method: "POST",
+    body: sendBody(files),
   });
 }
