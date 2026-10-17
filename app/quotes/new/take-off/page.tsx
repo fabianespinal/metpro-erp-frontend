@@ -13,7 +13,7 @@ import {
   type IncludedCharges,
   type TemplatePack,
 } from "@/lib/quotingApi";
-import { linesFromPack } from "@/lib/takeOffLines";
+import { dynamicChargesFromPack, linesFromPack } from "@/lib/takeOffLines";
 import { applyItemChange } from "@/lib/quoteItemEdit";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
@@ -113,6 +113,8 @@ function TakeOffScreen() {
       .then((p) => {
         if (cancelled) return;
         setPack(p);
+        // Pack charges become the quote's dynamic charges (max 3). Editable on this screen.
+        setCharges((prev) => ({ ...prev, dynamic_charges: dynamicChargesFromPack(p) }));
         const lines = linesFromPack(p);
         setQuoteItems(
           lines

@@ -35,7 +35,10 @@ export interface TemplatePackItem {
   id: number;
   product_id: number;
   product_name: string | null;
+  /** Effective price for quoting: pack_price_override when set, else catalog_price. */
   unit_price: number | null;
+  catalog_price?: number | null;
+  pack_price_override?: number | null;
   default_qty: number;
   optional: boolean;
   sort_order: number;
@@ -48,11 +51,25 @@ export interface TemplatePackCategory {
   items: TemplatePackItem[];
 }
 
+/** Pack-level charge. Copied into the quote's dynamic_charges when a quote starts from the pack. */
+export interface TemplatePackCharge {
+  id: number;
+  name: string;
+  type: "percentage";
+  value: number;
+  enabled_by_default: boolean;
+  sort_order: number;
+}
+
+export const MAX_PACK_CHARGES = 3;
+
 export interface TemplatePack {
   id: number;
   name: string;
   description: string | null;
   categories: TemplatePackCategory[];
+  /** Optional: older backends omit it. */
+  charges?: TemplatePackCharge[];
   created_at: string | null;
   updated_at: string | null;
 }
