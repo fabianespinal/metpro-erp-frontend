@@ -223,22 +223,14 @@ export default function ClientsPage() {
           />
 
           <div className='md:col-span-2 flex gap-2'>
-            <button
-              type='submit'
-              disabled={loading}
-              className='bg-accent text-white px-6 py-2 rounded hover:bg-accent-strong disabled:opacity-50'
-            >
+            <Button type='submit' disabled={loading}>
               {loading ? es.cli.guardando : editingClient ? es.cli.actualizar : es.cli.agregar}
-            </button>
+            </Button>
 
             {editingClient && (
-              <button
-                type='button'
-                onClick={() => setEditingClient(null)}
-                className='bg-line px-6 py-2 rounded hover:bg-line/70'
-              >
+              <Button type='button' variant='outline' onClick={() => setEditingClient(null)}>
                 {es.cli.cancelar}
-              </button>
+              </Button>
             )}
           </div>
         </form>

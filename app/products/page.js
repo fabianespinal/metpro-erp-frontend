@@ -202,22 +202,14 @@ const handleUpdateProduct = async (e) => {
           />
 
           <div className='md:col-span-3 flex gap-2'>
-            <button
-              type='submit'
-              disabled={loading}
-              className='bg-accent hover:bg-accent-strong text-white px-4 py-2 rounded-lg font-medium shadow-card hover:shadow-card transition-shadow disabled:opacity-50'
-            >
+            <Button type='submit' disabled={loading}>
               {loading ? es.prod.guardando : editingProduct ? es.prod.actualizar : es.prod.agregar}
-            </button>
+            </Button>
 
             {editingProduct && (
-              <button
-                type='button'
-                onClick={() => setEditingProduct(null)}
-                className='bg-line px-6 py-2 rounded hover:bg-line/70'
-              >
+              <Button type='button' variant='outline' onClick={() => setEditingProduct(null)}>
                 {es.prod.cancelar}
-              </button>
+              </Button>
             )}
           </div>
         </form>

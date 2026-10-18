@@ -1,6 +1,7 @@
 "use client";
 import { es } from "@/lib/i18n/es";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
 import { PageHeader } from "@/components/ui/page-header";
 import { dt } from "@/components/ui/data-table";
@@ -168,9 +169,9 @@ export default function UsersPage() {
       <PageHeader
         title={es.usr.titulo}
         actions={
-          <Link href="/users/create" className="rounded bg-accent px-4 py-2 text-sm text-white hover:bg-accent-strong">
-            {es.usr.nuevoUsuario}
-          </Link>
+          <Button asChild>
+            <Link href="/users/create">{es.usr.nuevoUsuario}</Link>
+          </Button>
         }
       />
 
