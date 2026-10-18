@@ -23,13 +23,18 @@ export default function ProjectProfitabilityReport({ data }) {
   return (
     <div>
       <div className="mb-6 grid grid-cols-2 gap-4 md:grid-cols-5">
-        <Card label={t.colFacturado} value={money(s.total_billed)} />
-        <Card label={t.colCobrado} value={money(s.total_paid)} />
+        <Card label={t.colFacturado} value={money(s.total_billed_net)} />
+        <Card label={t.colCobrado} value={money(s.total_paid_net)} />
         <Card label={t.colGastos} value={money(s.total_expenses)} />
         <Card label={t.colMargen} value={money(s.net_margin)} tone={tone(s.net_margin)} />
         <Card label={t.colMargenPct} value={pct(s.margin_pct)} tone={tone(s.net_margin)} />
       </div>
       <p className="mb-4 text-xs text-muted">{t.notaMargen}</p>
+      {s.invoices_without_itbis > 0 && (
+        <p className="mb-4 rounded-md border border-amber-200 bg-amber-50 p-2 text-xs text-amber-700">
+          {t.avisoSinItbis(s.invoices_without_itbis)}
+        </p>
+      )}
       {rows.length === 0 ? (
         <p className="text-sm text-muted">{t.sinDatos}</p>
       ) : (
@@ -59,8 +64,8 @@ export default function ProjectProfitabilityReport({ data }) {
                     {p.quote_label ? <div className="text-xs text-muted">{p.quote_label}</div> : null}
                   </td>
                   <td className={dt.td}>{p.client_name}</td>
-                  <td className={dt.tdRight}>{money(p.billed)}</td>
-                  <td className={dt.tdRight}>{money(p.paid)}</td>
+                  <td className={dt.tdRight}>{money(p.billed_net)}</td>
+                  <td className={dt.tdRight}>{money(p.paid_net)}</td>
                   <td className={dt.tdRight}>{money(p.outstanding)}</td>
                   <td className={dt.tdRight}>{money(p.expenses)}</td>
                   <td className={`${dt.tdRight} ${tone(p.net_margin)}`}>{money(p.net_margin)}</td>
@@ -84,8 +89,8 @@ export function profitabilityCsv(data) {
   let csv = t.csvRentabilidad;
   const q = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
   (data?.projects || []).forEach((p) => {
-    csv += [p.project_number, q(p.name), q(p.client_name), p.quote_label ?? "", p.billed.toFixed(2), p.billed_itbis.toFixed(2),
-      p.paid.toFixed(2), p.outstanding.toFixed(2), p.expenses.toFixed(2), p.net_margin.toFixed(2),
+    csv += [p.project_number, q(p.name), q(p.client_name), p.quote_label ?? "", p.billed_net.toFixed(2), p.billed_itbis.toFixed(2),
+      p.paid_net.toFixed(2), p.outstanding.toFixed(2), p.expenses.toFixed(2), p.net_margin.toFixed(2),
       p.margin_pct === null ? "" : p.margin_pct.toFixed(2), p.cash_margin.toFixed(2)].join(",") + "\n";
   });
   return csv;
