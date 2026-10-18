@@ -2,8 +2,9 @@
 import { fb } from "@/components/ui/filter-bar";
 
 import { useState } from "react";
+import { es } from "@/lib/i18n/es";
 
-export default function ExpensesFilters({ onFilter }) {
+export default function ExpensesFilters({ onFilter, projects = [] }) {
   const [filters, setFilters] = useState({
     category: "",
     dateFrom: "",
@@ -64,14 +65,21 @@ export default function ExpensesFilters({ onFilter }) {
 
         {/* Proyecto (solo referencia, módulo independiente) */}
         <div>
-          <label className={fb.label}>Proyecto (referencia opcional)</label>
-          <input
+          <label className={fb.label}>{es.led.colProyecto}</label>
+          <select
             name="project_id"
             value={filters.project_id}
             onChange={handleChange}
             className={fb.control}
-            placeholder="Texto o ID opcional"
-          />
+          >
+            <option value="">{es.led.todosProyectos}</option>
+            <option value="none">{es.led.sinProyecto}</option>
+            {projects.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.project_number ?? `P-${String(p.id).padStart(4, "0")}`} · {p.name}
+              </option>
+            ))}
+          </select>
         </div>
 
         {/* Cotización (solo referencia, módulo independiente) */}

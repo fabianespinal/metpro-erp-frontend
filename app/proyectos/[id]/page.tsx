@@ -11,6 +11,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { fb } from "@/components/ui/filter-bar";
 import { useCurrentRole } from "@/lib/currentRole";
+import ProjectExpensesTab from "@/components/projects/ProjectExpensesTab";
 
 const t = es.proyectos;
 const inputClass =
@@ -51,6 +52,7 @@ export default function ProyectoDetallePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [tab, setTab] = useState<"datos" | "gastos">("datos");
 
   const load = useCallback(async () => {
     try {
@@ -138,6 +140,30 @@ export default function ProyectoDetallePage() {
         }
       />
 
+      <div role="tablist" className="mb-4 flex gap-1 border-b border-line">
+        {([
+          ["datos", es.led.tabDatos],
+          ["gastos", es.led.tabGastos],
+        ] as const).map(([key, label]) => (
+          <button
+            key={key}
+            type="button"
+            role="tab"
+            aria-selected={tab === key}
+            onClick={() => setTab(key)}
+            className={`-mb-px border-b-2 px-4 py-2 text-sm font-medium ${
+              tab === key ? "border-accent text-ink" : "border-transparent text-muted hover:text-ink"
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {tab === "gastos" && <ProjectExpensesTab projectId={proyecto.id} />}
+
+      {tab === "datos" && (
+      <>
       <section className="mb-6 rounded-lg border border-line bg-surface p-4 shadow-card">
         <h2 className="mb-3 text-base font-semibold text-ink">{t.vinculos}</h2>
         <dl className="grid gap-3 text-sm sm:grid-cols-3">
@@ -227,6 +253,8 @@ export default function ProyectoDetallePage() {
         <h2 className="mb-1 font-semibold text-ink">{t.faseTresTitulo}</h2>
         <p>{t.faseTresTexto}</p>
       </section>
+      </>
+      )}
     </div>
   );
 }

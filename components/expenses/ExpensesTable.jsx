@@ -35,7 +35,17 @@ export default function ExpensesTable({ expenses, onDelete }) {
               ${Number(exp.amount).toFixed(2)}
             </td>
 
-            <td className={dt.td}>{exp.project_id || "-"}</td>
+            <td className={dt.td}>
+              {exp.project_id ? (
+                <a
+                  href={`/proyectos/${exp.project_id}`}
+                  title={exp.project_name || ""}
+                  className="inline-flex items-center rounded-md bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-200 hover:underline"
+                >
+                  {exp.project_number || `P-${exp.project_id}`}{exp.project_name ? ` · ${exp.project_name}` : ""}
+                </a>
+              ) : "-"}
+            </td>
             <td className={dt.td}>{exp.quote_id || "-"}</td>
 
             <td className={dt.tdRight}>

@@ -16,6 +16,7 @@ export default function ExpensesPage() {
   // Delete is admin only (API enforces the same rule).
   const { isAdmin } = useCurrentRole();
   const [clients, setClients] = useState([]);
+  const [projects, setProjects] = useState([]);
   const [loadError, setLoadError] = useState(null)
   const [expenses, setExpenses] = useState([]);
   const [filtered, setFiltered] = useState([]);
@@ -23,6 +24,7 @@ export default function ExpensesPage() {
 
   useEffect(() => {
     loadClients();
+    loadProjects();
     loadExpenses();
   }, []);
 
@@ -37,6 +39,17 @@ export default function ExpensesPage() {
       console.error("Error loading clients:", err);
       setClients([]);
       setLoadError(`No se pudieron cargar los clientes: ${err.message}`);
+    }
+  }
+
+  // Projects for the "Proyecto (opcional)" dropdown and the filter.
+  async function loadProjects() {
+    try {
+      const data = await api.get("/projects/");
+      setProjects(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error("Error loading projects:", err);
+      setProjects([]);
     }
   }
 
@@ -76,15 +89,15 @@ export default function ExpensesPage() {
       result = result.filter(e => new Date(e.date) <= new Date(filters.dateTo));
     }
 
-    if (filters.projectId) {
-      result = result.filter(
-        e => (e.project_id || "").toLowerCase() === filters.projectId.toLowerCase()
-      );
+    if (filters.project_id === "none") {
+      result = result.filter(e => e.project_id == null);
+    } else if (filters.project_id) {
+      result = result.filter(e => String(e.project_id ?? "") === String(filters.project_id));
     }
 
-    if (filters.quoteId) {
+    if (filters.quote_id) {
       result = result.filter(
-        e => (e.quote_id || "").toLowerCase() === filters.quoteId.toLowerCase()
+        e => (e.quote_id || "").toLowerCase() === filters.quote_id.toLowerCase()
       );
     }
 
@@ -102,14 +115,11 @@ export default function ExpensesPage() {
       delete formData.client_id;
     }
 
-    // Convert quote_id and project_id to strings (DB expects TEXT)
+    // quote_id stays free text. project_id is a project number from the dropdown, or none.
     if (formData.quote_id !== undefined && formData.quote_id !== null) {
       formData.quote_id = String(formData.quote_id);
     }
-
-    if (formData.project_id !== undefined && formData.project_id !== null) {
-      formData.project_id = String(formData.project_id);
-    }
+    formData.project_id = formData.project_id ? Number(formData.project_id) : null;
 
     try {
       await api.post("/expenses/", formData);
@@ -154,7 +164,7 @@ export default function ExpensesPage() {
         exp.description ? `"${exp.description.replace(/"/g, '""')}"` : "",
         exp.amount,
         exp.payment_method ?? "",
-        exp.project_id ?? "",
+        exp.project_number ? `"${exp.project_number} ${String(exp.project_name ?? "").replace(/"/g, '""')}"` : "",
         exp.quote_id ?? ""
       ].join(",") + "\n";
     });
@@ -177,11 +187,12 @@ export default function ExpensesPage() {
 
       <ExpenseForm
         clients={clients}
+        projects={projects}
         onSubmit={handleCreateExpense}
         loading={loading}
       />
 
-      <ExpensesFilters onFilter={applyFilters} />
+      <ExpensesFilters onFilter={applyFilters} projects={projects} />
 
       <ExpensesSummary expenses={filtered} />
 

@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from "react";
+import { es } from "@/lib/i18n/es";
 
-export default function ExpenseForm({ clients, onSubmit, loading }) {
+export default function ExpenseForm({ clients, projects = [], onSubmit, loading }) {
   const [form, setForm] = useState({
     date: "",
     category: "",
@@ -100,14 +101,20 @@ export default function ExpenseForm({ clients, onSubmit, loading }) {
 
         {/* Proyecto (opcional) */}
         <div>
-          <label className="block mb-1 font-medium">Proyecto (opcional)</label>
-          <input
-            type="text"
+          <label className="block mb-1 font-medium">{es.led.proyectoOpcional}</label>
+          <select
             name="project_id"
             value={form.project_id}
             onChange={handleChange}
             className="border p-2 rounded w-full"
-          />
+          >
+            <option value="">{es.led.sinProyecto}</option>
+            {projects.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.project_number ?? `P-${String(p.id).padStart(4, "0")}`} · {p.name}
+              </option>
+            ))}
+          </select>
         </div>
 
         {/* Cotización (opcional) */}

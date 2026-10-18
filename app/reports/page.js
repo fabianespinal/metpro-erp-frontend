@@ -8,6 +8,9 @@ import { fb } from "@/components/ui/filter-bar"
 import { dt } from "@/components/ui/data-table"
 
 import { useState, useEffect } from 'react'
+import ProjectProfitabilityReport, { profitabilityCsv } from '@/components/reports/ProjectProfitabilityReport'
+import ExpensesByCategoryReport, { categoriesCsv } from '@/components/reports/ExpensesByCategoryReport'
+import { api } from '@/lib/api'
 
 export default function ReportsPage() {
   const [reportType, setReportType] = useState('quotes-summary')
@@ -15,8 +18,11 @@ export default function ReportsPage() {
   const [filters, setFilters] = useState({
     start_date: '',
     end_date: '',
-    client_id: ''
+    client_id: '',
+    project_id: ''
   })
+  const [projects, setProjects] = useState([])
+  const isLedgerReport = reportType === 'project-profitability' || reportType === 'expenses-by-category'
   const [clients, setClients] = useState([])
   const [reportData, setReportData] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -34,6 +40,9 @@ export default function ReportsPage() {
 
   useEffect(() => {
     fetchClients()
+    api.get('/projects/')
+      .then((d) => setProjects(Array.isArray(d) ? d : []))
+      .catch(() => setProjects([]))
   }, [])
 
   const fetchClients = async () => {
@@ -67,7 +76,8 @@ export default function ReportsPage() {
       const params = new URLSearchParams({
         start_date: filters.start_date,
         end_date: filters.end_date,
-        ...(filters.client_id && { client_id: filters.client_id })
+        ...(filters.client_id && reportType !== 'expenses-by-category' && { client_id: filters.client_id }),
+        ...(filters.project_id && isLedgerReport && { project_id: filters.project_id })
       }).toString()
 
       const apiUrl = process.env.NEXT_PUBLIC_API_URL
@@ -83,13 +93,13 @@ export default function ReportsPage() {
       if (!res.ok) {
         checkUnauthorized(res)
         const errText = await res.text()
-        throw new Error(`Server error: ${errText || res.status}`)
+        throw new Error(`${es.led.errorServidor}${errText || res.status}`)
       }
 
       setReportData(unwrapEnvelope(await res.json()))
     } catch (error) {
       console.error('Report generation failed:', error)
-      alert(`Report failed: ${error.message}`)
+      alert(`${es.led.errorReporte}${error.message}`)
     } finally {
       setLoading(false)
     }
@@ -132,6 +142,16 @@ export default function ReportsPage() {
       })
     }
 
+    else if (reportType === 'project-profitability') {
+      filename = 'rentabilidad_proyectos'
+      csvContent = profitabilityCsv(reportData)
+    }
+
+    else if (reportType === 'expenses-by-category') {
+      filename = 'gastos_por_categoria'
+      csvContent = categoriesCsv(reportData)
+    }
+
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
     const url = window.URL.createObjectURL(blob)
     const link = document.createElement('a')
@@ -145,7 +165,7 @@ export default function ReportsPage() {
 
   return (
     <div className="w-full px-4 lg:px-8 py-8 text-ink">
-      <PageHeader title="Reportes" subtitle="Análisis de cotizaciones, ingresos y actividad de clientes" />
+      <PageHeader title="Reportes" subtitle="Análisis de cotizaciones, ingresos, clientes, proyectos y gastos" />
       <ErrorBanner message={loadError} />
 
       {/* Report Type Selector */}
@@ -165,6 +185,8 @@ export default function ReportsPage() {
               <option value="quotes-summary">{es.rep.resumenCotizaciones}</option>
               <option value="revenue">{es.rep.ingresos}</option>
               <option value="client-activity">{es.rep.actividadClientes}</option>
+              <option value="project-profitability">{es.led.rentabilidad}</option>
+              <option value="expenses-by-category">{es.led.gastosCategoria}</option>
             </select>
           </div>
 
@@ -188,6 +210,25 @@ export default function ReportsPage() {
             />
           </div>
 
+          {isLedgerReport && (
+            <div>
+              <label className={fb.label}>{es.led.colProyecto}</label>
+              <select
+                value={filters.project_id}
+                onChange={(e) => setFilters({ ...filters, project_id: e.target.value })}
+                className={`${fb.control} md:w-64`}
+              >
+                <option value="">{es.led.todosProyectos}</option>
+                {projects.map(p => (
+                  <option key={p.id} value={p.id}>
+                    {p.project_number ?? `P-${p.id}`} · {p.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {reportType !== 'expenses-by-category' && (
           <div>
             <label className={fb.label}>Cliente</label>
             <select
@@ -203,6 +244,7 @@ export default function ReportsPage() {
               ))}
             </select>
           </div>
+          )}
 
         </div>
 
@@ -229,8 +271,10 @@ export default function ReportsPage() {
             <p className='text-sm font-medium text-ink'>{es.rep.filtrosAplicados}</p>
             <p className='text-sm text-muted'>
               {es.rep.rangoFechas} {filters.start_date} {es.rep.hasta} {filters.end_date}
-              {filters.client_id &&
+              {filters.client_id && reportType !== 'expenses-by-category' &&
                 ` | ${es.rep.cliente} ${clients.find(c => c.id == filters.client_id)?.company_name}`}
+              {filters.project_id && isLedgerReport &&
+                ` | ${es.led.colProyecto}: ${projects.find(p => p.id == filters.project_id)?.name ?? filters.project_id}`}
             </p>
           </div>
 
@@ -240,6 +284,8 @@ export default function ReportsPage() {
               {reportType === 'quotes-summary' && es.rep.tituloResumen}
               {reportType === 'revenue' && es.rep.tituloIngresos}
               {reportType === 'client-activity' && es.rep.tituloActividad}
+              {reportType === 'project-profitability' && es.led.rentabilidad}
+              {reportType === 'expenses-by-category' && es.led.gastosCategoria}
             </h2>
 
             <Button variant="outline" onClick={exportCSV}>
@@ -354,6 +400,10 @@ export default function ReportsPage() {
           {/* ----------------------------- */}
           {/* CLIENT ACTIVITY */}
           {/* ----------------------------- */}
+          {reportType === 'project-profitability' && <ProjectProfitabilityReport data={reportData} />}
+
+          {reportType === 'expenses-by-category' && <ExpensesByCategoryReport data={reportData} />}
+
           {reportType === 'client-activity' && (
             <div>
               <div className='mb-6 grid grid-cols-1 gap-4 md:grid-cols-3'>
