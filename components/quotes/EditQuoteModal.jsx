@@ -1,3 +1,4 @@
+import { es } from "@/lib/i18n/es";
 import { useState, useEffect, useMemo } from 'react'
 import { api } from '@/lib/api'
 import SurchargeControls from './SurchargeControls'
@@ -132,7 +133,7 @@ export default function EditQuoteModal({ isOpen, onClose, quote, onSave, clients
       onClose()
     } catch (error) {
       console.error('Error saving quote:', error)
-      setSaveError(error?.message || 'Error saving quote. Try again.')
+      setSaveError(error?.message || es.cot.errorGuardarCotizacion)
     }
   }
 
@@ -148,17 +149,17 @@ export default function EditQuoteModal({ isOpen, onClose, quote, onSave, clients
 
           {/* Client */}
           <div>
-            <label className='block text-sm font-medium mb-2'>Client</label>
+            <label className='block text-sm font-medium mb-2'>{es.cot.cliente}</label>
             <select
               value={formData.client_id}
               onChange={(e) => setFormData({ ...formData, client_id: e.target.value })}
               className='w-full border border-line rounded-lg p-2'
               required
             >
-              <option value=''>-- Select Client --</option>
+              <option value=''>{es.cot.seleccionarCliente}</option>
               {clients.map((client) => (
                 <option key={client.id} value={client.id}>
-                  {client.company_name} - {client.contact_name || 'No contact'}
+                  {client.company_name} - {client.contact_name || es.cot.sinContacto}
                 </option>
               ))}
             </select>
@@ -166,28 +167,28 @@ export default function EditQuoteModal({ isOpen, onClose, quote, onSave, clients
 
           {/* Project Name */}
           <div>
-            <label className='block text-sm font-medium mb-2'>Project Name</label>
+            <label className='block text-sm font-medium mb-2'>{es.cot.nombreProyecto}</label>
             <input
               type='text'
               value={formData.project_name}
               onChange={(e) => setFormData({ ...formData, project_name: e.target.value })}
               className='w-full border border-line rounded-lg p-2'
-              placeholder='Enter project name'
+              placeholder={es.cot.ingreseProyecto}
             />
           </div>
 
           {/* Status */}
           <div>
-            <label className='block text-sm font-medium mb-2'>Status</label>
+            <label className='block text-sm font-medium mb-2'>{es.cot.estado}</label>
             <select
               value={formData.status}
               onChange={(e) => setFormData({ ...formData, status: e.target.value })}
               className='w-full border border-line rounded-lg p-2'
             >
-              <option value='Draft'>Draft</option>
-              <option value='Sent'>Sent</option>
-              <option value='Approved'>Approved</option>
-              <option value='Rejected'>Rejected</option>
+              <option value='Draft'>{es.estados.draft}</option>
+              <option value='Sent'>{es.estados.sent}</option>
+              <option value='Approved'>{es.estados.approved}</option>
+              <option value='Rejected'>{es.estados.rejected}</option>
               <option value='Cancelled'>Cancelled</option>
               <option value='Invoiced'>Invoiced</option>
             </select>
@@ -196,7 +197,7 @@ export default function EditQuoteModal({ isOpen, onClose, quote, onSave, clients
           {/* Items */}
           <div>
             <div className='flex items-center justify-between mb-2'>
-              <label className='block text-sm font-medium'>Items</label>
+              <label className='block text-sm font-medium'>{es.cot.articulos}</label>
               <button
                 type='button'
                 onClick={addItem}
@@ -210,11 +211,11 @@ export default function EditQuoteModal({ isOpen, onClose, quote, onSave, clients
               <table className='w-full text-sm'>
                 <thead className='bg-canvas'>
                   <tr>
-                    <th className='text-left px-3 py-2 font-medium text-muted'>Product</th>
+                    <th className='text-left px-3 py-2 font-medium text-muted'>{es.cot.producto}</th>
                     <th className='text-right px-3 py-2 font-medium text-muted w-20'>Qty</th>
-                    <th className='text-right px-3 py-2 font-medium text-muted w-28'>Unit Price</th>
-                    <th className='text-right px-3 py-2 font-medium text-muted w-24'>Discount</th>
-                    <th className='text-right px-3 py-2 font-medium text-muted w-28'>Total</th>
+                    <th className='text-right px-3 py-2 font-medium text-muted w-28'>{es.cot.precioUnitario}</th>
+                    <th className='text-right px-3 py-2 font-medium text-muted w-24'>{es.cot.descuento}</th>
+                    <th className='text-right px-3 py-2 font-medium text-muted w-28'>{es.cot.total}</th>
                     <th className='w-10'></th>
                   </tr>
                 </thead>
@@ -227,7 +228,7 @@ export default function EditQuoteModal({ isOpen, onClose, quote, onSave, clients
                           value={item.product_name}
                           onChange={(e) => selectProduct(i, e.target.value)}
                           className='w-full border border-line rounded p-1 text-sm'
-                          placeholder='Product name'
+                          placeholder={es.cot.nombreProducto}
                         />
                         <datalist id={`products-${i}`}>
                           {products.map((p) => (
@@ -262,7 +263,7 @@ export default function EditQuoteModal({ isOpen, onClose, quote, onSave, clients
                             onChange={(e) => updateItem(i, 'discount_type', e.target.value)}
                             className='border border-line rounded p-1 text-xs'
                           >
-                            <option value='none'>None</option>
+                            <option value='none'>{es.cot.ninguno}</option>
                             <option value='percentage'>%</option>
                             <option value='fixed'>$</option>
                           </select>
@@ -306,13 +307,13 @@ export default function EditQuoteModal({ isOpen, onClose, quote, onSave, clients
 
           {/* Notes */}
           <div>
-            <label className='block text-sm font-medium mb-2'>Notes</label>
+            <label className='block text-sm font-medium mb-2'>{es.cot.notas}</label>
             <textarea
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               className='w-full border border-line rounded-lg p-2'
               rows='3'
-              placeholder='Additional notes'
+              placeholder={es.cot.notasAdicionales}
             />
           </div>
 
@@ -355,13 +356,13 @@ export default function EditQuoteModal({ isOpen, onClose, quote, onSave, clients
               onClick={onClose}
               className='px-4 py-2 border border-line rounded-lg hover:bg-canvas'
             >
-              Cancel
+              {es.cot.cancelar}
             </button>
             <button
               type='submit'
               className='px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent-strong'
             >
-              Save Changes
+              {es.cot.guardarCambios}
             </button>
           </div>
         </form>

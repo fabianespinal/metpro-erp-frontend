@@ -1,4 +1,5 @@
 "use client";
+import { es } from "@/lib/i18n/es";
 import ErrorBanner from "@/components/ui/ErrorBanner";
 import { dt } from "@/components/ui/data-table";
 
@@ -14,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import InvoiceDocPreviewModal from "@/components/invoices/InvoiceDocPreviewModal";
 
 // Mirrors the backend manual matrix. Paid is reached only by recording payments.
-const STATUS_LABELS = { Pending: "Pendiente", Paid: "Pagado", Cancelled: "Cancelado", Overdue: "Vencido" };
+const STATUS_LABELS = { Pending: es.estados.pending, Paid: es.estados.paid, Cancelled: es.estados.cancelled, Overdue: es.estados.overdue };
 const MANUAL_NEXT = {
   Pending: ["Overdue", "Cancelled"],
   Overdue: ["Pending", "Cancelled"],
@@ -66,13 +67,13 @@ export default function InvoicesPage() {
       fetchInvoices();
 
       if (window.toast) {
-        window.toast("Status updated!", {
-          title: "Success",
-          description: `Invoice status changed to ${newStatus}`,
+        window.toast(es.fact.estadoActualizado, {
+          title: es.fact.exito,
+          description: es.fact.estadoCambiadoA(STATUS_LABELS[newStatus] ?? newStatus),
         });
       }
     } catch (error) {
-      alert("Error updating status: " + error.message);
+      alert(es.fact.errorEstado + error.message);
     }
   }
 

@@ -1,3 +1,4 @@
+import { es } from "@/lib/i18n/es";
 export default function PDFPreviewModal({ isOpen, onClose, quoteId, pdfUrl }) {
   if (!isOpen) return null
 
@@ -21,12 +22,12 @@ export default function PDFPreviewModal({ isOpen, onClose, quoteId, pdfUrl }) {
             <iframe
               src={pdfUrl}
               className='w-full h-full'
-              title={`Quote ${quoteId} Preview`}
+              title={es.cot.previewTitulo(quoteId)}
             />
           ) : (
             <div className='flex items-center justify-center h-full'>
               <div className='text-center'>
-                <p className='text-muted'>Loading PDF...</p>
+                <p className='text-muted'>{es.cot.cargandoPdf}</p>
               </div>
             </div>
           )}
@@ -37,7 +38,7 @@ export default function PDFPreviewModal({ isOpen, onClose, quoteId, pdfUrl }) {
             onClick={onClose}
             className='px-4 py-2 border border-line rounded-lg hover:bg-canvas'
           >
-            Close
+            {es.comun.cerrar}
           </button>
         </div>
       </div>

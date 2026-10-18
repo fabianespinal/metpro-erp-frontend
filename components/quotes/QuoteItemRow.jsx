@@ -1,3 +1,4 @@
+import { es } from "@/lib/i18n/es";
 export default function QuoteItemRow({ 
   item, 
   index, 
@@ -45,20 +46,20 @@ const lineTotal = (base - discount).toFixed(2)
               value={item.product_name}
               onChange={(e) => onChange(index, 'product_name', e.target.value)}
               className='flex-1 border p-2 rounded text-sm'
-              placeholder='Enter product name'
+              placeholder={es.cot.ingreseNombreProducto}
             />
             <button
               type='button'
               onClick={() => onOpenProductModal(index)}
               className='px-3 py-2 bg-accent text-white rounded hover:bg-accent-strong text-sm'
-              title='Select from database'
+              title={es.cot.seleccionarBD}
             >
               📦
             </button>
           </div>
         </div>
         <div>
-          <label className='block text-xs font-medium mb-1'>Quantity</label>
+          <label className='block text-xs font-medium mb-1'>{es.cot.cantidad}</label>
           <input
             type='number'
             value={item.quantity}
@@ -69,7 +70,7 @@ const lineTotal = (base - discount).toFixed(2)
           />
         </div>
         <div>
-          <label className='block text-xs font-medium mb-1'>Unit Price ($)</label>
+          <label className='block text-xs font-medium mb-1'>{es.cot.precioUnitarioUsd}</label>
           <input
             type='number'
             value={item.unit_price}
@@ -83,19 +84,19 @@ const lineTotal = (base - discount).toFixed(2)
 
       <div className='grid grid-cols-1 md:grid-cols-3 gap-3'>
         <div>
-          <label className='block text-xs font-medium mb-1'>Discount Type</label>
+          <label className='block text-xs font-medium mb-1'>{es.cot.tipoDescuento}</label>
           <select
             value={item.discount_type}
             onChange={(e) => onChange(index, 'discount_type', e.target.value)}
             className='w-full border p-2 rounded text-sm'
           >
-            <option value='none'>No Discount</option>
-            <option value='percentage'>Percentage</option>
-            <option value='fixed'>Fixed Amount</option>
+            <option value='none'>{es.cot.sinDescuento}</option>
+            <option value='percentage'>{es.cot.porcentaje}</option>
+            <option value='fixed'>{es.cot.montoFijo}</option>
           </select>
         </div>
         <div>
-          <label className='block text-xs font-medium mb-1'>Discount Value</label>
+          <label className='block text-xs font-medium mb-1'>{es.cot.valorDescuento}</label>
           <input
             type='number'
             value={item.discount_value}
@@ -107,7 +108,7 @@ const lineTotal = (base - discount).toFixed(2)
           />
         </div>
         <div>
-          <label className='block text-xs font-medium mb-1'>Line Total</label>
+          <label className='block text-xs font-medium mb-1'>{es.cot.totalLinea}</label>
           <div className='w-full border p-2 rounded bg-canvas font-bold text-sm'>
             ${lineTotal}
           </div>

@@ -1,3 +1,4 @@
+import { es } from "@/lib/i18n/es";
 import { useState, useEffect } from 'react'
 import { DEFAULT_CHARGES } from './quoteUtils'
 import { api } from '@/lib/api'
@@ -86,10 +87,10 @@ export function useQuoteForm() {
 
   const getFormData = () => {
     if (!selectedClient) {
-      throw new Error('Please select a client')
+      throw new Error(es.cot.errorSelCliente)
     }
     if (quoteItems.length === 0 || !quoteItems[0].product_name) {
-      throw new Error('Please add at least one product')
+      throw new Error(es.cot.errorSelProducto)
     }
     return {
       client_id: selectedClient.id,

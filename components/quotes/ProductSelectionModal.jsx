@@ -1,3 +1,4 @@
+import { es } from "@/lib/i18n/es";
 import { useState } from 'react'
 
 export default function ProductSelectionModal({ isOpen, onClose, onSelect, products }) {
@@ -16,7 +17,7 @@ export default function ProductSelectionModal({ isOpen, onClose, onSelect, produ
 
         {/* HEADER */}
         <div className='flex items-center justify-between p-5 border-b'>
-          <h3 className='text-xl font-bold text-ink'>Select Product from Database</h3>
+          <h3 className='text-xl font-bold text-ink'>{es.cot.selProductoTitulo}</h3>
           <button
             onClick={onClose}
             className='text-muted hover:text-muted text-2xl'
@@ -30,7 +31,7 @@ export default function ProductSelectionModal({ isOpen, onClose, onSelect, produ
           <div className='relative'>
             <input
               type='text'
-              placeholder='🔍 Search products by name...'
+              placeholder={es.cot.buscarProductos}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className='w-full border border-line rounded-lg py-2 px-4 pl-10 focus:ring-2 focus:ring-accent focus:border-accent'
@@ -47,8 +48,8 @@ export default function ProductSelectionModal({ isOpen, onClose, onSelect, produ
           {products.length === 0 ? (
             <div className='text-center text-muted py-8'>
               <div className='text-4xl mb-2'>📦</div>
-              <p className='font-medium'>No products in database yet</p>
-              <p className='text-sm mt-1'>Go to Products page to add products first</p>
+              <p className='font-medium'>{es.cot.sinProductos}</p>
+              <p className='text-sm mt-1'>{es.cot.irAProductos}</p>
             </div>
           ) : filteredProducts.length === 0 ? (
             <div className='text-center text-muted py-4'>
@@ -84,7 +85,7 @@ export default function ProductSelectionModal({ isOpen, onClose, onSelect, produ
             onClick={onClose}
             className='px-4 py-2 border border-line rounded-lg hover:bg-canvas'
           >
-            Cancel
+            {es.cot.cancelar}
           </button>
         </div>
 

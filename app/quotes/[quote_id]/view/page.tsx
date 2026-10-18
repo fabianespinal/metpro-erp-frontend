@@ -1,4 +1,5 @@
 "use client";
+import { es } from "@/lib/i18n/es";
 import ErrorBanner from "@/components/ui/ErrorBanner";
 import { api } from "@/lib/api";
 import type { DynamicCharge } from "@/lib/quotingApi";
@@ -183,7 +184,7 @@ export default function QuotePublicView() {
               <span className="font-semibold">Contacto:</span> {quote.contact_name}
             </div>
             <div>
-              <span className="font-semibold">Email:</span> {quote.contact_email}
+              <span className="font-semibold">{es.cot.correo}</span> {quote.contact_email}
             </div>
             <div>
               <span className="font-semibold">Teléfono:</span> {quote.contact_phone}
@@ -212,7 +213,7 @@ export default function QuotePublicView() {
         {/* Items Table */}
         <div className="mt-8">
           <div className="mb-4 border-b border-line pb-2 text-xs font-semibold uppercase tracking-wider text-muted">
-            Detalle de Items
+            {es.cot.detalleItems}
           </div>
           <div className={dt.wrap}>
             <table className={dt.table}>
@@ -220,8 +221,8 @@ export default function QuotePublicView() {
                 <tr>
                   <th className="whitespace-nowrap px-1 py-2 text-left text-[11px] font-semibold uppercase tracking-wide text-muted sm:px-4 sm:py-2.5">Descripción</th>
                   <th className="whitespace-nowrap px-1 py-2 text-right text-[11px] font-semibold uppercase tracking-wide text-muted sm:px-4 sm:py-2.5">Cantidad</th>
-                  <th className="whitespace-nowrap px-1 py-2 text-right text-[11px] font-semibold uppercase tracking-wide text-muted sm:px-4 sm:py-2.5">Precio Unit.</th>
-                  <th className="whitespace-nowrap px-1 py-2 text-right text-[11px] font-semibold uppercase tracking-wide text-muted sm:px-4 sm:py-2.5">Total</th>
+                  <th className="whitespace-nowrap px-1 py-2 text-right text-[11px] font-semibold uppercase tracking-wide text-muted sm:px-4 sm:py-2.5">{es.cot.precioUnit}</th>
+                  <th className="whitespace-nowrap px-1 py-2 text-right text-[11px] font-semibold uppercase tracking-wide text-muted sm:px-4 sm:py-2.5">{es.cot.total}</th>
                 </tr>
               </thead>
               <tbody className={dt.tbody}>
@@ -264,7 +265,7 @@ export default function QuotePublicView() {
               </div>
             )}
             <div className="flex justify-between border-b border-line py-1.5 text-sm tabular-nums">
-              <span className="text-muted">Subtotal General</span>
+              <span className="text-muted">{es.cot.subtotalGeneral}</span>
               <span>{money(quote.subtotal)}</span>
             </div>
             <div className="flex justify-between border-b border-line py-1.5 text-sm tabular-nums">
@@ -272,7 +273,7 @@ export default function QuotePublicView() {
               <span>{money(quote.tax_amount)}</span>
             </div>
             <div className="mt-1 flex justify-between border-t-2 border-ink pt-3 text-base font-semibold tabular-nums">
-              <span>TOTAL GENERAL</span>
+              <span>{es.cot.totalGeneralMay}</span>
               <span>{money(quote.grand_total)}</span>
             </div>
           </div>

@@ -1,3 +1,4 @@
+import { es } from "@/lib/i18n/es";
 import { useMemo } from 'react'
 import SurchargeControls from './SurchargeControls'
 import QuoteItemRow from './QuoteItemRow'
@@ -38,14 +39,14 @@ export default function QuoteForm({
 
   return (
     <div className='bg-surface rounded-lg shadow p-6 mb-8'>
-      <h2 className='text-xl font-semibold mb-4'>Create New Quote</h2>
+      <h2 className='text-xl font-semibold mb-4'>{es.cot.crearNueva}</h2>
       
       {/* CLIENT. Locked (read-only) when Step 1 already chose it. */}
       <div className='mb-4'>
-        <label className='block text-sm font-medium mb-2'>Client</label>
+        <label className='block text-sm font-medium mb-2'>{es.cot.cliente}</label>
         {clientLocked ? (
           <div className='w-full border p-2 rounded bg-canvas text-sm'>
-            {selectedClient ? selectedClient.company_name : 'Loading client…'}
+            {selectedClient ? selectedClient.company_name : es.cot.cargandoCliente}
           </div>
         ) : (
           <select
@@ -54,10 +55,10 @@ export default function QuoteForm({
             className='w-full border p-2 rounded'
             required
           >
-            <option value=''>-- Select Client --</option>
+            <option value=''>{es.cot.seleccionarCliente}</option>
             {clients.map(client => (
               <option key={client.id} value={client.id}>
-                {client.company_name} - {client.contact_name || 'No contact'}
+                {client.company_name} - {client.contact_name || es.cot.sinContacto}
               </option>
             ))}
           </select>
@@ -67,12 +68,12 @@ export default function QuoteForm({
       {/* CONTACT SELECT — only shows after company is picked */}
       {selectedClient && (
         <div className='mb-4'>
-          <label className='block text-sm font-medium mb-2'>Select Contact (optional)</label>
+          <label className='block text-sm font-medium mb-2'>{es.cot.contactoOpcional}</label>
           {contacts.length === 0 ? (
             <p className='text-sm text-muted border p-2 rounded bg-canvas'>
               No contacts found for this company. Add contacts from the{' '}
               <a href='/clients' className='text-accent underline'>
-                Clients page
+                {es.cot.paginaClientes}
               </a>
               .
             </p>
@@ -82,7 +83,7 @@ export default function QuoteForm({
               onChange={(e) => setSelectedContact(contacts.find(c => c.id == e.target.value) || null)}
               className='w-full border p-2 rounded'
             >
-              <option value=''>-- No specific contact --</option>
+              <option value=''>{es.cot.sinContactoEspecifico}</option>
               {contacts.map(contact => (
                 <option key={contact.id} value={contact.id}>
                   {contact.name}{contact.email ? ` — ${contact.email}` : ''}{contact.phone ? ` — ${contact.phone}` : ''}
@@ -95,13 +96,13 @@ export default function QuoteForm({
 
       {/* PROJECT NAME */}
       <div className='mb-4'>
-        <label className='block text-sm font-medium mb-2'>Project Name (optional)</label>
+        <label className='block text-sm font-medium mb-2'>{es.cot.proyectoOpcional}</label>
         <input
           type='text'
           value={projectName}
           onChange={(e) => setProjectName(e.target.value)}
           className='w-full border p-2 rounded'
-          placeholder='Enter project name'
+          placeholder={es.cot.ingreseProyecto}
         />
       </div>
 
@@ -130,7 +131,7 @@ export default function QuoteForm({
 
       {/* QUOTE ITEMS */}
       <div className='mb-4'>
-        <label className='block text-sm font-medium mb-2'>Quote Items *</label>
+        <label className='block text-sm font-medium mb-2'>{es.cot.articulosTitulo}</label>
         {quoteItems.map((item, index) => (
           <QuoteItemRow
             key={index}
@@ -160,13 +161,13 @@ export default function QuoteForm({
 
       {/* NOTES */}
       <div className='mb-4 mt-4'>
-        <label className='block text-sm font-medium mb-2'>Notes (optional)</label>
+        <label className='block text-sm font-medium mb-2'>{es.cot.notasOpcional}</label>
         <textarea
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           className='w-full border p-2 rounded'
           rows='3'
-          placeholder='Any additional notes or terms'
+          placeholder={es.cot.notasPlaceholder}
         />
       </div>
 
@@ -176,7 +177,7 @@ export default function QuoteForm({
         disabled={loading}
         className='w-full bg-accent text-white py-3 rounded hover:bg-accent-strong disabled:opacity-50'
       >
-        {loading ? 'Creating...' : 'Create Quote'}
+        {loading ? es.comun.creando : es.cot.crearCotizacion}
       </button>
     </div>
   )

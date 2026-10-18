@@ -1,3 +1,4 @@
+import { es } from "@/lib/i18n/es";
 /**
  * Take-off line model (quoting v1, module 6c). Pure functions, no React.
  *
@@ -45,7 +46,7 @@ export function linesFromPack(pack: TemplatePack): TakeOffLine[] {
         category: category.name,
         include: !item.optional,
         product_id: item.product_id,
-        name: item.product_name ?? `Product ${item.product_id}`,
+        name: item.product_name ?? es.cot.productoGenerico(item.product_id),
         description: "",
         quantity: item.default_qty,
         unit_price: item.unit_price ?? 0,
@@ -69,12 +70,12 @@ export function lineTotal(line: TakeOffLine): number {
 
 /** Validation for one line. Returns the first problem, or null. */
 export function lineProblem(line: TakeOffLine): string | null {
-  if (!line.name.trim()) return "Name is required";
-  if (!(line.quantity > 0)) return "Quantity must be greater than 0";
-  if (line.unit_price < 0) return "Price cannot be negative";
-  if (line.discount_value < 0) return "Discount cannot be negative";
+  if (!line.name.trim()) return es.cot.vNombre;
+  if (!(line.quantity > 0)) return es.cot.vCantidad;
+  if (line.unit_price < 0) return es.cot.vPrecio;
+  if (line.discount_value < 0) return es.cot.vDescuento;
   if (line.discount_type === "percentage" && line.discount_value > 100) {
-    return "Percentage discount cannot exceed 100";
+    return es.cot.vPorcentaje;
   }
   return null;
 }

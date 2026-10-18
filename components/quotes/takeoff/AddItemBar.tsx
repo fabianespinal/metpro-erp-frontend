@@ -1,5 +1,6 @@
 "use client";
 
+import { es } from "@/lib/i18n/es";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { formatMoney, type TakeOffLine, newManualLine, newProductLine } from "@/lib/takeOffLines";
@@ -39,16 +40,16 @@ export function AddItemBar({
 
   return (
     <section className="rounded-lg border border-line bg-surface p-4 shadow-card">
-      <h2 className="mb-3 text-sm font-semibold text-ink">Add item</h2>
+      <h2 className="mb-3 text-sm font-semibold text-ink">{es.cot.agregarArticulo}</h2>
       <div className="grid gap-3 sm:grid-cols-[1fr_auto_auto]">
         <div className="relative">
           <input
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search products"
+            placeholder={es.cot.buscarProductosCorto}
             className={takeOffInputClass}
-            aria-label="Search products"
+            aria-label={es.cot.buscarProductosCorto}
           />
           {matches.length > 0 ? (
             <ul className="absolute z-10 mt-1 max-h-60 w-full overflow-y-auto rounded-md border border-line bg-surface shadow-card">
@@ -68,10 +69,10 @@ export function AddItemBar({
           ) : null}
         </div>
         <Button variant="secondary" onClick={() => addManual("service")}>
-          Add service
+          {es.cot.agregarServicio}
         </Button>
         <Button variant="secondary" onClick={() => addManual("custom")}>
-          Add custom
+          {es.cot.agregarPersonalizado}
         </Button>
       </div>
     </section>

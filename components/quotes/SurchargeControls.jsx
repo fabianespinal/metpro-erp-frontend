@@ -1,3 +1,4 @@
+import { es } from "@/lib/i18n/es";
 export default function SurchargeControls({ charges, setCharges }) {
   const handleToggle = (field) => {
     setCharges({ ...charges, [field]: !charges[field] })
@@ -38,7 +39,7 @@ export default function SurchargeControls({ charges, setCharges }) {
 
   return (
     <div className='mb-4'>
-      <label className='block text-sm font-medium mb-3'>Additional Charges</label>
+      <label className='block text-sm font-medium mb-3'>{es.cot.cargosAdicionales}</label>
       <div className='border rounded-lg p-4 space-y-3'>
         <div className='flex items-center justify-between'>
           <div className='flex items-center gap-2'>
@@ -48,7 +49,7 @@ export default function SurchargeControls({ charges, setCharges }) {
               onChange={() => handleToggle('supervision')}
               className='w-4 h-4'
             />
-            <label className='text-sm font-medium'>Supervision</label>
+            <label className='text-sm font-medium'>{es.cot.cargos.supervision}</label>
           </div>
           <div className='flex items-center gap-2'>
             <input
@@ -72,7 +73,7 @@ export default function SurchargeControls({ charges, setCharges }) {
               onChange={() => handleToggle('admin')}
               className='w-4 h-4'
             />
-            <label className='text-sm font-medium'>Admin</label>
+            <label className='text-sm font-medium'>{es.cot.cargos.admin}</label>
           </div>
           <div className='flex items-center gap-2'>
             <input
@@ -96,7 +97,7 @@ export default function SurchargeControls({ charges, setCharges }) {
               onChange={() => handleToggle('insurance')}
               className='w-4 h-4'
             />
-            <label className='text-sm font-medium'>Insurance</label>
+            <label className='text-sm font-medium'>{es.cot.cargos.insurance}</label>
           </div>
           <div className='flex items-center gap-2'>
             <input
@@ -120,7 +121,7 @@ export default function SurchargeControls({ charges, setCharges }) {
               onChange={() => handleToggle('transport')}
               className='w-4 h-4'
             />
-            <label className='text-sm font-medium'>Transport</label>
+            <label className='text-sm font-medium'>{es.cot.cargos.transport}</label>
           </div>
           <div className='flex items-center gap-2'>
             <input
@@ -144,7 +145,7 @@ export default function SurchargeControls({ charges, setCharges }) {
               onChange={() => handleToggle('contingency')}
               className='w-4 h-4'
             />
-            <label className='text-sm font-medium'>Contingency</label>
+            <label className='text-sm font-medium'>{es.cot.cargos.contingency}</label>
           </div>
           <div className='flex items-center gap-2'>
             <input
@@ -163,7 +164,7 @@ export default function SurchargeControls({ charges, setCharges }) {
         {/* Dynamic Charges */}
         {dynamicCharges.length > 0 && (
           <div className='border-t pt-3'>
-            <div className='text-xs font-medium text-muted mb-2'>Custom Charges</div>
+            <div className='text-xs font-medium text-muted mb-2'>{es.cot.cargosPersonalizados}</div>
             <div className='space-y-2'>
               {dynamicCharges.map((dc, index) => (
                 <div key={dc.id} className='flex items-center gap-2'>
@@ -177,7 +178,7 @@ export default function SurchargeControls({ charges, setCharges }) {
                     type='text'
                     value={dc.name}
                     onChange={(e) => handleDynamicChargeNameChange(index, e.target.value)}
-                    placeholder='Charge name'
+                    placeholder={es.cot.nombreCargo}
                     className='flex-1 border rounded px-2 py-1 text-sm'
                   />
                   <input
@@ -211,7 +212,7 @@ export default function SurchargeControls({ charges, setCharges }) {
           onClick={handleAddDynamicCharge}
           className='mt-3 w-full text-sm text-accent hover:text-accent-strong py-1 border border-dashed border-accent rounded'
         >
-          + Add custom charge
+          {es.cot.agregarCargo}
         </button>
       )}
     </div>

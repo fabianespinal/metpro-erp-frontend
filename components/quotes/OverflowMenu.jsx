@@ -1,3 +1,4 @@
+import { es } from "@/lib/i18n/es";
 import { useState, useRef, useEffect } from 'react'
 import { useCurrentRole } from '@/lib/currentRole'
 
@@ -38,7 +39,7 @@ export default function OverflowMenu({
       <button
         onClick={() => setIsOpen(!isOpen)}
         className='p-2 hover:bg-canvas rounded-full transition'
-        aria-label='More actions'
+        aria-label={es.cot.masAcciones}
       >
         <svg className='w-5 h-5' fill='currentColor' viewBox='0 0 20 20'>
           <path d='M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z' />
@@ -55,7 +56,7 @@ export default function OverflowMenu({
               }}
               className='w-full text-left px-4 py-2 hover:bg-canvas flex items-center gap-2'
             >
-              <span>Preview PDF</span>
+              <span>{es.cot.vistaPrevia}</span>
             </button>
 
             <button
@@ -65,7 +66,7 @@ export default function OverflowMenu({
               }}
               className='w-full text-left px-4 py-2 hover:bg-canvas flex items-center gap-2'
             >
-              <span>Download PDF</span>
+              <span>{es.cot.descargarPdf}</span>
             </button>
 
             {/* Mirrors the backend matrix: approve from Final or Sent; reject from Final, Sent or Approved (no invoice). */}
@@ -77,7 +78,7 @@ export default function OverflowMenu({
                 }}
                 className='w-full text-left px-4 py-2 hover:bg-canvas flex items-center gap-2 text-emerald-700'
               >
-                <span>Approve Quote</span>
+                <span>{es.cot.aprobar}</span>
               </button>
             )}
 
@@ -89,7 +90,7 @@ export default function OverflowMenu({
                 }}
                 className='w-full text-left px-4 py-2 hover:bg-canvas flex items-center gap-2 text-red-600'
               >
-                <span>Reject Quote</span>
+                <span>{es.cot.rechazar}</span>
               </button>
             )}
 
@@ -101,7 +102,7 @@ export default function OverflowMenu({
                 }}
                 className='w-full text-left px-4 py-2 hover:bg-canvas flex items-center gap-2 text-accent-strong'
               >
-                <span>Convert to Invoice</span>
+                <span>{es.cot.convertir}</span>
               </button>
             )}
 
@@ -113,7 +114,7 @@ export default function OverflowMenu({
                 }}
                 className='w-full text-left px-4 py-2 hover:bg-canvas flex items-center gap-2'
               >
-                <span>Generate Conduce</span>
+                <span>{es.cot.generarConduce}</span>
               </button>
             )}
 
@@ -126,7 +127,7 @@ export default function OverflowMenu({
               }}
               className='w-full text-left px-4 py-2 hover:bg-canvas flex items-center gap-2'
             >
-              <span>Duplicate</span>
+              <span>{es.cot.duplicar}</span>
             </button>
 
             {quote.status === 'Draft' && (
@@ -137,7 +138,7 @@ export default function OverflowMenu({
                 }}
                 className='w-full text-left px-4 py-2 hover:bg-canvas flex items-center gap-2'
               >
-                <span>Edit</span>
+                <span>{es.cot.editar}</span>
               </button>
             )}
 
@@ -153,7 +154,7 @@ export default function OverflowMenu({
                   }}
                   className='w-full text-left px-4 py-2 hover:bg-canvas flex items-center gap-2 text-red-600'
                 >
-                  <span>Delete</span>
+                  <span>{es.cot.eliminar}</span>
                 </button>
               </>
             )}

@@ -1,3 +1,4 @@
+import { es } from "@/lib/i18n/es";
 import { dt } from "@/components/ui/data-table";
 import StatusPill from '@/components/ui/StatusPill'
 import PrimaryActionButton from './PrimaryActionButton'
@@ -23,7 +24,7 @@ export default function QuoteTable({
   if (quotes.length === 0) {
     return (
       <div className='p-8 text-center text-muted'>
-        No quotes match the selected status filter.
+        {es.cot.sinResultados}
       </div>
     )
   }
@@ -32,12 +33,12 @@ export default function QuoteTable({
     <table className={dt.table}>
       <thead className={dt.thead}>
         <tr>
-          <th className={dt.th}>No.</th>
-          <th className={dt.th}>Client</th>
-          <th className={dt.th}>Project</th>
-          <th className={dt.th}>Date</th>
-          <th className={dt.thRight}>Amount</th>
-          <th className={dt.th}>Status</th>
+          <th className={dt.th}>{es.cot.colNumero}</th>
+          <th className={dt.th}>{es.cot.colCliente}</th>
+          <th className={dt.th}>{es.cot.colProyecto}</th>
+          <th className={dt.th}>{es.cot.colFecha}</th>
+          <th className={dt.thRight}>{es.cot.colMonto}</th>
+          <th className={dt.th}>{es.cot.colEstado}</th>
           <th className={dt.thRight}>Actions</th>
         </tr>
       </thead>

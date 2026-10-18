@@ -1,5 +1,6 @@
 "use client";
 
+import { es } from "@/lib/i18n/es";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -51,7 +52,7 @@ export default function NewQuotePage() {
     api("/clients")
       .then((data) => setClients(Array.isArray(data) ? (data as Client[]) : []))
       .catch((err: any) => {
-        const msg = err?.message || "Could not load clients. Refresh to try again.";
+        const msg = err?.message || es.cot.errorClientes;
         setClientError(msg);
         console.error("Failed to load clients:", err);
       });
@@ -59,7 +60,7 @@ export default function NewQuotePage() {
     listTemplatePacks()
       .then((data) => setPacks(Array.isArray(data) ? data : []))
       .catch((err: Error) => {
-        const msg = err.message || "Could not load template packs.";
+        const msg = err.message || es.cot.errorPlantillas;
         setPackError(msg);
         console.error("Failed to load template packs:", err);
       })
@@ -76,7 +77,7 @@ export default function NewQuotePage() {
       .catch((err: Error) => {
         if (cancelled) return;
         setContacts([]);
-        setClientError(`Could not load contacts for this client: ${err.message}`);
+        setClientError(es.cot.errorContactosCliente(err.message));
       });
     return () => {
       cancelled = true;
@@ -109,11 +110,11 @@ export default function NewQuotePage() {
   return (
     <div className="mx-auto w-full max-w-4xl px-4 py-6 sm:px-6">
       <PageHeader
-        title="New quote"
-        subtitle="Choose the client, the contact and a template pack. Next, select the items."
+        title={es.cot.nuevaTitulo}
+        subtitle={es.cot.nuevaSubtitulo}
         actions={
           <Button asChild variant="outline">
-            <Link href="/quotes">Back to quotes</Link>
+            <Link href="/quotes">{es.cot.volverCotizaciones}</Link>
           </Button>
         }
       />
@@ -132,13 +133,13 @@ export default function NewQuotePage() {
 
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="block">
-            <span className="mb-1 block text-sm font-medium text-ink">Client</span>
+            <span className="mb-1 block text-sm font-medium text-ink">{es.cot.cliente}</span>
             <select
               className={selectClass}
               value={clientId}
               onChange={(e) => handleClientChange(e.target.value)}
             >
-              <option value="">Select a client</option>
+              <option value="">{es.cot.seleccioneCliente}</option>
               {clients.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.company_name}
@@ -148,7 +149,7 @@ export default function NewQuotePage() {
           </label>
 
           <label className="block">
-            <span className="mb-1 block text-sm font-medium text-ink">Contact</span>
+            <span className="mb-1 block text-sm font-medium text-ink">{es.cot.contacto}</span>
             <select
               className={selectClass}
               value={contactId}
@@ -157,10 +158,10 @@ export default function NewQuotePage() {
             >
               <option value="">
                 {!clientId
-                  ? "Select a client first"
+                  ? es.cot.seleccioneClientePrimero
                   : contacts.length === 0
-                  ? "No contacts for this client"
-                  : "Select a contact"}
+                  ? es.cot.sinContactos
+                  : es.cot.seleccioneContacto}
               </option>
               {contacts.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -174,11 +175,11 @@ export default function NewQuotePage() {
 
         {clientId && contacts.length === 0 ? (
           <p className="mt-2 text-sm text-muted">
-            Add a contact for this client on the{" "}
+            Agregue un contacto para este cliente en la{" "}
             <Link href={`/contacts/${clientId}`} className="text-accent underline">
-              contacts page
+              {es.cot.paginaContactos}
             </Link>{" "}
-            first.
+            primero.
           </p>
         ) : null}
       </section>
@@ -196,13 +197,13 @@ export default function NewQuotePage() {
         ) : null}
 
         {loadingPacks ? (
-          <p className="text-sm text-muted">Loading template packs…</p>
+          <p className="text-sm text-muted">{es.cot.cargandoPlantillas}</p>
         ) : !packError && packs.length === 0 ? (
           <p className="text-sm text-muted">
-            No template packs yet. An admin can create them from the template packs page.
+            {es.cot.sinPlantillas}
           </p>
         ) : (
-          <div role="radiogroup" aria-label="Template pack" className="grid gap-3 sm:grid-cols-2">
+          <div role="radiogroup" aria-label="Plantilla" className="grid gap-3 sm:grid-cols-2">
             {packs.map((pack) => {
               const selected = pack.id === packId;
               return (
@@ -235,10 +236,10 @@ export default function NewQuotePage() {
       {/* FOOTER */}
       <div className="flex flex-col-reverse gap-3 border-t border-line pt-4 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-muted">
-          {selectedPack ? `Template: ${selectedPack.name}` : "No template selected"}
+          {selectedPack ? es.cot.plantillaSel(selectedPack.name) : es.cot.sinPlantillaSel}
         </p>
         <Button onClick={handleContinue} disabled={!canContinue} className="w-full sm:w-auto">
-          Continue to items
+          {es.cot.continuar}
         </Button>
       </div>
     </div>

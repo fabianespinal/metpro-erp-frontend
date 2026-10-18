@@ -1,5 +1,6 @@
 "use client";
 
+import { es } from "@/lib/i18n/es";
 import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -28,7 +29,7 @@ import ProductSelectionModal from "@/components/quotes/ProductSelectionModal";
 
 export default function TakeOffPage() {
   return (
-    <Suspense fallback={<div className="p-6 text-sm text-muted">Loading…</div>}>
+    <Suspense fallback={<div className="p-6 text-sm text-muted">{es.cot.cargando}</div>}>
       <TakeOffScreen />
     </Suspense>
   );
@@ -85,7 +86,7 @@ function TakeOffScreen() {
         if (!cancelled) setClient(data as { id: number; company_name: string });
       })
       .catch((err: Error) => {
-        if (!cancelled) setSaveError(`Could not load the client: ${err.message}`);
+        if (!cancelled) setSaveError(es.cot.errorCliente(err.message));
       });
     api(`/contacts/company/${clientId}`)
       .then((data) => {
@@ -95,7 +96,7 @@ function TakeOffScreen() {
         setSelectedContact(list.find((c: { id: number }) => String(c.id) === contactId) ?? null);
       })
       .catch((err: Error) => {
-        if (!cancelled) setSaveError(`Could not load the client contacts: ${err.message}`);
+        if (!cancelled) setSaveError(es.cot.errorContactos(err.message));
       });
     return () => {
       cancelled = true;
@@ -125,7 +126,7 @@ function TakeOffScreen() {
         );
       })
       .catch((err: Error) => {
-        if (!cancelled) setPackError(err.message || "Could not load the template pack.");
+        if (!cancelled) setPackError(err.message || es.cot.errorPlantilla);
       });
     return () => {
       cancelled = true;
@@ -142,7 +143,7 @@ function TakeOffScreen() {
       .catch((err: Error) => {
         if (cancelled) return;
         setProducts([]);
-        setCatalogError(`Could not load the product catalog: ${err.message}`);
+        setCatalogError(es.cot.errorCatalogo(err.message));
       });
     return () => {
       cancelled = true;
@@ -200,9 +201,9 @@ function TakeOffScreen() {
       router.push(`/quotes/${quote.quote_id}/edit`);
     } catch (err) {
       if (hasErrorCode(err, "PRODUCT_NOT_FOUND")) {
-        setSaveError("A product in this quote no longer exists. Remove it and try again.");
+        setSaveError(es.cot.productoNoExiste);
       } else {
-        setSaveError((err as Error).message || "Could not save the draft.");
+        setSaveError((err as Error).message || es.cot.errorBorrador);
       }
       setSaving(false);
     }
@@ -213,12 +214,12 @@ function TakeOffScreen() {
       <div className="mx-auto w-full max-w-4xl px-4 py-6 sm:px-6">
         <Alert variant="destructive">
           <AlertDescription>
-            Missing client, contact or template. Start again from the new quote page.
+            {es.cot.faltaDatos}
           </AlertDescription>
         </Alert>
         <div className="mt-4">
           <Link href="/quotes/new" className="text-accent underline">
-            Back to new quote
+            {es.cot.volverNueva}
           </Link>
         </div>
       </div>
@@ -228,11 +229,11 @@ function TakeOffScreen() {
   return (
     <div className="mx-auto w-full max-w-4xl px-4 py-6 sm:px-6">
       <PageHeader
-        title="Build Quote"
-        subtitle={pack ? `Template: ${pack.name}` : "Add items and charges"}
+        title={es.cot.armarTitulo}
+        subtitle={pack ? es.cot.plantillaSel(pack.name) : es.cot.armarSubtitulo}
         actions={
           <Button asChild variant="outline">
-            <Link href="/quotes/new">Change template</Link>
+            <Link href="/quotes/new">{es.cot.cambiarPlantilla}</Link>
           </Button>
         }
       />
@@ -284,10 +285,10 @@ function TakeOffScreen() {
 
       <div className="mt-6 flex gap-2">
         <Button onClick={handleSave} disabled={!saveAllowed}>
-          {saving ? "Saving draft…" : "Save draft"}
+          {saving ? es.cot.guardandoBorrador : es.cot.guardarBorrador}
         </Button>
         <Button asChild variant="outline">
-          <Link href="/quotes/new">Cancel</Link>
+          <Link href="/quotes/new">{es.cot.cancelar}</Link>
         </Button>
       </div>
 

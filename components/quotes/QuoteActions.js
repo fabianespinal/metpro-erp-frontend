@@ -1,3 +1,4 @@
+import { es } from "@/lib/i18n/es";
 import { unwrapEnvelope, checkUnauthorized } from "@/lib/api";
 /**
  * QuoteActions.js
@@ -27,7 +28,7 @@ function getHeaders(token, isJSON) {
 async function handleResponse(response) {
   if (!response.ok) {
     checkUnauthorized(response);
-    let errorMessage = "Request failed with status " + response.status;
+    let errorMessage = es.cot.errorSolicitud(response.status);
     try {
       const errorData = await response.json();
       // Backend error model is {"detail": ..., "code": ...}.
@@ -130,7 +131,7 @@ export async function deleteQuote(quoteId, token) {
     // UI guard only. The backend enforces admin on DELETE /quotes/{id}.
     const role = await fetchCurrentRole();
     if (!isAdminRole(role)) {
-      const error = new Error("Insufficient permissions");
+      const error = new Error(es.cot.sinPermisos);
       error.status = 403;
       throw error;
     }

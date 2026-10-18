@@ -1,5 +1,6 @@
 "use client";
 
+import { es } from "@/lib/i18n/es";
 /**
  * Invoice documents: factura PDF and conduce PDF from the backend generators.
  *   GET /pdf/invoices/{id}          -> factura
@@ -28,7 +29,7 @@ export function invoiceDocFilename(kind: InvoiceDocKind, invoiceNumber: string |
 
 export async function fetchInvoiceDoc(kind: InvoiceDocKind, invoiceId: number): Promise<Blob> {
   const rawBase = process.env.NEXT_PUBLIC_API_URL;
-  if (!rawBase) throw new Error("Backend URL missing");
+  if (!rawBase) throw new Error(es.fact.backendFalta);
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
   const res = await fetch(`${rawBase.replace(/\/+$/, "")}${PATHS[kind](invoiceId)}`, {
@@ -39,7 +40,7 @@ export async function fetchInvoiceDoc(kind: InvoiceDocKind, invoiceId: number): 
 
   if (!res.ok) {
     checkUnauthorized(res);
-    let message = `Error ${res.status}`;
+    let message = es.fact.errorHttp(res.status);
     try {
       const body = await res.json();
       if (body && typeof body.detail === "string") message = body.detail;

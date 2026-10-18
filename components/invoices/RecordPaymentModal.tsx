@@ -1,5 +1,6 @@
 "use client";
 
+import { es } from "@/lib/i18n/es";
 import { useState } from "react";
 import { createPayment } from "@/lib/invoiceApi";
 
@@ -66,11 +67,11 @@ const [form, setForm] = useState({
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
       <div className="bg-surface p-6 rounded shadow-card w-full max-w-md">
-        <h2 className="text-xl font-semibold mb-4">Record Payment</h2>
+        <h2 className="text-xl font-semibold mb-4">{es.fact.registrarPago}</h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block mb-1 font-medium">Amount</label>
+            <label className="block mb-1 font-medium">{es.fact.monto}</label>
             <input
               type="number"
               name="amount"
@@ -84,20 +85,20 @@ const [form, setForm] = useState({
           </div>
 
           <div>
-            <label className="block mb-1 font-medium">Payment Method</label>
+            <label className="block mb-1 font-medium">{es.fact.metodoPago}</label>
             <input
               type="text"
               name="method"
               value={form.method}
               onChange={handleChange}
               className="border p-2 rounded w-full"
-              placeholder="Cash, Transfer, Card"
+              placeholder="Efectivo, Transferencia, Tarjeta"
               required
             />
           </div>
 
           <div>
-            <label className="block mb-1 font-medium">Payment Date</label>
+            <label className="block mb-1 font-medium">{es.fact.fechaPago}</label>
             <input
               type="date"
               name="payment_date"
@@ -109,7 +110,7 @@ const [form, setForm] = useState({
           </div>
 
           <div>
-            <label className="block mb-1 font-medium">Notes (optional)</label>
+            <label className="block mb-1 font-medium">{es.fact.notasOpcional}</label>
             <textarea
               name="notes"
               value={form.notes}
@@ -130,7 +131,7 @@ const [form, setForm] = useState({
               onClick={onClose}
               className="px-4 py-2 border rounded"
             >
-              Cancel
+              {es.fact.cancelar}
             </button>
 
             <button
@@ -138,7 +139,7 @@ const [form, setForm] = useState({
               disabled={loading}
               className="bg-accent text-white px-4 py-2 rounded hover:bg-accent-strong"
             >
-              {loading ? "Saving..." : "Record Payment"}
+              {loading ? es.cot.guardando : es.fact.registrarPago}
             </button>
           </div>
         </form>

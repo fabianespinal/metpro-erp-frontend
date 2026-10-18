@@ -1,4 +1,5 @@
 'use client'
+import { es } from "@/lib/i18n/es";
 import ErrorBanner from "@/components/ui/ErrorBanner";
 import { useState, useEffect } from 'react'
 import { api } from "@/lib/api"
@@ -100,7 +101,7 @@ export default function QuotesPage() {
       setPreviewModal({ isOpen: true, quoteId, pdfUrl: url })
     } catch (e) {
       console.error("PDF Preview Error:", e)
-      alert("Error previewing PDF: " + e.message)
+      alert(es.cot.errorVistaPrevia + e.message)
     }
   }
 
@@ -118,7 +119,7 @@ export default function QuotesPage() {
       document.body.removeChild(link)
     } catch (e) {
       console.error("PDF Download Error:", e)
-      alert("Error downloading PDF: " + e.message)
+      alert(es.cot.errorDescarga + e.message)
     }
   }
 
@@ -126,7 +127,7 @@ export default function QuotesPage() {
     const mergedQuotes = mergeQuotesWithInvoices(quotes, invoices)
     const quote = mergedQuotes.find(q => q.quote_id === quoteId)
     if (!quote || !quote.has_invoice) {
-      alert('This quote has not been converted to an invoice yet.')
+      alert(es.cot.sinFactura)
       return
     }
 
@@ -134,26 +135,26 @@ export default function QuotesPage() {
   }
 
   async function handleDuplicateQuote(quoteId) {
-    if (!confirm("Duplicate this quote?")) return
+    if (!confirm(es.cot.confirmarDuplicar)) return
     try {
       const data = await duplicateQuote(quoteId, token)
       // Open the new Draft in the editor. The banner tells the user it was duplicated.
       window.location.assign(`/quotes/${data.quote_id}/edit?duplicated=1`)
     } catch (error) {
-      alert("Error duplicating quote: " + error.message)
+      alert(es.cot.errorDuplicar + error.message)
     }
   }
 
   async function handleConvertToInvoice(quoteId) {
-    if (!confirm(`Convert quote ${quoteId} to invoice?\nThis cannot be undone.`)) return
+    if (!confirm(es.cot.confirmarConvertir(quoteId))) return
     try {
       const data = await convertToInvoice(quoteId, token)
-      alert(`SUCCESS!\nQuote converted to invoice:\nNEW ID: ${data.invoice_id}`)
+      alert(es.cot.exitoConversion(data.invoice_id))
       fetchQuotes()
       fetchInvoices()
     } catch (error) {
       console.error('Conversion Error:', error)
-      alert(`Conversion failed:\n${error.message}`)
+      alert(es.cot.errorConversion + error.message)
     }
   }
 
@@ -162,7 +163,7 @@ export default function QuotesPage() {
       await updateQuoteStatus(quoteId, token, newStatus)
       fetchQuotes()
     } catch (error) {
-      alert('Error updating status: ' + error.message)
+      alert(es.cot.errorEstado + error.message)
     }
   }
 
@@ -173,7 +174,7 @@ export default function QuotesPage() {
       setInvoices(prevInvoices => prevInvoices.filter(inv => inv.quote_id !== quoteId))
     } catch (error) {
       console.error('Delete Quote Error:', error)
-      alert(`Error deleting quote: ${error.message}`)
+      alert(es.cot.errorEliminar + error.message)
     }
   }
 
@@ -188,7 +189,7 @@ export default function QuotesPage() {
     if (quote.has_invoice) {
       window.location.href = `/invoices?invoice_id=${quote.invoice_id}`
     } else {
-      alert('This quote has not been converted to an invoice yet.')
+      alert(es.cot.sinFactura)
     }
   }
 
@@ -213,12 +214,12 @@ export default function QuotesPage() {
 
     <div className="bg-surface rounded-lg shadow p-6">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-semibold">Existing Quotes</h2>
+        <h2 className="text-xl font-semibold">{es.cot.existentes}</h2>
         <Link
           href="/quotes/new"
           className="rounded-md bg-ink px-4 py-2 text-sm font-medium text-surface"
         >
-          Nueva cotización
+          {es.cot.nueva}
         </Link>
 
         <select
@@ -226,17 +227,17 @@ export default function QuotesPage() {
           onChange={(e) => setStatusFilter(e.target.value)}
           className={`${fb.control} w-44`}
         >
-          <option value="all">All Statuses</option>
-          <option value="Draft">Draft</option>
-          <option value="Approved">Approved</option>
-          <option value="Invoiced">Invoiced</option>
-          <option value="Cancelled">Cancelled</option>
+          <option value="all">{es.cot.todosEstados}</option>
+          <option value="Draft">{es.estados.draft}</option>
+          <option value="Approved">{es.estados.approved}</option>
+          <option value="Invoiced">{es.estados.invoiced}</option>
+          <option value="Cancelled">{es.estados.cancelled}</option>
         </select>
       </div>
 
       {safeQuotes.length === 0 ? (
         <div className="p-8 text-center text-muted">
-          No quotes yet. Create one above!
+          {es.cot.sinCotizaciones}
         </div>
       ) : (
         <QuoteTable
@@ -249,7 +250,7 @@ export default function QuotesPage() {
           onDelete={handleDelete}
           onApprove={(id) => handleUpdateStatus(id, "Approved")}
           onReject={(id) => {
-            if (confirm("Reject this quote? Rejected quotes cannot be reopened; use Duplicate to rework.")) {
+            if (confirm(es.cot.confirmarRechazar)) {
               handleUpdateStatus(id, "Rejected")
             }
           }}

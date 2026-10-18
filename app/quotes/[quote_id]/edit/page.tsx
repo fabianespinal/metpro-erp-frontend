@@ -1,5 +1,6 @@
 "use client";
 
+import { es } from "@/lib/i18n/es";
 import ErrorBanner from "@/components/ui/ErrorBanner";
 import { Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
@@ -51,10 +52,10 @@ interface Contact {
 }
 
 const ERROR_MESSAGES: Record<string, string> = {
-  QUOTE_EMPTY: "Add at least one item before finalizing.",
-  QUOTE_NOT_DRAFT: "This quote is no longer a draft. Reload to see its current status.",
-  QUOTE_FINALIZED: "This quote is finalized and cannot be edited.",
-  PRODUCT_NOT_FOUND: "A product in this quote no longer exists. Remove it and try again.",
+  QUOTE_EMPTY: es.cot.codigos.QUOTE_EMPTY,
+  QUOTE_NOT_DRAFT: es.cot.codigos.QUOTE_NOT_DRAFT,
+  QUOTE_FINALIZED: es.cot.codigos.QUOTE_FINALIZED,
+  PRODUCT_NOT_FOUND: es.cot.codigos.PRODUCT_NOT_FOUND,
 };
 
 function messageFor(err: unknown, fallback: string): string {
@@ -66,7 +67,7 @@ function messageFor(err: unknown, fallback: string): string {
 
 export default function DraftEditorPage() {
   return (
-    <Suspense fallback={<div className="p-6 text-sm text-muted">Loading quote…</div>}>
+    <Suspense fallback={<div className="p-6 text-sm text-muted">{es.cot.cargandoCotizacion}</div>}>
       <DraftEditor />
     </Suspense>
   );
@@ -141,7 +142,7 @@ function DraftEditor() {
         if (!cancelled) applyQuote(q);
       })
       .catch((err: Error) => {
-        if (!cancelled) setLoadError(err.message || "Could not load the quote.");
+        if (!cancelled) setLoadError(err.message || es.cot.errorCargarCotizacion);
       });
     return () => {
       cancelled = true;
@@ -157,7 +158,7 @@ function DraftEditor() {
       .catch((err: Error) => {
         if (cancelled) return;
         setProducts([]);
-        setCatalogError(`Could not load the product catalog: ${err.message}`);
+        setCatalogError(es.cot.errorCatalogo(err.message));
       });
     return () => {
       cancelled = true;
@@ -177,7 +178,7 @@ function DraftEditor() {
       .catch((err: Error) => {
         if (cancelled) return;
         setContactName(null);
-        setCatalogError(`Could not load the contact: ${err.message}`);
+        setCatalogError(es.cot.errorContacto(err.message));
       });
     return () => {
       cancelled = true;
@@ -223,7 +224,7 @@ function DraftEditor() {
   async function persistDraft(): Promise<boolean> {
     if (!charges) return false;
     if (!canSave(lines)) {
-      setActionError("Every included item needs a name and a quantity above zero.");
+      setActionError(es.cot.lineaInvalida);
       return false;
     }
     setSaving(true);
@@ -237,10 +238,10 @@ function DraftEditor() {
         included_charges: charges,
       });
       applyQuote(updated);
-      setSaveMessage("Draft saved.");
+      setSaveMessage(es.cot.borradorGuardado);
       return true;
     } catch (err) {
-      setActionError(messageFor(err, "Could not save the draft."));
+      setActionError(messageFor(err, es.cot.errorBorrador));
       return false;
     } finally {
       setSaving(false);
@@ -266,7 +267,7 @@ function DraftEditor() {
       // The view page calls a route that does not exist yet (pre-existing). Return to the list.
       router.push("/quotes");
     } catch (err) {
-      setActionError(messageFor(err, "Could not finalize the quote."));
+      setActionError(messageFor(err, es.cot.errorFinalizar));
       setFinalizing(false);
       setConfirmOpen(false);
     }
@@ -280,7 +281,7 @@ function DraftEditor() {
         </Alert>
         <div className="mt-4">
           <Link href="/quotes" className="text-accent underline">
-            Back to quotes
+            {es.cot.volverCotizaciones}
           </Link>
         </div>
       </div>
@@ -288,20 +289,20 @@ function DraftEditor() {
   }
 
   if (!quote || charges === null) {
-    return <div className="p-6 text-sm text-muted">Loading quote…</div>;
+    return <div className="p-6 text-sm text-muted">{es.cot.cargandoCotizacion}</div>;
   }
 
   if (!isDraft) {
     return (
       <div className="mx-auto w-full max-w-4xl px-4 py-6 sm:px-6">
-        <PageHeader title="Quote" subtitle={`Status: ${quote.status}`} />
+        <PageHeader title={es.cot.tituloCotizacion} subtitle={es.cot.estadoLabel(es.estados[String(quote.status).toLowerCase()] ?? quote.status)} />
         <Alert className="mb-4">
           <AlertDescription>
             Only draft quotes can be edited. This quote is {quote.status}.
           </AlertDescription>
         </Alert>
         <Button asChild variant="outline">
-          <Link href={`/quotes/${quoteId}/view`}>View quote</Link>
+          <Link href={`/quotes/${quoteId}/view`}>{es.cot.verCotizacion}</Link>
         </Button>
       </div>
     );
@@ -310,18 +311,18 @@ function DraftEditor() {
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6">
       <PageHeader
-        title="Draft quote"
-        subtitle={`${projectName || "No project name"} · Contact: ${contactName ?? "—"}`}
+        title={es.cot.tituloBorrador}
+        subtitle={`${projectName || es.cot.sinNombreProyecto} · ${es.cot.contactoLabel}: ${contactName ?? "—"}`}
         actions={
           <Button asChild variant="outline">
-            <Link href="/quotes">Back to quotes</Link>
+            <Link href="/quotes">{es.cot.volverCotizaciones}</Link>
           </Button>
         }
       />
 
       {fromDuplicate && bannerOpen ? (
         <Alert className="mb-4 flex items-start justify-between gap-3">
-          <AlertDescription>This is a duplicated quote. Adjust as needed.</AlertDescription>
+          <AlertDescription>{es.cot.cotizacionDuplicada}</AlertDescription>
           <button
             type="button"
             onClick={() => setBannerOpen(false)}
@@ -343,7 +344,7 @@ function DraftEditor() {
           <AddItemBar products={products} onAdd={addLine} />
 
           {lines.length === 0 ? (
-            <p className="text-sm text-muted">No items. Add at least one item before finalizing.</p>
+            <p className="text-sm text-muted">{es.cot.sinArticulos}</p>
           ) : (
             <ul className="space-y-3">
               {lines.map((line) => (
@@ -369,48 +370,48 @@ function DraftEditor() {
           )}
 
           <section className="rounded-lg border border-line bg-surface p-4 shadow-card space-y-3">
-            <h2 className="text-sm font-semibold text-ink">Quote details</h2>
+            <h2 className="text-sm font-semibold text-ink">{es.cot.detalles}</h2>
             <input
               type="text"
               value={projectName}
               onChange={(e) => setProjectName(e.target.value)}
-              placeholder="Project name"
+              placeholder={es.cot.nombreProyecto}
               className={takeOffInputClass}
-              aria-label="Project name"
+              aria-label={es.cot.nombreProyecto}
             />
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Notes"
+              placeholder={es.cot.notas}
               rows={3}
               className={takeOffInputClass}
-              aria-label="Notes"
+              aria-label={es.cot.notas}
             />
             <input
               type="text"
               value={paymentTerms}
               onChange={(e) => setPaymentTerms(e.target.value)}
-              placeholder="Payment terms"
+              placeholder={es.cot.terminosPago}
               className={takeOffInputClass}
-              aria-label="Payment terms"
+              aria-label={es.cot.terminosPago}
             />
           </section>
 
           {saveMessage ? <p className="text-sm text-muted">{saveMessage}</p> : null}
-          {dirty ? <p className="text-sm text-muted">Unsaved changes.</p> : null}
+          {dirty ? <p className="text-sm text-muted">{es.cot.cambiosSinGuardar}</p> : null}
 
           <Button onClick={handleSave} disabled={!canWrite || !dirty} variant="outline" className="w-full">
-            {saving ? "Saving…" : "Save draft"}
+            {saving ? es.cot.guardando : es.cot.guardarBorrador}
           </Button>
           <Button
             onClick={() => setConfirmOpen(true)}
             disabled={!canWrite || includedCount === 0}
             className="w-full"
           >
-            Finalize quote
+            {es.cot.finalizar}
           </Button>
           {includedCount === 0 ? (
-            <p className="text-xs text-muted">Include at least one item to finalize.</p>
+            <p className="text-xs text-muted">{es.cot.incluyaUno}</p>
           ) : null}
         </aside>
       </div>
@@ -418,19 +419,19 @@ function DraftEditor() {
       <Dialog open={confirmOpen} onOpenChange={(open) => !finalizing && setConfirmOpen(open)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Finalize this quote?</DialogTitle>
+            <DialogTitle>{es.cot.finalizarPregunta}</DialogTitle>
             <DialogDescription>
-              The quote becomes Final. Items and charges lock. A public link is created.
-              {dirty ? " Unsaved changes are saved first." : ""}
+              {es.cot.finalizarAviso}
+              {dirty ? es.cot.cambiosSeGuardan : ""}
             </DialogDescription>
           </DialogHeader>
           <dl className="space-y-1 text-sm">
             <div className="flex justify-between">
-              <dt className="text-muted">Items included</dt>
+              <dt className="text-muted">{es.cot.articulosIncluidos}</dt>
               <dd className="text-ink">{includedCount}</dd>
             </div>
             <div className="flex justify-between">
-              <dt className="text-muted">Subtotal General</dt>
+              <dt className="text-muted">{es.cot.subtotalGeneral}</dt>
               <dd className="text-ink">{calculatedTotals ? formatMoney(parseFloat(calculatedTotals.subtotal_general)) : "—"}</dd>
             </div>
             <div className="flex justify-between">
@@ -438,16 +439,16 @@ function DraftEditor() {
               <dd className="text-ink">{calculatedTotals ? formatMoney(parseFloat(calculatedTotals.itbis)) : "—"}</dd>
             </div>
             <div className="flex justify-between font-semibold">
-              <dt className="text-ink">Grand total</dt>
+              <dt className="text-ink">{es.cot.totalGeneral}</dt>
               <dd className="text-ink">{calculatedTotals ? formatMoney(parseFloat(calculatedTotals.grand_total)) : "—"}</dd>
             </div>
           </dl>
           <DialogFooter>
             <Button variant="outline" onClick={() => setConfirmOpen(false)} disabled={finalizing}>
-              Cancel
+              {es.cot.cancelar}
             </Button>
             <Button onClick={handleConfirmFinalize} disabled={finalizing}>
-              {finalizing ? "Finalizing…" : "Finalize"}
+              {finalizing ? es.cot.finalizando : es.cot.finalizarCorto}
             </Button>
           </DialogFooter>
         </DialogContent>
