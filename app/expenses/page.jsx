@@ -10,8 +10,11 @@ import ExpensesFilters from "@/components/expenses/ExpensesFilters";
 import ExpensesSummary from "@/components/expenses/ExpensesSummary";
 import ExpensesChart from "@/components/expenses/ExpensesChart";
 import { PageHeader } from "@/components/ui/page-header";
+import { useCurrentRole } from "@/lib/currentRole";
 
 export default function ExpensesPage() {
+  // Delete is admin only (API enforces the same rule).
+  const { isAdmin } = useCurrentRole();
   const [clients, setClients] = useState([]);
   const [loadError, setLoadError] = useState(null)
   const [expenses, setExpenses] = useState([]);
@@ -198,7 +201,7 @@ export default function ExpensesPage() {
 
         <ExpensesTable
           expenses={filtered}
-          onDelete={handleDeleteExpense}
+          onDelete={isAdmin ? handleDeleteExpense : undefined}
         />
       </div>
     </div>

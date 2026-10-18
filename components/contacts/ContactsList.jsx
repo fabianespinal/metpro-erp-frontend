@@ -43,12 +43,14 @@ export default function ContactsList({ contacts, onEdit, onDelete }) {
                   Editar
                 </button>
 
-                <button
-                  className="px-3 py-1 bg-red-600 text-white rounded"
-                  onClick={() => onDelete(c.id)}
-                >
-                  Eliminar
-                </button>
+                {onDelete && (
+                  <button
+                    className="px-3 py-1 bg-red-600 text-white rounded"
+                    onClick={() => onDelete(c.id)}
+                  >
+                    Eliminar
+                  </button>
+                )}
               </td>
             </tr>
           ))}

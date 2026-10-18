@@ -8,8 +8,11 @@ import ContactsList from "../../../components/contacts/ContactsList";
 import ContactModal from "../../../components/contacts/ContactModal";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
+import { useCurrentRole } from "@/lib/currentRole";
 
 export default function ContactsPage() {
+  // Delete is admin only (API enforces the same rule).
+  const { isAdmin } = useCurrentRole();
   const { companyId } = useParams();
 
   const [contacts, setContacts] = useState([]);
@@ -79,7 +82,7 @@ export default function ContactsPage() {
             setEditingContact(contact);
             setModalOpen(true);
           }}
-          onDelete={handleDelete}
+          onDelete={isAdmin ? handleDelete : undefined}
         />
       )}
 

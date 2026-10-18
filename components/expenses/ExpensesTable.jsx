@@ -39,12 +39,14 @@ export default function ExpensesTable({ expenses, onDelete }) {
             <td className={dt.td}>{exp.quote_id || "-"}</td>
 
             <td className={dt.tdRight}>
-              <button
-                onClick={() => onDelete(exp.expense_id)}
-                className="text-red-600 hover:underline"
-              >
-                Eliminar
-              </button>
+              {onDelete && (
+                <button
+                  onClick={() => onDelete(exp.expense_id)}
+                  className="text-red-600 hover:underline"
+                >
+                  Eliminar
+                </button>
+              )}
             </td>
           </tr>
         ))}
