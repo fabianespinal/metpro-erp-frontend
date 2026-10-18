@@ -13,6 +13,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { mergeQuotesWithInvoices, filterQuotesByStatus } from '@/components/quotes/quoteUtils'
 import { PageHeader } from "@/components/ui/page-header";
+import { Button } from "@/components/ui/button";
 import { fb } from "@/components/ui/filter-bar";
 import {
   previewPDF,
@@ -216,18 +217,20 @@ export default function QuotesPage() {
 
   return (
   <div className="w-full px-4 lg:px-8 py-6">
-    <PageHeader title="Cotizar" />
+    <PageHeader
+      title="Cotizar"
+      actions={
+        // Shared primary button (components/ui/button): same as Nuevo proyecto, Crear paquete.
+        <Button asChild>
+          <Link href="/quotes/new">{es.cot.nueva}</Link>
+        </Button>
+      }
+    />
     <ErrorBanner message={loadError} />
 
     <div className="bg-surface rounded-lg shadow p-6">
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-wrap justify-between items-center gap-3 mb-6">
         <h2 className="text-xl font-semibold">{es.cot.existentes}</h2>
-        <Link
-          href="/quotes/new"
-          className="rounded-md bg-ink px-4 py-2 text-sm font-medium text-surface"
-        >
-          {es.cot.nueva}
-        </Link>
 
         <select
           value={statusFilter}
