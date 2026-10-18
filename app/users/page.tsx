@@ -1,4 +1,5 @@
 "use client";
+import { es } from "@/lib/i18n/es";
 import Link from "next/link";
 import { api } from "@/lib/api";
 import { PageHeader } from "@/components/ui/page-header";
@@ -51,7 +52,7 @@ export default function UsersPage() {
       setUsers(Array.isArray(data) ? (data as User[]) : []);
       setLoadError(null);
     } catch (err) {
-      setLoadError(message(err, "Failed to load users"));
+      setLoadError(message(err, es.usr.errorCargar));
     } finally {
       setLoading(false);
     }
@@ -70,16 +71,16 @@ export default function UsersPage() {
     try {
       await api.put(`/users/${u.id}`, { is_active: !u.is_active });
       await fetchUsers();
-      setNotice({ kind: "ok", text: `${u.username} ${u.is_active ? "deactivated" : "activated"}.` });
+      setNotice({ kind: "ok", text: es.usr.estadoCambiado(u.username, u.is_active) });
     } catch (err) {
-      setNotice({ kind: "error", text: message(err, "Failed to update user") });
+      setNotice({ kind: "error", text: message(err, es.usr.errorActualizar) });
     } finally {
       setBusyId(null);
     }
   };
 
   const deleteUser = async (u: User) => {
-    if (!window.confirm(`Delete user ${u.username}? This cannot be undone.`)) return;
+    if (!window.confirm(es.usr.confirmarEliminar(u.username))) return;
     setBusyId(u.id);
     setNotice(null);
     try {
@@ -87,7 +88,7 @@ export default function UsersPage() {
       await fetchUsers();
       setNotice({ kind: "ok", text: `${u.username} deleted.` });
     } catch (err) {
-      setNotice({ kind: "error", text: message(err, "Failed to delete user") });
+      setNotice({ kind: "error", text: message(err, es.usr.errorEliminar) });
     } finally {
       setBusyId(null);
     }
@@ -101,7 +102,7 @@ export default function UsersPage() {
 
   const submitEdit = async () => {
     if (!editTarget) return;
-    if (editForm.email && !editForm.email.includes("@")) return setEditError("Enter a valid email.");
+    if (editForm.email && !editForm.email.includes("@")) return setEditError(es.usr.correoInvalido);
     setEditSaving(true);
     setEditError(null);
     try {
@@ -113,7 +114,7 @@ export default function UsersPage() {
       setEditTarget(null);
       await fetchUsers();
     } catch (err) {
-      setEditError(message(err, "Update failed"));
+      setEditError(message(err, es.usr.errorActualizacion));
     } finally {
       setEditSaving(false);
     }
@@ -129,11 +130,11 @@ export default function UsersPage() {
   const submitReset = async () => {
     if (!resetTarget) return;
     if (newPassword.length < MIN_PASSWORD_LENGTH) {
-      setResetError(`Password must be at least ${MIN_PASSWORD_LENGTH} characters.`);
+      setResetError(es.usr.claveCorta(MIN_PASSWORD_LENGTH));
       return;
     }
     if (newPassword !== confirmPassword) {
-      setResetError("Passwords do not match.");
+      setResetError(es.usr.clavesNoCoinciden);
       return;
     }
     setResetSaving(true);
@@ -143,35 +144,35 @@ export default function UsersPage() {
         method: "PATCH",
         body: JSON.stringify({ new_password: newPassword }),
       });
-      setNotice({ kind: "ok", text: `Password reset for ${resetTarget.username}.` });
+      setNotice({ kind: "ok", text: es.usr.claveRestablecida(resetTarget.username) });
       setResetTarget(null);
       setNewPassword("");
       setConfirmPassword("");
     } catch (err) {
-      setResetError(message(err, "Reset failed"));
+      setResetError(message(err, es.usr.errorRestablecer));
     } finally {
       setResetSaving(false);
     }
   };
 
-  if (loading) return <p className="text-sm text-muted">Loading users…</p>;
+  if (loading) return <p className="text-sm text-muted">{es.usr.cargando}</p>;
 
   const inputCls = "mt-1 w-full rounded border px-3 py-2";
 
   return (
     <div>
       <PageHeader
-        title="User Management"
+        title={es.usr.titulo}
         actions={
           <Link href="/users/create" className="rounded bg-accent px-4 py-2 text-sm text-white hover:bg-accent-strong">
-            New user
+            {es.usr.nuevoUsuario}
           </Link>
         }
       />
 
       {loadError && (
         <p role="alert" className="mb-4 rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-          Could not load users: {loadError}
+          {es.usr.noCargo}{loadError}
         </p>
       )}
       {notice && (
@@ -189,12 +190,12 @@ export default function UsersPage() {
         <table className={dt.table}>
           <thead className={dt.thead}>
             <tr>
-              <th className={dt.th}>Username</th>
-              <th className={dt.th}>Full name</th>
-              <th className={dt.th}>Email</th>
-              <th className={dt.th}>Role</th>
-              <th className={dt.th}>Active</th>
-              <th className={dt.th}>Actions</th>
+              <th className={dt.th}>{es.usr.colUsuario}</th>
+              <th className={dt.th}>{es.usr.colNombre}</th>
+              <th className={dt.th}>{es.usr.colCorreo}</th>
+              <th className={dt.th}>{es.usr.colRol}</th>
+              <th className={dt.th}>{es.usr.colActivo}</th>
+              <th className={dt.th}>{es.usr.colAcciones}</th>
             </tr>
           </thead>
 
@@ -204,34 +205,34 @@ export default function UsersPage() {
                 <td className={dt.td}>{u.username}</td>
                 <td className={dt.td}>{u.full_name || "—"}</td>
                 <td className={dt.td}>{u.email || "—"}</td>
-                <td className={dt.td}>{u.role}</td>
-                <td className={dt.td}>{u.is_active ? "Yes" : "No"}</td>
+                <td className={dt.td}>{es.usr.roles[u.role] ?? u.role}</td>
+                <td className={dt.td}>{u.is_active ? es.usr.si : es.usr.no}</td>
                 <td className={dt.td}>
                   {canManage(u) ? (
                     <div className="flex flex-wrap gap-3">
                       <button onClick={() => openEdit(u)} className="text-sm font-medium text-accent hover:underline">
-                        Edit
+                        {es.usr.editar}
                       </button>
                       <button
                         onClick={() => toggleActive(u)}
                         disabled={busyId === u.id}
                         className="text-sm font-medium text-accent hover:underline disabled:opacity-50"
                       >
-                        {u.is_active ? "Deactivate" : "Activate"}
+                        {u.is_active ? es.usr.desactivar : es.usr.activar}
                       </button>
                       <button onClick={() => openReset(u)} className="text-sm font-medium text-accent hover:underline">
-                        Reset password
+                        {es.usr.restablecer}
                       </button>
                       <button
                         onClick={() => deleteUser(u)}
                         disabled={busyId === u.id}
                         className="text-sm font-medium text-red-600 hover:underline disabled:opacity-50"
                       >
-                        Delete
+                        {es.usr.eliminar}
                       </button>
                     </div>
                   ) : (
-                    <span className="text-xs text-muted">Superadmin only</span>
+                    <span className="text-xs text-muted">{es.usr.soloSuperadmin}</span>
                   )}
                 </td>
               </tr>
@@ -239,7 +240,7 @@ export default function UsersPage() {
             {users.length === 0 && !loadError && (
               <tr>
                 <td className={dt.td} colSpan={6}>
-                  No users.
+                  {es.usr.sinUsuarios}
                 </td>
               </tr>
             )}
@@ -250,30 +251,30 @@ export default function UsersPage() {
       {editTarget && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
           <div className="w-full max-w-md rounded-lg bg-surface p-6 shadow">
-            <h2 className="mb-4 text-lg font-semibold">Edit {editTarget.username}</h2>
+            <h2 className="mb-4 text-lg font-semibold">{es.usr.editarA(editTarget.username)}</h2>
             <label className="mb-3 block text-sm">
-              Full name
+              {es.usr.nombre}
               <input className={inputCls} value={editForm.full_name} onChange={(e) => setEditForm({ ...editForm, full_name: e.target.value })} />
             </label>
             <label className="mb-3 block text-sm">
-              Email
+              {es.usr.correo}
               <input type="email" className={inputCls} value={editForm.email} onChange={(e) => setEditForm({ ...editForm, email: e.target.value })} />
             </label>
             <label className="mb-3 block text-sm">
-              Role
+              {es.usr.rol}
               <select className={inputCls} value={editForm.role} onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}>
-                <option value="user">user</option>
-                <option value="admin">admin</option>
-                {(isSuper || editTarget.role === "superadmin") && <option value="superadmin">superadmin</option>}
+                <option value="user">{es.usr.roles.user}</option>
+                <option value="admin">{es.usr.roles.admin}</option>
+                {(isSuper || editTarget.role === "superadmin") && <option value="superadmin">{es.usr.roles.superadmin}</option>}
               </select>
             </label>
             {editError && <p role="alert" className="mb-3 text-sm text-red-600">{editError}</p>}
             <div className="flex justify-end gap-3">
               <button onClick={() => setEditTarget(null)} disabled={editSaving} className="px-4 py-2 text-sm text-muted hover:underline disabled:opacity-50">
-                Cancel
+                {es.usr.cancelar}
               </button>
               <button onClick={submitEdit} disabled={editSaving} className="rounded bg-accent px-4 py-2 text-sm text-white hover:bg-accent-strong disabled:opacity-50">
-                {editSaving ? "Saving…" : "Save"}
+                {editSaving ? es.usr.guardando : es.usr.guardar}
               </button>
             </div>
           </div>
@@ -283,22 +284,22 @@ export default function UsersPage() {
       {resetTarget && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
           <div className="w-full max-w-md rounded-lg bg-surface p-6 shadow">
-            <h2 className="mb-4 text-lg font-semibold">Reset password: {resetTarget.username}</h2>
+            <h2 className="mb-4 text-lg font-semibold">{es.usr.restablecerA(resetTarget.username)}</h2>
             <label className="mb-3 block text-sm">
-              New password
+              {es.usr.nuevaClave}
               <input type="password" autoComplete="new-password" className={inputCls} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
             </label>
             <label className="mb-3 block text-sm">
-              Confirm password
+              {es.usr.confirmarClave}
               <input type="password" autoComplete="new-password" className={inputCls} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
             </label>
             {resetError && <p role="alert" className="mb-3 text-sm text-red-600">{resetError}</p>}
             <div className="flex justify-end gap-3">
               <button onClick={() => setResetTarget(null)} disabled={resetSaving} className="px-4 py-2 text-sm text-muted hover:underline disabled:opacity-50">
-                Cancel
+                {es.usr.cancelar}
               </button>
               <button onClick={submitReset} disabled={resetSaving} className="rounded bg-accent px-4 py-2 text-sm text-white hover:bg-accent-strong disabled:opacity-50">
-                {resetSaving ? "Saving…" : "Reset password"}
+                {resetSaving ? es.usr.guardando : es.usr.restablecer}
               </button>
             </div>
           </div>

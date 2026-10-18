@@ -1,3 +1,4 @@
+import { es } from "@/lib/i18n/es";
 import { useState } from "react";
 
 // Mounted fresh on each open (parent renders it only while modalOpen),
@@ -38,7 +39,7 @@ export default function ContactModal({ contact, onClose, onSubmit }) {
             name="email"
             value={form.email}
             onChange={handleChange}
-            placeholder="Email"
+            placeholder={es.con.phCorreo}
             className="w-full border p-2 rounded"
           />
 

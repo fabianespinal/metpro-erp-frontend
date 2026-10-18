@@ -1,3 +1,4 @@
+import { es } from "@/lib/i18n/es";
 import { dt } from "@/components/ui/data-table";
 import { useRouter } from "next/navigation";
 
@@ -14,7 +15,7 @@ export default function ContactsList({ contacts, onEdit, onDelete }) {
         <thead className={dt.thead}>
           <tr>
             <th className={dt.th}>Nombre</th>
-            <th className={dt.th}>Email</th>
+            <th className={dt.th}>{es.con.colCorreo}</th>
             <th className={dt.th}>Teléfono</th>
             <th className={dt.th}>Acciones</th>
           </tr>
@@ -32,7 +33,7 @@ export default function ContactsList({ contacts, onEdit, onDelete }) {
                   className="px-3 py-1 bg-accent text-white rounded"
                   onClick={() => router.push(`/quotes?contactId=${c.id}&companyId=${c.company_id}`)}
                 >
-                  Use in Quote
+                  {es.con.usarEnCotizacion}
                 </button>
 
                 <button

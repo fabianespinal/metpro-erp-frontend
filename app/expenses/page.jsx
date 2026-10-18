@@ -1,5 +1,6 @@
 'use client';
 
+import { es } from "@/lib/i18n/es";
 import ErrorBanner from "@/components/ui/ErrorBanner";
 import { useState, useEffect } from "react";
 import ExpenseForm from "@/components/expenses/ExpenseForm";
@@ -110,9 +111,9 @@ export default function ExpensesPage() {
     try {
       await api.post("/expenses/", formData);
       await loadExpenses();
-      alert("Expense added successfully!");
+      alert(es.gas.creado);
     } catch (e) {
-      alert("Error creating expense: " + e.message);
+      alert(es.gas.errorCrear + e.message);
     } finally {
       setLoading(false);
     }
@@ -122,13 +123,13 @@ export default function ExpensesPage() {
   // DELETE EXPENSE
   // -----------------------------
   async function handleDeleteExpense(id) {
-    if (!confirm("Delete this expense?")) return;
+    if (!confirm(es.gas.confirmarEliminar)) return;
 
     try {
       await api.delete(`/expenses/${id}`);
       await loadExpenses();
     } catch (e) {
-      alert("Error deleting expense: " + e.message);
+      alert(es.gas.errorEliminar + e.message);
     }
   }
 
@@ -137,12 +138,11 @@ export default function ExpensesPage() {
   // -----------------------------
   function exportExpensesCSV(expensesToExport) {
     if (!expensesToExport || expensesToExport.length === 0) {
-      alert("No expenses to export");
+      alert(es.gas.nadaQueExportar);
       return;
     }
 
-    let csv =
-      "Date,Category,Description,Amount,Payment Method,Project ID,Quote ID\n";
+    let csv = es.gas.csvEncabezado;
 
     expensesToExport.forEach(exp => {
       csv += [

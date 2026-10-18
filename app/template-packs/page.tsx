@@ -1,5 +1,6 @@
 "use client";
 
+import { es } from "@/lib/i18n/es";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { api } from "@/lib/api";
@@ -43,7 +44,7 @@ export default function TemplatePacksPage() {
         }
       } catch (err: any) {
         if (!cancelled) {
-          setError(err.message || "Failed to load template packs");
+          setError(err.message || es.pl.errorCargar);
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -59,7 +60,7 @@ export default function TemplatePacksPage() {
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name.trim()) {
-      setError("Pack name is required");
+      setError(es.pl.errorNombre);
       return;
     }
 
@@ -78,7 +79,7 @@ export default function TemplatePacksPage() {
       setShowForm(false);
       setError(null);
     } catch (err: any) {
-      setError(err.message || "Failed to create template pack");
+      setError(err.message || es.pl.errorCrear);
     } finally {
       setCreating(false);
     }
@@ -94,18 +95,18 @@ export default function TemplatePacksPage() {
       setDeleteConfirm(false);
       setError(null);
     } catch (err: any) {
-      setError(err.message || "Failed to delete template pack");
+      setError(err.message || es.pl.errorEliminar);
     }
   };
 
   return (
     <div className="mx-auto w-full max-w-4xl px-4 py-6 sm:px-6">
       <PageHeader
-        title="Template Packs"
-        subtitle="Create and manage quote template packs"
+        title={es.pl.titulo}
+        subtitle={es.pl.subtitulo}
         actions={
           <Button asChild>
-            <Link href="/template-packs/new">Create pack</Link>
+            <Link href="/template-packs/new">{es.pl.crearPaquete}</Link>
           </Button>
         }
       />
@@ -119,26 +120,26 @@ export default function TemplatePacksPage() {
       {/* CREATE FORM */}
       {showForm && (
         <div className="mb-8 rounded-lg border border-line bg-surface p-6">
-          <h3 className="mb-4 text-lg font-semibold text-ink">New Template Pack</h3>
+          <h3 className="mb-4 text-lg font-semibold text-ink">{es.pl.nuevoPaquete}</h3>
           <form onSubmit={handleCreate} className="space-y-4">
             <label className="block">
-              <span className="mb-1 block text-sm font-medium text-ink">Pack Name *</span>
+              <span className="mb-1 block text-sm font-medium text-ink">{es.pl.nombreReq}</span>
               <input
                 type="text"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="e.g., Standard Steel Structure"
+                placeholder={es.pl.phNombre}
                 className="w-full rounded-md border border-line bg-canvas px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-accent"
                 disabled={creating}
               />
             </label>
 
             <label className="block">
-              <span className="mb-1 block text-sm font-medium text-ink">Description</span>
+              <span className="mb-1 block text-sm font-medium text-ink">{es.pl.descripcion}</span>
               <textarea
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Optional description"
+                placeholder={es.pl.phDescripcion}
                 rows={3}
                 className="w-full rounded-md border border-line bg-canvas px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-accent"
                 disabled={creating}
@@ -147,7 +148,7 @@ export default function TemplatePacksPage() {
 
             <div className="flex gap-3">
               <Button type="submit" disabled={creating || !formData.name.trim()}>
-                {creating ? "Creating..." : "Create"}
+                {creating ? es.pl.creando : es.pl.crear}
               </Button>
               <Button
                 type="button"
@@ -155,7 +156,7 @@ export default function TemplatePacksPage() {
                 onClick={() => setShowForm(false)}
                 disabled={creating}
               >
-                Cancel
+                {es.pl.cancelar}
               </Button>
             </div>
           </form>
@@ -164,9 +165,9 @@ export default function TemplatePacksPage() {
 
       {/* PACKS LIST */}
       {loading ? (
-        <p className="text-sm text-muted">Loading template packs...</p>
+        <p className="text-sm text-muted">{es.pl.cargando}</p>
       ) : packs.length === 0 ? (
-        <p className="text-sm text-muted">No template packs yet.</p>
+        <p className="text-sm text-muted">{es.pl.vacio}</p>
       ) : (
         <div className="space-y-3">
           {packs.map((pack) => (
@@ -174,18 +175,18 @@ export default function TemplatePacksPage() {
               <div>
                 <h4 className="font-semibold text-ink">{pack.name}</h4>
                 {pack.item_count === 0 && (
-                  <p className="text-xs font-medium text-amber-700">Empty pack. Quotes from it start with no items.</p>
+                  <p className="text-xs font-medium text-amber-700">{es.pl.paqueteVacio}</p>
                 )}
                 {pack.description && <p className="text-sm text-muted">{pack.description}</p>}
                 <p className="mt-1 text-xs text-muted">
-                  {pack.category_count} categories · {pack.item_count} items
+                  {es.pl.resumen(pack.category_count, pack.item_count)}
                 </p>
               </div>
 
               <div className="flex gap-2">
                 <Link href={`/template-packs/${pack.id}/edit`}>
                   <Button variant="outline" size="sm">
-                    Edit
+                    {es.pl.editar}
                   </Button>
                 </Link>
                 <button
@@ -195,7 +196,7 @@ export default function TemplatePacksPage() {
                   }}
                   className="rounded px-3 py-1 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
                 >
-                  Delete
+                  {es.pl.eliminar}
                 </button>
               </div>
             </div>
@@ -207,16 +208,16 @@ export default function TemplatePacksPage() {
       {deleteConfirm && deleteId !== null && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-surface rounded-lg p-6 max-w-sm mx-4">
-            <h3 className="text-lg font-semibold text-ink mb-2">Delete Pack?</h3>
+            <h3 className="text-lg font-semibold text-ink mb-2">{es.pl.eliminarTitulo}</h3>
             <p className="text-sm text-muted mb-6">
-              Are you sure? This will remove the pack and all its categories and items.
+              {es.pl.eliminarTexto}
             </p>
             <div className="flex gap-3">
               <button
                 onClick={handleDelete}
                 className="flex-1 rounded bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 transition-colors"
               >
-                Delete
+                {es.pl.eliminar}
               </button>
               <button
                 onClick={() => {
@@ -225,7 +226,7 @@ export default function TemplatePacksPage() {
                 }}
                 className="flex-1 rounded border border-line px-4 py-2 text-sm font-medium text-ink hover:bg-canvas transition-colors"
               >
-                Cancel
+                {es.pl.cancelar}
               </button>
             </div>
           </div>

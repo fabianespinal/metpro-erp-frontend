@@ -1,4 +1,5 @@
 "use client";
+import { es } from "@/lib/i18n/es";
 import { dt } from "@/components/ui/data-table";
 export const dynamic = "force-dynamic";
 
@@ -38,9 +39,9 @@ export default function ClientsPage() {
     console.error("Failed to fetch clients:", error);
     setClients([]);
     if (error.message.includes("401") || error.message.includes("unauthorized")) {
-      alert("Session expired. Please login again.");
+      alert(es.cli.sesionExpirada);
     } else {
-      alert("Error loading clients. Please try again.");
+      alert(es.cli.errorCargar);
     }
   }
 };
@@ -65,9 +66,9 @@ export default function ClientsPage() {
         tax_id: '',
         notes: ''
       })
-      alert("Client created successfully!")
+      alert(es.cli.creado)
     } catch (error) {
-      alert("Error: " + error.message)
+      alert(es.cli.errorGenerico + error.message)
     } finally {
       setLoading(false)
     }
@@ -85,32 +86,32 @@ export default function ClientsPage() {
 
       await fetchClients()
       setEditingClient(null)
-      alert("Client updated successfully!")
+      alert(es.cli.actualizado)
     } catch (error) {
-      alert("Error: " + error.message)
+      alert(es.cli.errorGenerico + error.message)
     } finally {
       setLoading(false)
     }
   }
 
   const handleDeleteClient = async (clientId) => {
-    if (!confirm("Delete this client? This cannot be undone.")) return
+    if (!confirm(es.cli.confirmarEliminar)) return
 
     try {
       await api(`/clients/${clientId}`, { method: 'DELETE' })
       await fetchClients()
-      alert("Client deleted!")
+      alert(es.cli.eliminado)
     } catch (error) {
-      alert("Error deleting client: " + error.message)
+      alert(es.cli.errorEliminar + error.message)
     }
   }
 
   const handleImportComplete = () => {
     fetchClients()
     if (typeof window !== "undefined" && window.toast) {
-      window.toast("Clients Imported!", {
-        title: "Success",
-        description: "Client list updated with new imports"
+      window.toast(es.cli.importados, {
+        title: es.cli.exito,
+        description: es.cli.listaActualizada
       })
     }
   }
@@ -129,7 +130,7 @@ export default function ClientsPage() {
       {/* Create/Edit Client Form */}
       <div className='bg-surface rounded-lg shadow p-6 mb-8'>
         <h2 className='text-xl font-semibold mb-4'>
-          {editingClient ? "Edit Client" : "New Client"}
+          {editingClient ? es.cli.editar : es.cli.nuevo}
         </h2>
 
         <form
@@ -138,7 +139,7 @@ export default function ClientsPage() {
         >
           <input
             type='text'
-            placeholder='Company Name *'
+            placeholder={es.cli.empresa}
             value={editingClient ? editingClient.company_name : newClient.company_name}
             onChange={(e) =>
               editingClient
@@ -151,7 +152,7 @@ export default function ClientsPage() {
 
           <input
             type='text'
-            placeholder='Contact Name'
+            placeholder={es.cli.contacto}
             value={editingClient ? editingClient.contact_name : newClient.contact_name}
             onChange={(e) =>
               editingClient
@@ -163,7 +164,7 @@ export default function ClientsPage() {
 
           <input
             type='email'
-            placeholder='Email'
+            placeholder={es.cli.correo}
             value={editingClient ? editingClient.email : newClient.email}
             onChange={(e) =>
               editingClient
@@ -175,7 +176,7 @@ export default function ClientsPage() {
 
           <input
             type='tel'
-            placeholder='Phone'
+            placeholder={es.cli.telefono}
             value={editingClient ? editingClient.phone : newClient.phone}
             onChange={(e) =>
               editingClient
@@ -187,7 +188,7 @@ export default function ClientsPage() {
 
           <input
             type='text'
-            placeholder='Address'
+            placeholder={es.cli.direccion}
             value={editingClient ? editingClient.address : newClient.address}
             onChange={(e) =>
               editingClient
@@ -199,7 +200,7 @@ export default function ClientsPage() {
 
           <input
             type='text'
-            placeholder='Tax ID (RNC)'
+            placeholder={es.cli.rnc}
             value={editingClient ? editingClient.tax_id : newClient.tax_id}
             onChange={(e) =>
               editingClient
@@ -210,7 +211,7 @@ export default function ClientsPage() {
           />
 
           <textarea
-            placeholder='Notes'
+            placeholder={es.cli.notas}
             value={editingClient ? editingClient.notes : newClient.notes}
             onChange={(e) =>
               editingClient
@@ -227,7 +228,7 @@ export default function ClientsPage() {
               disabled={loading}
               className='bg-accent text-white px-6 py-2 rounded hover:bg-accent-strong disabled:opacity-50'
             >
-              {loading ? "Saving..." : editingClient ? "Update Client" : "Add Client"}
+              {loading ? es.cli.guardando : editingClient ? es.cli.actualizar : es.cli.agregar}
             </button>
 
             {editingClient && (
@@ -236,7 +237,7 @@ export default function ClientsPage() {
                 onClick={() => setEditingClient(null)}
                 className='bg-line px-6 py-2 rounded hover:bg-line/70'
               >
-                Cancel
+                {es.cli.cancelar}
               </button>
             )}
           </div>
@@ -256,8 +257,8 @@ export default function ClientsPage() {
             <thead className={dt.thead}>
               <tr>
                 <th className={dt.th}>Compañía</th>
-                <th className={dt.th}>Contact</th>
-                <th className={dt.th}>Email</th>
+                <th className={dt.th}>{es.cli.colContacto}</th>
+                <th className={dt.th}>{es.cli.colCorreo}</th>
                 <th className={dt.th}>Teléfono</th>
                 <th className={dt.th}>Dirección</th>
                 <th className={dt.th}>Notas</th>

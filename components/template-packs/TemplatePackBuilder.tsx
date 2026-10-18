@@ -1,5 +1,6 @@
 "use client";
 
+import { es } from "@/lib/i18n/es";
 /**
  * Template Pack Builder. Shared by /template-packs/new and /template-packs/[id]/edit.
  *
@@ -100,7 +101,7 @@ export default function TemplatePackBuilder({ packId }: { packId?: number }) {
           );
         }
       } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : "Could not load data";
+        const msg = err instanceof Error ? err.message : es.pl.errorCargarDatos;
         console.error("Template pack builder load failed:", err);
         if (!cancelled) setLoadError(msg);
       } finally {
@@ -155,14 +156,14 @@ export default function TemplatePackBuilder({ packId }: { packId?: number }) {
   };
 
   const addCategory = () =>
-    update([...categories, { key: newKey("cat"), name: `Category ${categories.length + 1}`, items: [] }]);
+    update([...categories, { key: newKey("cat"), name: es.pl.categoriaN(categories.length + 1), items: [] }]);
 
   const patchCategory = (key: string, patch: Partial<DraftCategory>) =>
     update(categories.map((c) => (c.key === key ? { ...c, ...patch } : c)));
 
   const removeCategory = (key: string) => {
     const cat = categories.find((c) => c.key === key);
-    if (cat && cat.items.length > 0 && !window.confirm(`Remove "${cat.name}" and its ${cat.items.length} items?`)) {
+    if (cat && cat.items.length > 0 && !window.confirm(es.pl.confirmarQuitarCategoria(cat.name, cat.items.length))) {
       return;
     }
     update(categories.filter((c) => c.key !== key));
@@ -197,9 +198,9 @@ export default function TemplatePackBuilder({ packId }: { packId?: number }) {
 
   // ---------- validation + save ----------
   const validationError = useMemo(() => {
-    if (!name.trim()) return "Pack name is required.";
+    if (!name.trim()) return es.pl.nombreObligatorio;
     for (const c of categories) {
-      if (!c.name.trim()) return "Every category needs a name.";
+      if (!c.name.trim()) return es.pl.categoriaSinNombre;
       for (const i of c.items) {
         if (!(i.default_qty > 0)) return `Quantity must be greater than 0 in "${c.name}".`;
       }
@@ -237,7 +238,7 @@ export default function TemplatePackBuilder({ packId }: { packId?: number }) {
       setDirty(false);
       router.push("/template-packs");
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Save failed";
+      const msg = err instanceof Error ? err.message : es.pl.errorGuardar;
       console.error("Template pack save failed:", err);
       setSaveError(msg);
     } finally {
@@ -246,12 +247,12 @@ export default function TemplatePackBuilder({ packId }: { packId?: number }) {
   };
 
   const handleCancel = () => {
-    if (dirty && !window.confirm("Discard unsaved changes?")) return;
+    if (dirty && !window.confirm(es.pl.descartar)) return;
     router.push("/template-packs");
   };
 
   // ---------- render ----------
-  if (loading) return <p className="text-sm text-muted">Loading template pack builder…</p>;
+  if (loading) return <p className="text-sm text-muted">{es.pl.cargandoEditor}</p>;
 
   if (loadError) {
     return (
@@ -271,10 +272,10 @@ export default function TemplatePackBuilder({ packId }: { packId?: number }) {
 
       {/* BASIC INFO */}
       <section className="rounded-lg border border-line bg-surface p-5">
-        <h2 className="mb-4 text-base font-semibold text-ink">Pack details</h2>
+        <h2 className="mb-4 text-base font-semibold text-ink">{es.pl.detalles}</h2>
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="block">
-            <span className="mb-1 block text-sm font-medium text-ink">Name *</span>
+            <span className="mb-1 block text-sm font-medium text-ink">{es.pl.nombre}</span>
             <input
               className={inputClass}
               value={name}
@@ -282,12 +283,12 @@ export default function TemplatePackBuilder({ packId }: { packId?: number }) {
                 setName(e.target.value);
                 setDirty(true);
               }}
-              placeholder="e.g. Nave Basica"
+              placeholder={es.pl.phNombreB}
               disabled={saving}
             />
           </label>
           <label className="block">
-            <span className="mb-1 block text-sm font-medium text-ink">Description</span>
+            <span className="mb-1 block text-sm font-medium text-ink">{es.comun.descripcion}</span>
             <input
               className={inputClass}
               value={description}
@@ -295,7 +296,7 @@ export default function TemplatePackBuilder({ packId }: { packId?: number }) {
                 setDescription(e.target.value);
                 setDirty(true);
               }}
-              placeholder="Optional"
+              placeholder={es.pl.phOpcional}
               disabled={saving}
             />
           </label>
@@ -306,16 +307,16 @@ export default function TemplatePackBuilder({ packId }: { packId?: number }) {
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-base font-semibold text-ink">
-            Categories ({categories.length}) · Items ({totals.itemCount})
+            {es.pl.categoriasItems(categories.length, totals.itemCount)}
           </h2>
           <Button onClick={addCategory} disabled={saving}>
-            Add category
+            {es.pl.agregarCategoria}
           </Button>
         </div>
 
         {categories.length === 0 && (
           <p className="rounded-lg border border-dashed border-line p-6 text-center text-sm text-muted">
-            No categories yet. Add a category, then add products to it.
+            {es.pl.sinCategorias}
           </p>
         )}
 
@@ -326,10 +327,10 @@ export default function TemplatePackBuilder({ packId }: { packId?: number }) {
                 className={`${inputClass} flex-1 min-w-[12rem] font-medium`}
                 value={cat.name}
                 onChange={(e) => patchCategory(cat.key, { name: e.target.value })}
-                aria-label="Category name"
+                aria-label={es.pl.nombreCategoria}
                 disabled={saving}
               />
-              <Button variant="outline" size="sm" onClick={() => moveCategory(ci, -1)} disabled={saving || ci === 0} aria-label="Move category up">
+              <Button variant="outline" size="sm" onClick={() => moveCategory(ci, -1)} disabled={saving || ci === 0} aria-label={es.pl.subirCategoria}>
                 ↑
               </Button>
               <Button
@@ -337,7 +338,7 @@ export default function TemplatePackBuilder({ packId }: { packId?: number }) {
                 size="sm"
                 onClick={() => moveCategory(ci, 1)}
                 disabled={saving || ci === categories.length - 1}
-                aria-label="Move category down"
+                aria-label={es.pl.bajarCategoria}
               >
                 ↓
               </Button>
@@ -347,22 +348,22 @@ export default function TemplatePackBuilder({ packId }: { packId?: number }) {
                 disabled={saving}
                 className="rounded px-3 py-1 text-sm font-medium text-red-600 hover:bg-red-50"
               >
-                Remove
+                {es.pl.quitar}
               </button>
             </div>
 
             {cat.items.length === 0 ? (
-              <p className="mb-3 text-sm text-muted">No items in this category.</p>
+              <p className="mb-3 text-sm text-muted">{es.pl.sinItems}</p>
             ) : (
               <div className="mb-3 overflow-x-auto">
                 <table className="min-w-full text-sm">
                   <thead>
                     <tr className="border-b border-line text-left text-xs uppercase text-muted">
-                      <th className="py-2 pr-2">Product</th>
-                      <th className="py-2 pr-2 text-right">Unit price</th>
-                      <th className="py-2 pr-2 text-right">Default qty</th>
-                      <th className="py-2 pr-2 text-right">Line</th>
-                      <th className="py-2 pr-2 text-center">Optional</th>
+                      <th className="py-2 pr-2">{es.pl.colProducto}</th>
+                      <th className="py-2 pr-2 text-right">{es.pl.colPrecio}</th>
+                      <th className="py-2 pr-2 text-right">{es.pl.colCantidad}</th>
+                      <th className="py-2 pr-2 text-right">{es.pl.colLinea}</th>
+                      <th className="py-2 pr-2 text-center">{es.pl.colOpcional}</th>
                       <th className="py-2" />
                     </tr>
                   </thead>
@@ -373,7 +374,7 @@ export default function TemplatePackBuilder({ packId }: { packId?: number }) {
                       return (
                         <tr key={item.key}>
                           <td className="py-2 pr-2">
-                            {product ? product.name : <span className="text-red-600">Missing product #{item.product_id}</span>}
+                            {product ? product.name : <span className="text-red-600">{es.pl.productoFaltante(item.product_id)}</span>}
                           </td>
                           <td className="py-2 pr-2 text-right">${money(price)}</td>
                           <td className="py-2 pr-2 text-right">
@@ -384,7 +385,7 @@ export default function TemplatePackBuilder({ packId }: { packId?: number }) {
                               className="w-24 rounded-md border border-line bg-canvas px-2 py-1 text-right text-sm"
                               value={item.default_qty}
                               onChange={(e) => patchItem(cat.key, item.key, { default_qty: Number(e.target.value) })}
-                              aria-label="Default quantity"
+                              aria-label={es.pl.cantidadDefecto}
                               disabled={saving}
                             />
                           </td>
@@ -394,12 +395,12 @@ export default function TemplatePackBuilder({ packId }: { packId?: number }) {
                               type="checkbox"
                               checked={item.optional}
                               onChange={(e) => patchItem(cat.key, item.key, { optional: e.target.checked })}
-                              aria-label="Optional item"
+                              aria-label={es.pl.itemOpcional}
                               disabled={saving}
                             />
                           </td>
                           <td className="whitespace-nowrap py-2 text-right">
-                            <button type="button" className="px-1 text-muted hover:text-ink disabled:opacity-30" onClick={() => moveItem(cat.key, ii, -1)} disabled={saving || ii === 0} aria-label="Move item up">
+                            <button type="button" className="px-1 text-muted hover:text-ink disabled:opacity-30" onClick={() => moveItem(cat.key, ii, -1)} disabled={saving || ii === 0} aria-label={es.pl.subirItem}>
                               ↑
                             </button>
                             <button
@@ -407,12 +408,12 @@ export default function TemplatePackBuilder({ packId }: { packId?: number }) {
                               className="px-1 text-muted hover:text-ink disabled:opacity-30"
                               onClick={() => moveItem(cat.key, ii, 1)}
                               disabled={saving || ii === cat.items.length - 1}
-                              aria-label="Move item down"
+                              aria-label={es.pl.bajarItem}
                             >
                               ↓
                             </button>
                             <button type="button" className="ml-2 px-1 text-red-600 hover:underline" onClick={() => removeItem(cat.key, item.key)} disabled={saving}>
-                              Remove
+                              {es.pl.quitar}
                             </button>
                           </td>
                         </tr>
@@ -429,7 +430,7 @@ export default function TemplatePackBuilder({ packId }: { packId?: number }) {
                   <input
                     autoFocus
                     className={inputClass}
-                    placeholder={`Search ${products.length} products by name, description or ID`}
+                    placeholder={es.pl.buscarProductos(products.length)}
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                   />
@@ -440,11 +441,11 @@ export default function TemplatePackBuilder({ packId }: { packId?: number }) {
                       setSearch("");
                     }}
                   >
-                    Close
+                    {es.pl.cerrar}
                   </Button>
                 </div>
                 <ul className="max-h-64 divide-y divide-line overflow-y-auto">
-                  {filteredProducts.length === 0 && <li className="py-2 text-sm text-muted">No products match.</li>}
+                  {filteredProducts.length === 0 && <li className="py-2 text-sm text-muted">{es.pl.sinCoincidencias}</li>}
                   {filteredProducts.map((p) => {
                     const already = cat.items.some((i) => i.product_id === p.id);
                     return (
@@ -456,7 +457,7 @@ export default function TemplatePackBuilder({ packId }: { packId?: number }) {
                         >
                           <span>
                             <span className="text-ink">{p.name}</span>
-                            {already && <span className="ml-2 text-xs text-muted">(already in category)</span>}
+                            {already && <span className="ml-2 text-xs text-muted">{es.pl.yaEnCategoria}</span>}
                           </span>
                           <span className="text-muted">${money(Number(p.unit_price))}</span>
                         </button>
@@ -465,7 +466,7 @@ export default function TemplatePackBuilder({ packId }: { packId?: number }) {
                   })}
                 </ul>
                 {products.length > 50 && !search && (
-                  <p className="mt-2 text-xs text-muted">Showing first 50. Type to search all.</p>
+                  <p className="mt-2 text-xs text-muted">{es.pl.primeros50}</p>
                 )}
               </div>
             ) : (
@@ -478,7 +479,7 @@ export default function TemplatePackBuilder({ packId }: { packId?: number }) {
                 }}
                 disabled={saving}
               >
-                Add product
+                {es.pl.agregarProducto}
               </Button>
             )}
           </div>
@@ -488,16 +489,16 @@ export default function TemplatePackBuilder({ packId }: { packId?: number }) {
       {/* SUMMARY + SAVE */}
       <section className="flex flex-col gap-4 border-t border-line pt-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="text-sm text-muted">
-          Required items at catalog price: <span className="font-semibold text-ink">${money(totals.required)}</span>
-          {totals.optional > 0 && <> · Optional: ${money(totals.optional)}</>}
-          <div className="text-xs">Before discounts, charges and ITBIS. Final totals are computed on the quote.</div>
+          {es.pl.requeridos} <span className="font-semibold text-ink">${money(totals.required)}</span>
+          {totals.optional > 0 && <> · {es.pl.opcionales} ${money(totals.optional)}</>}
+          <div className="text-xs">{es.pl.aviso}</div>
         </div>
         <div className="flex gap-3">
           <Button variant="outline" onClick={handleCancel} disabled={saving}>
-            Cancel
+            {es.pl.cancelar}
           </Button>
           <Button onClick={handleSave} disabled={saving || !name.trim()}>
-            {saving ? "Saving…" : isEdit ? "Save changes" : "Create pack"}
+            {saving ? es.pl.guardando : isEdit ? es.pl.guardarCambios : es.pl.crearPaquete}
           </Button>
         </div>
       </section>

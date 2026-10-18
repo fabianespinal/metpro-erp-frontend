@@ -1,4 +1,5 @@
 'use client'
+import { es } from "@/lib/i18n/es";
 import { unwrapEnvelope } from "@/lib/api"
 
 import { useState, useCallback } from 'react'
@@ -37,13 +38,13 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete }) {
 
   const validateAndSetFile = (selectedFile) => {
     if (!selectedFile.name.toLowerCase().endsWith('.csv')) {
-      setError('Please upload a CSV file only')
+      setError(es.csv.soloCsv)
       setFile(null)
       return
     }
 
     if (selectedFile.size > MAX_FILE_SIZE) {
-      setError('File size must be less than 10MB')
+      setError(es.csv.tamano)
       setFile(null)
       return
     }
@@ -70,7 +71,7 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete }) {
       : null
 
     if (!token) {
-      setError("You must be logged in to import clients")
+      setError(es.csv.sinSesion)
       setIsUploading(false)
       return
     }
@@ -92,7 +93,7 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete }) {
 
       // Handle non-OK responses BEFORE parsing JSON
       if (!response.ok) {
-        let errorMessage = "Import failed"
+        let errorMessage = es.csv.importFallo
         try {
           const errorData = await response.json()
           // Backend error model is {"detail": ..., "code": ...}.
@@ -118,9 +119,9 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete }) {
       }
     } catch (err) {
       if (err.name === 'TypeError' && err.message.includes('fetch')) {
-        setError('Network error. Please check your connection and try again.')
+        setError(es.csv.errorRed)
       } else {
-        setError(err.message || 'Upload failed. Please check file format.')
+        setError(err.message || es.csv.errorSubida)
       }
       console.error('Import error:', err)
     } finally {
@@ -145,7 +146,7 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete }) {
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
       <div className="bg-surface rounded-lg shadow-card w-full max-w-2xl max-h-[90vh] flex flex-col">
         <div className="flex items-center justify-between p-5 border-b">
-          <h3 className="text-xl font-bold text-ink">Import Clients from CSV</h3>
+          <h3 className="text-xl font-bold text-ink">{es.csv.titulo}</h3>
           <button onClick={handleClose} className="text-muted hover:text-muted text-2xl leading-none">×</button>
         </div>
         
@@ -156,11 +157,11 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete }) {
               <div className="bg-accent/10 border border-accent/30 rounded-lg p-4">
                 <h4 className="font-bold text-accent-strong mb-2">CSV Requirements</h4>
                 <ul className="text-sm text-accent-strong space-y-1">
-                  <li>• <span className="font-medium">Required column:</span> company_name</li>
-                  <li>• <span className="font-medium">Optional columns:</span> contact_name, email, phone, address, tax_id, notes</li>
-                  <li>• File must be UTF-8 encoded (Excel: Save As → CSV UTF-8)</li>
-                  <li>• First row must contain headers</li>
-                  <li>• Maximum file size: 10MB</li>
+                  <li>• <span className="font-medium">{es.csv.columnaObligatoria}</span> company_name</li>
+                  <li>• <span className="font-medium">{es.csv.columnasOpcionales}</span> contact_name, email, phone, address, tax_id, notes</li>
+                  <li>{es.csv.utf8}</li>
+                  <li>{es.csv.encabezados}</li>
+                  <li>{es.csv.maximo}</li>
                 </ul>
               </div>
               
@@ -189,7 +190,7 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete }) {
                 <label htmlFor="csv-upload" className="cursor-pointer block">
                   {file ? (
                     <div>
-                      <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-emerald-700">File ready</p>
+                      <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-emerald-700">{es.csv.archivoListo}</p>
                       <p className="font-medium text-emerald-700">{file.name}</p>
                       <p className="text-sm text-muted mt-1">
                         { ((file?.size ?? 0) / 1024).toFixed(2) } KB • Click to change file
@@ -197,11 +198,11 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete }) {
                     </div>
                   ) : (
                     <div>
-                      <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">No file selected</p>
+                      <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">{es.csv.sinArchivo}</p>
                       <p className="font-medium text-ink">
-                        {dragActive ? 'Drop your CSV file here' : 'Drag & drop CSV file here'}
+                        {dragActive ? es.csv.suelteAqui : es.csv.arrastre}
                       </p>
-                      <p className="text-sm text-muted mt-1">or click to browse</p>
+                      <p className="text-sm text-muted mt-1">{es.csv.clic}</p>
                     </div>
                   )}
                 </label>
@@ -209,7 +210,7 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete }) {
               
               {/* Import Options */}
               <div className="space-y-3">
-                <h4 className="font-medium text-ink">Import Options</h4>
+                <h4 className="font-medium text-ink">{es.csv.opciones}</h4>
                 <label className="flex items-center space-x-3 p-3 bg-canvas rounded-lg cursor-pointer hover:bg-canvas transition">
                   <input
                     type="radio"
@@ -218,8 +219,8 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete }) {
                     className="form-radio text-accent"
                   />
                   <div>
-                    <p className="font-medium text-ink">Skip duplicates</p>
-                    <p className="text-sm text-muted">Keep existing records, skip duplicates</p>
+                    <p className="font-medium text-ink">{es.csv.omitir}</p>
+                    <p className="text-sm text-muted">{es.csv.omitirDesc}</p>
                   </div>
                 </label>
                 <label className="flex items-center space-x-3 p-3 bg-canvas rounded-lg cursor-pointer hover:bg-canvas transition">
@@ -230,8 +231,8 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete }) {
                     className="form-radio text-accent"
                   />
                   <div>
-                    <p className="font-medium text-ink">Overwrite existing</p>
-                    <p className="text-sm text-muted">Update existing records with new data</p>
+                    <p className="font-medium text-ink">{es.csv.sobrescribir}</p>
+                    <p className="text-sm text-muted">{es.csv.sobrescribirDesc}</p>
                   </div>
                 </label>
               </div>
@@ -251,31 +252,31 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete }) {
               }`}>
                 <div className="flex items-center justify-center mb-4">
                   {importResult.success ? (
-                    <p className="text-sm font-semibold uppercase tracking-wide text-emerald-700">Import successful</p>
+                    <p className="text-sm font-semibold uppercase tracking-wide text-emerald-700">{es.csv.exitoso}</p>
                   ) : (
-                    <p className="text-sm font-semibold uppercase tracking-wide text-red-700">Import failed</p>
+                    <p className="text-sm font-semibold uppercase tracking-wide text-red-700">{es.csv.fallida}</p>
                   )}
                 </div>
                 <h4 className="text-xl font-bold text-center mb-2">
-                  {importResult.success ? 'Import Successful!' : 'Import Failed'}
+                  {importResult.success ? es.csv.exitosoAdm : es.csv.fallidaAdm}
                 </h4>
                 {importResult.success && importResult.summary && (
                   <div className="grid grid-cols-2 gap-4 mt-4 text-sm">
                     <div className="text-center p-3 bg-surface rounded shadow-sm">
                       <div className="font-bold text-2xl text-emerald-600">{importResult.summary.inserted || 0}</div>
-                      <div className="text-muted">New Clients</div>
+                      <div className="text-muted">{es.csv.nuevos}</div>
                     </div>
                     <div className="text-center p-3 bg-surface rounded shadow-sm">
                       <div className="font-bold text-2xl text-accent">{importResult.summary.updated || 0}</div>
-                      <div className="text-muted">Updated</div>
+                      <div className="text-muted">{es.csv.actualizados}</div>
                     </div>
                     <div className="text-center p-3 bg-surface rounded shadow-sm">
                       <div className="font-bold text-2xl text-amber-600">{importResult.summary.skipped || 0}</div>
-                      <div className="text-muted">Skipped</div>
+                      <div className="text-muted">{es.csv.omitidos}</div>
                     </div>
                     <div className="text-center p-3 bg-surface rounded shadow-sm">
                       <div className="font-bold text-2xl text-red-600">{importResult.summary.errors_count || 0}</div>
-                      <div className="text-muted">Errors</div>
+                      <div className="text-muted">{es.csv.errores}</div>
                     </div>
                   </div>
                 )}
@@ -283,7 +284,7 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete }) {
               
               {importResult.errors && importResult.errors.length > 0 && (
                 <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 max-h-60 overflow-y-auto">
-                  <h5 className="font-bold text-amber-800 mb-2">Import Warnings & Errors:</h5>
+                  <h5 className="font-bold text-amber-800 mb-2">{es.csv.advertencias}</h5>
                   <ul className="text-sm text-amber-800 space-y-1">
                     {importResult.errors.map((err, i) => (
                       <li key={i}>• {err}</li>
@@ -294,8 +295,8 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete }) {
               
               <div className="text-center text-sm text-muted">
                 {importResult.success 
-                  ? 'Modal will close automatically in 5 seconds...' 
-                  : 'Please fix errors and try again'}
+                  ? es.csv.cierraSolo 
+                  : es.csv.corrija}
               </div>
             </div>
           )}
@@ -308,7 +309,7 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete }) {
               onClick={handleClose}
               className="px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent-strong"
             >
-              Close
+              {es.csv.cerrar}
             </Button>
           ) : (
             <>
@@ -318,7 +319,7 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete }) {
                 variant="outline"
                 className="px-4 py-2"
               >
-                Cancel
+                {es.csv.cancelar}
               </Button>
               <Button
                 onClick={handleUpload}
@@ -338,7 +339,7 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete }) {
                     Importing...
                   </span>
                 ) : (
-                  'Import Clients'
+                  es.csv.importar
                 )}
               </Button>
             </>

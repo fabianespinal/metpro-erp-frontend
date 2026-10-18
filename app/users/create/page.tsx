@@ -1,5 +1,6 @@
 "use client";
 
+import { es } from "@/lib/i18n/es";
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -32,11 +33,11 @@ export default function CreateUserPage() {
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    if (form.username.trim().length < 3) return setError("Username must be at least 3 characters.");
-    if (!form.email.includes("@")) return setError("Enter a valid email.");
+    if (form.username.trim().length < 3) return setError(es.usr.usuarioCorto);
+    if (!form.email.includes("@")) return setError(es.usr.correoInvalido);
     if (form.password.length < MIN_PASSWORD_LENGTH)
-      return setError(`Password must be at least ${MIN_PASSWORD_LENGTH} characters.`);
-    if (form.password !== form.confirm) return setError("Passwords do not match.");
+      return setError(es.usr.claveCorta(MIN_PASSWORD_LENGTH));
+    if (form.password !== form.confirm) return setError(es.usr.clavesNoCoinciden);
 
     setSaving(true);
     try {
@@ -49,7 +50,7 @@ export default function CreateUserPage() {
       });
       router.push("/users");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not create user.");
+      setError(err instanceof Error ? err.message : es.usr.errorCrear);
       setSaving(false);
     }
   }
@@ -58,35 +59,35 @@ export default function CreateUserPage() {
 
   return (
     <div className="mx-auto max-w-xl">
-      <PageHeader title="New user" subtitle="Create an account. The user signs in with this username and password." />
+      <PageHeader title={es.usr.nuevoTitulo} subtitle={es.usr.nuevoSub} />
 
       <form onSubmit={submit} className="mt-6 space-y-4 rounded-lg bg-surface p-6 shadow">
         <label className="block text-sm">
-          Username
+          {es.usr.usuario}
           <input className={input} value={form.username} onChange={(e) => set("username", e.target.value)} autoComplete="off" required />
         </label>
         <label className="block text-sm">
-          Full name
+          {es.usr.nombre}
           <input className={input} value={form.full_name} onChange={(e) => set("full_name", e.target.value)} />
         </label>
         <label className="block text-sm">
-          Email
+          {es.usr.correo}
           <input type="email" className={input} value={form.email} onChange={(e) => set("email", e.target.value)} required />
         </label>
         <label className="block text-sm">
-          Password
+          {es.usr.clave}
           <input type="password" className={input} value={form.password} onChange={(e) => set("password", e.target.value)} autoComplete="new-password" required />
         </label>
         <label className="block text-sm">
-          Confirm password
+          {es.usr.confirmarClave}
           <input type="password" className={input} value={form.confirm} onChange={(e) => set("confirm", e.target.value)} autoComplete="new-password" required />
         </label>
         <label className="block text-sm">
-          Role
+          {es.usr.rol}
           <select className={input} value={form.role} onChange={(e) => set("role", e.target.value)}>
-            <option value="user">user</option>
-            <option value="admin">admin</option>
-            {myRole === "superadmin" && <option value="superadmin">superadmin</option>}
+            <option value="user">{es.usr.roles.user}</option>
+            <option value="admin">{es.usr.roles.admin}</option>
+            {myRole === "superadmin" && <option value="superadmin">{es.usr.roles.superadmin}</option>}
           </select>
         </label>
 
@@ -98,14 +99,14 @@ export default function CreateUserPage() {
 
         <div className="flex justify-end gap-3">
           <Link href="/users" className="px-4 py-2 text-sm text-muted hover:underline">
-            Cancel
+            {es.usr.cancelar}
           </Link>
           <button
             type="submit"
             disabled={saving}
             className="rounded bg-accent px-4 py-2 text-sm text-white hover:bg-accent-strong disabled:opacity-50"
           >
-            {saving ? "Creating…" : "Create user"}
+            {saving ? es.usr.creando : es.usr.crear}
           </button>
         </div>
       </form>

@@ -1,5 +1,6 @@
 "use client";
 
+import { es } from "@/lib/i18n/es";
 import { useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 
@@ -10,5 +11,5 @@ export default function TemplatePackRedirect() {
   useEffect(() => {
     router.replace(`/template-packs/${params.pack_id}/edit`);
   }, [params.pack_id, router]);
-  return <p className="p-6 text-sm text-muted">Opening builder…</p>;
+  return <p className="p-6 text-sm text-muted">{es.pl.abriendo}</p>;
 }

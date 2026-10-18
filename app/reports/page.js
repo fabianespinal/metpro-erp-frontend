@@ -1,4 +1,5 @@
 'use client'
+import { es } from "@/lib/i18n/es";
 import ErrorBanner from "@/components/ui/ErrorBanner";
 import { unwrapEnvelope, checkUnauthorized } from "@/lib/api"
 import { PageHeader } from "@/components/ui/page-header"
@@ -57,7 +58,7 @@ export default function ReportsPage() {
 
   const runReport = async () => {
     if (!filters.start_date || !filters.end_date) {
-      alert('Please select both start and end dates')
+      alert(es.rep.fechasRequeridas)
       return
     }
 
@@ -102,13 +103,13 @@ export default function ReportsPage() {
 
     if (reportType === 'quotes-summary') {
       filename = 'quotes_summary'
-      csvContent = 'Status,Count,Percentage\n'
+      csvContent = es.rep.csvResumen
 
       reportData.status_breakdown?.forEach(row => {
-        csvContent += `${row.status},${row.count},${row.percentage}%\n`
+        csvContent += `${es.estados[row.status] ?? row.status},${row.count},${row.percentage}%\n`
       })
 
-      csvContent += `\nTotal Quotes,${reportData.summary?.total_quotes ?? 0},100%`
+      csvContent += `\n${es.rep.csvTotal},${reportData.summary?.total_quotes ?? 0},100%`
     }
 
     else if (reportType === 'revenue') {
@@ -116,7 +117,7 @@ export default function ReportsPage() {
       csvContent = 'Concepto,Monto,Cantidad\n'
 
       reportData.revenue_breakdown?.forEach(row => {
-        csvContent += `${row.status},$${(row.total_revenue ?? 0).toFixed(2)},${row.count ?? row.quote_count}\n`
+        csvContent += `${es.estados[row.status] ?? row.status},$${(row.total_revenue ?? 0).toFixed(2)},${row.count ?? row.quote_count}\n`
       })
 
       csvContent += `\nCobrado,$${(reportData.grand_total ?? 0).toFixed(2)}`
@@ -124,10 +125,10 @@ export default function ReportsPage() {
 
     else if (reportType === 'client-activity') {
       filename = 'client_activity'
-      csvContent = 'Client,Quotes,Total Quoted,Last Quote Date\n'
+      csvContent = es.rep.csvActividad
 
       reportData.clients?.forEach(row => {
-        csvContent += `${row.client_name},${row.quote_count},$${(row.total_quoted ?? 0).toFixed(2)},${row.last_quote_date || 'N/A'}\n`
+        csvContent += `${row.client_name},${row.quote_count},$${(row.total_quoted ?? 0).toFixed(2)},${row.last_quote_date || es.rep.noAplica}\n`
       })
     }
 
@@ -161,9 +162,9 @@ export default function ReportsPage() {
               }}
               className={`${fb.control} md:w-56`}
             >
-              <option value="quotes-summary">Quotes Summary</option>
-              <option value="revenue">Revenue Report</option>
-              <option value="client-activity">Client Activity</option>
+              <option value="quotes-summary">{es.rep.resumenCotizaciones}</option>
+              <option value="revenue">{es.rep.ingresos}</option>
+              <option value="client-activity">{es.rep.actividadClientes}</option>
             </select>
           </div>
 
@@ -194,7 +195,7 @@ export default function ReportsPage() {
               onChange={(e) => setFilters({ ...filters, client_id: e.target.value })}
               className={`${fb.control} md:w-64`}
             >
-              <option value="">All Clients</option>
+              <option value="">{es.rep.todosClientes}</option>
               {clients.map(client => (
                 <option key={client.id} value={client.id}>
                   {client.company_name}
@@ -215,7 +216,7 @@ export default function ReportsPage() {
               </svg>
               Running...
             </span>
-          ) : 'Run Report'}
+          ) : es.rep.ejecutar}
         </Button>
       </div>
 
@@ -225,24 +226,24 @@ export default function ReportsPage() {
 
           {/* Filters Applied */}
           <div className='mb-6 rounded-md border border-line bg-canvas p-4'>
-            <p className='text-sm font-medium text-ink'>Filters Applied:</p>
+            <p className='text-sm font-medium text-ink'>{es.rep.filtrosAplicados}</p>
             <p className='text-sm text-muted'>
-              Date Range: {filters.start_date} to {filters.end_date}
+              {es.rep.rangoFechas} {filters.start_date} {es.rep.hasta} {filters.end_date}
               {filters.client_id &&
-                ` | Client: ${clients.find(c => c.id == filters.client_id)?.company_name}`}
+                ` | ${es.rep.cliente} ${clients.find(c => c.id == filters.client_id)?.company_name}`}
             </p>
           </div>
 
           {/* Report Header */}
           <div className='mb-4 flex items-center justify-between'>
             <h2 className='text-lg font-semibold tracking-tight text-ink'>
-              {reportType === 'quotes-summary' && 'Quotes Summary Report'}
-              {reportType === 'revenue' && 'Revenue Report'}
-              {reportType === 'client-activity' && 'Client Activity Report'}
+              {reportType === 'quotes-summary' && es.rep.tituloResumen}
+              {reportType === 'revenue' && es.rep.tituloIngresos}
+              {reportType === 'client-activity' && es.rep.tituloActividad}
             </h2>
 
             <Button variant="outline" onClick={exportCSV}>
-              Export CSV
+              {es.rep.exportarCsv}
             </Button>
           </div>
 
@@ -256,7 +257,7 @@ export default function ReportsPage() {
                   <div className='text-2xl font-semibold tabular-nums text-ink'>
                     {reportData.summary?.total_quotes ?? 0}
                   </div>
-                  <div className='mt-1 text-sm text-muted'>Total Quotes</div>
+                  <div className='mt-1 text-sm text-muted'>{es.rep.totalCotizaciones}</div>
                 </div>
 
                 {reportData.status_breakdown?.map(status => (
@@ -268,20 +269,20 @@ export default function ReportsPage() {
                 ))}
               </div>
 
-              <h3 className='mb-3 text-base font-semibold text-ink'>Status Breakdown</h3>
+              <h3 className='mb-3 text-base font-semibold text-ink'>{es.rep.desgloseEstado}</h3>
               <div className={dt.wrap}>
                 <table className={dt.table}>
                   <thead className={dt.thead}>
                     <tr>
-                      <th className={dt.th}>Status</th>
-                      <th className={dt.thRight}>Count</th>
-                      <th className={dt.thRight}>Percentage</th>
+                      <th className={dt.th}>{es.rep.estado}</th>
+                      <th className={dt.thRight}>{es.rep.cantidad}</th>
+                      <th className={dt.thRight}>{es.rep.porcentaje}</th>
                     </tr>
                   </thead>
                   <tbody className={dt.tbody}>
                     {reportData.status_breakdown?.map((row, i) => (
                       <tr key={i} className={dt.tr}>
-                        <td className={dt.td}>{row.status}</td>
+                        <td className={dt.td}>{es.estados[row.status] ?? row.status}</td>
                         <td className={dt.tdRight}>{row.count}</td>
                         <td className={dt.tdRight}>{row.percentage}%</td>
                       </tr>
@@ -322,7 +323,7 @@ export default function ReportsPage() {
 
               </div>
 
-              <h3 className='mb-3 text-base font-semibold text-ink'>Revenue Breakdown</h3>
+              <h3 className='mb-3 text-base font-semibold text-ink'>{es.rep.desgloseIngresos}</h3>
               <div className={dt.wrap}>
                 <table className={dt.table}>
                   <thead className={dt.thead}>
@@ -335,7 +336,7 @@ export default function ReportsPage() {
                   <tbody className={dt.tbody}>
                     {reportData.revenue_breakdown?.map((row, i) => (
                       <tr key={i} className={dt.tr}>
-                        <td className={dt.td}>{row.status}</td>
+                        <td className={dt.td}>{es.estados[row.status] ?? row.status}</td>
                         <td className={dt.tdRight}>
                           ${(row.total_revenue ?? 0).toFixed(2)}
                         </td>
@@ -360,33 +361,33 @@ export default function ReportsPage() {
                   <div className='text-2xl font-semibold tabular-nums text-ink'>
                     {reportData.summary?.total_clients ?? 0}
                   </div>
-                  <div className='mt-1 text-sm text-muted'>Active Clients</div>
+                  <div className='mt-1 text-sm text-muted'>{es.rep.clientesActivos}</div>
                 </div>
 
                 <div className='rounded-lg border border-line bg-surface p-4 text-center shadow-card'>
                   <div className='text-2xl font-semibold tabular-nums text-ink'>
                     {reportData.summary?.total_quotes ?? 0}
                   </div>
-                  <div className='mt-1 text-sm text-muted'>Total Quotes</div>
+                  <div className='mt-1 text-sm text-muted'>{es.rep.totalCotizaciones}</div>
                 </div>
 
                 <div className='rounded-lg border border-line bg-surface p-4 text-center shadow-card'>
                   <div className='text-2xl font-semibold tabular-nums text-emerald-600'>
                     ${(reportData.summary?.total_revenue ?? 0).toFixed(2)}
                   </div>
-                  <div className='mt-1 text-sm text-muted'>Total Revenue</div>
+                  <div className='mt-1 text-sm text-muted'>{es.rep.totalIngresos}</div>
                 </div>
               </div>
 
-              <h3 className='mb-3 text-base font-semibold text-ink'>Client Activity</h3>
+              <h3 className='mb-3 text-base font-semibold text-ink'>{es.rep.actividadClientes}</h3>
               <div className={dt.wrap}>
                 <table className={dt.table}>
                   <thead className={dt.thead}>
                     <tr>
-                      <th className={dt.th}>Client</th>
-                      <th className={dt.thRight}>Quotes</th>
-                      <th className={dt.thRight}>Total Quoted</th>
-                      <th className={dt.th}>Last Quote</th>
+                      <th className={dt.th}>{es.rep.cliente2}</th>
+                      <th className={dt.thRight}>{es.rep.cotizaciones}</th>
+                      <th className={dt.thRight}>{es.rep.totalCotizado}</th>
+                      <th className={dt.th}>{es.rep.ultimaCotizacion}</th>
                     </tr>
                   </thead>
                   <tbody className={dt.tbody}>
@@ -402,7 +403,7 @@ export default function ReportsPage() {
                           ${(row.total_quoted ?? 0).toFixed(2)}
                         </td>
                         <td className={dt.td}>
-                          {row.last_quote_date || 'N/A'}
+                          {row.last_quote_date || es.rep.noAplica}
                         </td>
                       </tr>
                     ))}

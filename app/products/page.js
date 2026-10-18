@@ -1,4 +1,5 @@
 'use client'
+import { es } from "@/lib/i18n/es";
 import ErrorBanner from "@/components/ui/ErrorBanner";
 import { dt } from "@/components/ui/data-table";
 
@@ -49,9 +50,9 @@ export default function ProductsPage() {
 
       await fetchProducts()
       setNewProduct({ name: '', description: '', unit_price: 0 })
-      alert('Product created successfully!')
+      alert(es.prod.creado)
     } catch (error) {
-      alert('Error: ' + error.message)
+      alert(es.prod.errorGenerico + error.message)
     } finally {
       setLoading(false)
     }
@@ -71,9 +72,9 @@ const handleUpdateProduct = async (e) => {
 
     await fetchProducts()
     setEditingProduct(null)
-    alert('Product updated successfully!')
+    alert(es.prod.actualizado)
   } catch (error) {
-    alert('Error: ' + error.message)
+    alert(es.prod.errorGenerico + error.message)
   } finally {
     setLoading(false)
   }
@@ -81,14 +82,14 @@ const handleUpdateProduct = async (e) => {
 
   // Delete product
   const handleDeleteProduct = async (productId) => {
-    if (!confirm('Delete this product?')) return
+    if (!confirm(es.prod.confirmarEliminar)) return
 
     try {
       await api(`/products/${productId}/`, { method: 'DELETE' })
       await fetchProducts()
-      alert('Product deleted!')
+      alert(es.prod.eliminado)
     } catch (error) {
-      alert('Error deleting product: ' + error.message)
+      alert(es.prod.errorEliminar + error.message)
     }
   }
 
@@ -96,7 +97,7 @@ const handleUpdateProduct = async (e) => {
   const handleCsvImport = async (e) => {
     e.preventDefault()
     if (!csvFile) {
-      alert('Please select a CSV file')
+      alert(es.prod.seleccioneCsv)
       return
     }
 
@@ -116,7 +117,7 @@ const handleUpdateProduct = async (e) => {
       setCsvFile(null)
       alert(`Imported ${data.imported} products!`)
     } catch (error) {
-      alert('Error importing CSV: ' + error.message)
+      alert(es.prod.errorCsv + error.message)
     } finally {
       setLoading(false)
     }
@@ -138,7 +139,7 @@ const handleUpdateProduct = async (e) => {
             className={`${fb.control} min-w-0 flex-1 py-1.5`}
           />
           <Button type='submit' disabled={loading || !csvFile} className='shrink-0'>
-            {loading ? 'Importing...' : 'Import CSV'}
+            {loading ? es.prod.importando : es.prod.importar}
           </Button>
         </form>
 
@@ -153,7 +154,7 @@ const handleUpdateProduct = async (e) => {
       {/* Create / Edit Product */}
       <div className='bg-surface rounded-lg shadow p-6 mb-8'>
         <h2 className='text-xl font-semibold mb-4'>
-          {editingProduct ? 'Edit Product' : 'Add New Product'}
+          {editingProduct ? es.prod.editar : es.prod.nuevo}
         </h2>
 
         <form
@@ -162,7 +163,7 @@ const handleUpdateProduct = async (e) => {
         >
           <input
             type='text'
-            placeholder='Product Name *'
+            placeholder={es.prod.nombre}
             value={editingProduct ? editingProduct.name : newProduct.name}
             onChange={(e) =>
               editingProduct
@@ -175,7 +176,7 @@ const handleUpdateProduct = async (e) => {
 
           <input
             type='text'
-            placeholder='Description'
+            placeholder={es.prod.descripcion}
             value={editingProduct ? editingProduct.description : newProduct.description}
             onChange={(e) =>
               editingProduct
@@ -187,7 +188,7 @@ const handleUpdateProduct = async (e) => {
 
           <input
             type='number'
-            placeholder='Unit Price *'
+            placeholder={es.prod.precio}
             value={editingProduct ? editingProduct.unit_price : newProduct.unit_price}
             onChange={(e) =>
               editingProduct
@@ -206,7 +207,7 @@ const handleUpdateProduct = async (e) => {
               disabled={loading}
               className='bg-accent hover:bg-accent-strong text-white px-4 py-2 rounded-lg font-medium shadow-card hover:shadow-card transition-shadow disabled:opacity-50'
             >
-              {loading ? 'Saving...' : editingProduct ? 'Update Product' : 'Add Product'}
+              {loading ? es.prod.guardando : editingProduct ? es.prod.actualizar : es.prod.agregar}
             </button>
 
             {editingProduct && (
@@ -215,7 +216,7 @@ const handleUpdateProduct = async (e) => {
                 onClick={() => setEditingProduct(null)}
                 className='bg-line px-6 py-2 rounded hover:bg-line/70'
               >
-                Cancel
+                {es.prod.cancelar}
               </button>
             )}
           </div>
@@ -257,7 +258,7 @@ const handleUpdateProduct = async (e) => {
                         onClick={() => setEditingProduct(product)}
                         className='text-accent hover:text-accent-strong'
                       >
-                        Edit
+                        {es.prod.editarBoton}
                       </button>
 
                       {isAdmin && (

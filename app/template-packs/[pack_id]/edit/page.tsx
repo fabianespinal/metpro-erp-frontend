@@ -1,5 +1,6 @@
 "use client";
 
+import { es } from "@/lib/i18n/es";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { PageHeader } from "@/components/ui/page-header";
@@ -15,11 +16,11 @@ export default function EditTemplatePackPage() {
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6">
       <PageHeader
-        title="Edit template pack"
-        subtitle="Categories, products, default quantities and optional items."
+        title={es.pl.editarTitulo}
+        subtitle={es.pl.editarSub}
         actions={
           <Button asChild variant="outline">
-            <Link href="/template-packs">Back</Link>
+            <Link href="/template-packs">{es.pl.volver}</Link>
           </Button>
         }
       />
@@ -27,7 +28,7 @@ export default function EditTemplatePackPage() {
         <TemplatePackBuilder packId={packId} />
       ) : (
         <Alert variant="destructive">
-          <AlertDescription>Invalid template pack ID.</AlertDescription>
+          <AlertDescription>{es.pl.idInvalido}</AlertDescription>
         </Alert>
       )}
     </div>
