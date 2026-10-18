@@ -24,7 +24,7 @@ function message(err: unknown, fallback: string): string {
 }
 
 export default function UsersPage() {
-  const { role: myRole } = useCurrentRole();
+  const { role: myRole, isAdmin, loading: roleLoading } = useCurrentRole();
   const isSuper = myRole === "superadmin";
 
   const [users, setUsers] = useState<User[]>([]);
@@ -59,8 +59,11 @@ export default function UsersPage() {
   };
 
   useEffect(() => {
-    fetchUsers();
-  }, []);
+    // Usuario never calls the admin-only endpoint; the page shows a no-access notice instead.
+    if (roleLoading) return;
+    if (isAdmin) fetchUsers();
+    else setLoading(false);
+  }, [roleLoading, isAdmin]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Admins cannot act on superadmin accounts; the backend enforces the same rule.
   const canManage = (u: User) => isSuper || u.role !== "superadmin";
@@ -155,6 +158,7 @@ export default function UsersPage() {
     }
   };
 
+  if (!roleLoading && !isAdmin) return <p className="text-sm text-muted">{es.usr.sinAcceso}</p>;
   if (loading) return <p className="text-sm text-muted">{es.usr.cargando}</p>;
 
   const inputCls = "mt-1 w-full rounded border px-3 py-2";

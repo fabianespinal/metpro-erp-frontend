@@ -1,5 +1,5 @@
 import { es } from "@/lib/i18n/es";
-export default function DeleteQuoteModal({ isOpen, onClose, onConfirm, quoteId, quoteStatus }) {
+export default function DeleteQuoteModal({ isOpen, onClose, onConfirm, quoteId, quoteLabel, quoteStatus }) {
   if (!isOpen) return null
 
   const isInvoiced = quoteStatus === 'Invoiced'
@@ -24,7 +24,7 @@ export default function DeleteQuoteModal({ isOpen, onClose, onConfirm, quoteId, 
           ) : (
             <div className='mb-6'>
               <p className='text-ink'>
-                Are you sure you want to delete quote <span className='font-bold'>{quoteId}</span>?
+                {es.cot.confirmarEliminarCot} <span className='font-bold'>{quoteLabel || quoteId}</span>?
               </p>
               <p className='text-muted text-sm mt-2'>
                 {es.cot.eliminarAviso}

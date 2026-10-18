@@ -25,7 +25,7 @@ const lineTotal = (base - discount).toFixed(2)
   return (
     <div className='mb-4 p-4 border rounded'>
       <div className='flex justify-between items-center mb-3'>
-        <h4 className='font-medium'>Item {index + 1}</h4>
+        <h4 className='font-medium'>{es.cot.articuloN} {index + 1}</h4>
         {showRemove && (
           <button
             type='button'
@@ -39,7 +39,7 @@ const lineTotal = (base - discount).toFixed(2)
       
       <div className='grid grid-cols-1 md:grid-cols-4 gap-3 mb-3'>
         <div className='md:col-span-2'>
-          <label className='block text-xs font-medium mb-1'>Product/Service</label>
+          <label className='block text-xs font-medium mb-1'>{es.cot.productoServicio}</label>
           <div className='flex gap-2'>
             <input
               type='text'

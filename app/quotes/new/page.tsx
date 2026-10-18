@@ -122,7 +122,7 @@ export default function NewQuotePage() {
       {/* STEP 1: CLIENT AND CONTACT */}
       <section aria-labelledby="step-client" className="mb-8">
         <h2 id="step-client" className="mb-3 text-base font-semibold text-ink">
-          1. Client and contact
+          {es.cot.paso1}
         </h2>
 
         {clientError ? (
@@ -187,7 +187,7 @@ export default function NewQuotePage() {
       {/* STEP 2: TEMPLATE PACK */}
       <section aria-labelledby="step-pack" className="mb-8">
         <h2 id="step-pack" className="mb-3 text-base font-semibold text-ink">
-          2. Template pack
+          {es.cot.paso2}
         </h2>
 
         {packError ? (
@@ -224,7 +224,7 @@ export default function NewQuotePage() {
                     <span className="mt-1 block text-sm text-muted">{pack.description}</span>
                   ) : null}
                   <span className="mt-2 block text-xs text-muted">
-                    {pack.category_count} categories · {pack.item_count} items
+                    {es.cot.resumenPlantilla(pack.category_count, pack.item_count)}
                   </span>
                 </button>
               );

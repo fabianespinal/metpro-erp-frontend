@@ -268,7 +268,7 @@ export default function TemplatePackBuilder({ packId }: { packId?: number }) {
   if (loadError) {
     return (
       <Alert variant="destructive">
-        <AlertDescription>Could not load the builder: {loadError}</AlertDescription>
+        <AlertDescription>{es.pl.errorCargarEditor} {loadError}</AlertDescription>
       </Alert>
     );
   }

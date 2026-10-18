@@ -155,7 +155,7 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete }) {
             <div className="space-y-6">
               {/* CSV Requirements */}
               <div className="bg-accent/10 border border-accent/30 rounded-lg p-4">
-                <h4 className="font-bold text-accent-strong mb-2">CSV Requirements</h4>
+                <h4 className="font-bold text-accent-strong mb-2">{es.csv.requisitos}</h4>
                 <ul className="text-sm text-accent-strong space-y-1">
                   <li>• <span className="font-medium">{es.csv.columnaObligatoria}</span> company_name</li>
                   <li>• <span className="font-medium">{es.csv.columnasOpcionales}</span> contact_name, email, phone, address, tax_id, notes</li>
@@ -193,7 +193,7 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete }) {
                       <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-emerald-700">{es.csv.archivoListo}</p>
                       <p className="font-medium text-emerald-700">{file.name}</p>
                       <p className="text-sm text-muted mt-1">
-                        { ((file?.size ?? 0) / 1024).toFixed(2) } KB • Click to change file
+                        { ((file?.size ?? 0) / 1024).toFixed(2) } {es.csv.cambiarArchivo}
                       </p>
                     </div>
                   ) : (
@@ -240,7 +240,7 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete }) {
               {/* Error Message */}
               {error && (
                 <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
-                  Error: {error}
+                  {es.csv.errorPrefijo} {error}
                 </div>
               )}
             </div>
@@ -336,7 +336,7 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete }) {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    Importing...
+                    {es.csv.importando}
                   </span>
                 ) : (
                   es.csv.importar

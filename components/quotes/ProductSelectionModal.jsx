@@ -53,7 +53,7 @@ export default function ProductSelectionModal({ isOpen, onClose, onSelect, produ
             </div>
           ) : filteredProducts.length === 0 ? (
             <div className='text-center text-muted py-4'>
-              No products match &quot;{searchTerm}&quot;
+              {es.cot.sinCoincidenciasProd(searchTerm)}
             </div>
           ) : (
             <div className='space-y-2'>

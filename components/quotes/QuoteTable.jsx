@@ -40,7 +40,7 @@ export default function QuoteTable({
           <th className={dt.th}>{es.cot.colFecha}</th>
           <th className={dt.thRight}>{es.cot.colMonto}</th>
           <th className={dt.th}>{es.cot.colEstado}</th>
-          <th className={dt.thRight}>Actions</th>
+          <th className={dt.thRight}>{es.cot.colAcciones}</th>
         </tr>
       </thead>
 
@@ -59,11 +59,11 @@ export default function QuoteTable({
             <td className={dt.td}>
               <StatusPill status={quote.status} gender="f" />
               <div className='text-xs text-muted mt-1'>
-                Created by {quote.created_by_name || '—'}
+                {es.cot.creadoPor} {quote.created_by_name || '—'}
               </div>
               {quote.has_invoice && (
                 <div className='text-xs text-accent mt-1'>
-                  Invoice: {quote.invoice_number}
+                  {es.cot.facturaLabel} {quote.invoice_number}
                 </div>
               )}
             </td>

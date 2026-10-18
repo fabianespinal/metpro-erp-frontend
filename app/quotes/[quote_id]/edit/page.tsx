@@ -299,7 +299,7 @@ function DraftEditor() {
         <PageHeader title={es.cot.tituloCotizacion} subtitle={es.cot.estadoLabel(getStatusLabel(String(quote.status), "f"))} />
         <Alert className="mb-4">
           <AlertDescription>
-            Only draft quotes can be edited. This quote is {quote.status}.
+            {es.cot.soloBorradorEditable(getStatusLabel(String(quote.status), "f"))}
           </AlertDescription>
         </Alert>
         <Button asChild variant="outline">
@@ -329,7 +329,7 @@ function DraftEditor() {
             onClick={() => setBannerOpen(false)}
             className="shrink-0 text-sm text-muted underline hover:text-ink"
           >
-            Dismiss
+            {es.cot.descartar}
           </button>
         </Alert>
       ) : null}

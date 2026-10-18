@@ -146,11 +146,17 @@ export default function QuotesPage() {
     }
   }
 
+  // Printed number for messages (Q-10001), never the internal UUID.
+  function quoteLabel(quoteId) {
+    const q = mergedQuotes.find(x => x.quote_id === quoteId)
+    return q?.quote_number != null ? `Q-${q.quote_number}` : quoteId
+  }
+
   async function handleConvertToInvoice(quoteId) {
-    if (!confirm(es.cot.confirmarConvertir(quoteId))) return
+    if (!confirm(es.cot.confirmarConvertir(quoteLabel(quoteId)))) return
     try {
       const data = await convertToInvoice(quoteId, token)
-      alert(es.cot.exitoConversion(data.invoice_id))
+      alert(es.cot.exitoConversion(data.invoice_number ?? data.invoice_id))
       fetchQuotes()
       fetchInvoices()
     } catch (error) {
@@ -273,6 +279,7 @@ export default function QuotesPage() {
         setPreviewModal({ isOpen: false, quoteId: null, pdfUrl: null });
       }}
       quoteId={previewModal.quoteId}
+      quoteLabel={previewModal.quoteId ? quoteLabel(previewModal.quoteId) : null}
       pdfUrl={previewModal.pdfUrl}
     />
 
@@ -294,6 +301,7 @@ export default function QuotesPage() {
       }
       onConfirm={handleConfirmDelete}
       quoteId={deleteModal.quoteId}
+      quoteLabel={deleteModal.quoteId ? quoteLabel(deleteModal.quoteId) : null}
       quoteStatus={deleteModal.quoteStatus}
     />
 

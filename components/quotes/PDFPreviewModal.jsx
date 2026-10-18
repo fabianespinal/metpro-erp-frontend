@@ -1,5 +1,5 @@
 import { es } from "@/lib/i18n/es";
-export default function PDFPreviewModal({ isOpen, onClose, quoteId, pdfUrl }) {
+export default function PDFPreviewModal({ isOpen, onClose, quoteId, quoteLabel, pdfUrl }) {
   if (!isOpen) return null
 
   return (
@@ -7,7 +7,7 @@ export default function PDFPreviewModal({ isOpen, onClose, quoteId, pdfUrl }) {
       <div className='bg-surface rounded-lg shadow-card w-full max-w-6xl h-[90vh] flex flex-col'>
         <div className='flex items-center justify-between p-4 border-b'>
           <h3 className='text-xl font-bold text-ink'>
-            Quote Preview: {quoteId}
+            {es.cot.vistaPreviaCot} {quoteLabel || quoteId}
           </h3>
           <button
             onClick={onClose}

@@ -169,7 +169,7 @@ export default function ExpensesPage() {
 
   return (
     <div className="w-full px-4 lg:px-8 py-6">
-      <PageHeader title="Expenses" />
+      <PageHeader title={es.gas.titulo} />
       <ErrorBanner message={loadError} />
 
       <ExpenseForm
@@ -186,13 +186,13 @@ export default function ExpensesPage() {
 
       <div className="bg-surface rounded-lg shadow p-6 mt-6">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold">Recorded Expenses</h2>
+          <h2 className="text-xl font-semibold">{es.gas.registrados}</h2>
 
           <button
             onClick={() => exportExpensesCSV(filtered)}
             className="bg-accent text-white px-4 py-2 rounded hover:bg-accent-strong"
           >
-            Export CSV
+            {es.gas.exportarCsv}
           </button>
         </div>
 

@@ -71,7 +71,7 @@ export default function QuoteForm({
           <label className='block text-sm font-medium mb-2'>{es.cot.contactoOpcional}</label>
           {contacts.length === 0 ? (
             <p className='text-sm text-muted border p-2 rounded bg-canvas'>
-              No contacts found for this company. Add contacts from the{' '}
+              {es.cot.sinContactosEmpresa}{' '}
               <a href='/clients' className='text-accent underline'>
                 {es.cot.paginaClientes}
               </a>
@@ -149,7 +149,7 @@ export default function QuoteForm({
           onClick={handleAddItem}
           className='w-full bg-accent/10 text-accent-strong py-2 rounded hover:bg-accent/10'
         >
-          + Add Item
+          {es.cot.agregarArticuloMas}
         </button>
       </div>
 

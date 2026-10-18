@@ -13,7 +13,7 @@ const MIN_PASSWORD_LENGTH = 8;
 
 export default function CreateUserPage() {
   const router = useRouter();
-  const { role: myRole } = useCurrentRole();
+  const { role: myRole, isAdmin, loading: roleLoading } = useCurrentRole();
 
   const [form, setForm] = useState({
     username: "",
@@ -56,6 +56,8 @@ export default function CreateUserPage() {
   }
 
   const input = "mt-1 w-full rounded border px-3 py-2";
+
+  if (!roleLoading && !isAdmin) return <p className="text-sm text-muted">{es.usr.sinAcceso}</p>;
 
   return (
     <div className="mx-auto max-w-xl">
