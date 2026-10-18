@@ -588,6 +588,7 @@ export const es = {
     abriendo: "Abriendo el editor…",
     // Builder
     errorCargarDatos: "No se pudieron cargar los datos",
+    soloAdmin: "Solo un administrador puede crear o editar paquetes de plantillas.",
     categoriaN: (n: number) => `Categoría ${n}`,
     confirmarQuitarCategoria: (nombre: string, n: number) => `¿Quitar "${nombre}" y sus ${n} ítems?`,
     nombreObligatorio: "El nombre del paquete es obligatorio.",

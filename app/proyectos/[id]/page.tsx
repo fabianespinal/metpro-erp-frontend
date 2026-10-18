@@ -10,6 +10,7 @@ import StatusPill from "@/components/ui/StatusPill";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { fb } from "@/components/ui/filter-bar";
+import { useCurrentRole } from "@/lib/currentRole";
 
 const t = es.proyectos;
 const inputClass =
@@ -42,6 +43,7 @@ function toForm(p: Proyecto): FormState {
 }
 
 export default function ProyectoDetallePage() {
+  const { isAdmin } = useCurrentRole();
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const [proyecto, setProyecto] = useState<Proyecto | null>(null);
@@ -213,9 +215,11 @@ export default function ProyectoDetallePage() {
           <Button type="submit" disabled={saving}>
             {saving ? es.comun.guardando : es.comun.guardar}
           </Button>
-          <Button type="button" variant="outline" onClick={handleDelete}>
-            {es.comun.eliminar}
-          </Button>
+          {isAdmin && (
+            <Button type="button" variant="outline" onClick={handleDelete}>
+              {es.comun.eliminar}
+            </Button>
+          )}
         </div>
       </form>
 

@@ -7,6 +7,7 @@ import { api } from "@/lib/api";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useCurrentRole } from "@/lib/currentRole";
 
 interface TemplatePack {
   id: number;
@@ -23,6 +24,7 @@ interface CreateFormData {
 }
 
 export default function TemplatePacksPage() {
+  const { isAdmin } = useCurrentRole();
   const [packs, setPacks] = useState<TemplatePack[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -105,9 +107,11 @@ export default function TemplatePacksPage() {
         title={es.pl.titulo}
         subtitle={es.pl.subtitulo}
         actions={
-          <Button asChild>
-            <Link href="/template-packs/new">{es.pl.crearPaquete}</Link>
-          </Button>
+          isAdmin ? (
+            <Button asChild>
+              <Link href="/template-packs/new">{es.pl.crearPaquete}</Link>
+            </Button>
+          ) : undefined
         }
       />
 
@@ -183,6 +187,7 @@ export default function TemplatePacksPage() {
                 </p>
               </div>
 
+              {isAdmin && (
               <div className="flex gap-2">
                 <Link href={`/template-packs/${pack.id}/edit`}>
                   <Button variant="outline" size="sm">
@@ -199,6 +204,7 @@ export default function TemplatePacksPage() {
                   {es.pl.eliminar}
                 </button>
               </div>
+              )}
             </div>
           ))}
         </div>

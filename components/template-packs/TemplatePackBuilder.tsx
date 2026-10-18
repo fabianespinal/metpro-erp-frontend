@@ -17,6 +17,7 @@ import { api } from "@/lib/api";
 import { getTemplatePack } from "@/lib/quotingApi";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useCurrentRole } from "@/lib/currentRole";
 
 interface Product {
   id: number;
@@ -58,6 +59,7 @@ function move<T>(arr: T[], index: number, delta: number): T[] {
 export default function TemplatePackBuilder({ packId }: { packId?: number }) {
   const router = useRouter();
   const isEdit = typeof packId === "number";
+  const { isAdmin, loading: roleLoading } = useCurrentRole();
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -252,7 +254,16 @@ export default function TemplatePackBuilder({ packId }: { packId?: number }) {
   };
 
   // ---------- render ----------
-  if (loading) return <p className="text-sm text-muted">{es.pl.cargandoEditor}</p>;
+  if (loading || roleLoading) return <p className="text-sm text-muted">{es.pl.cargandoEditor}</p>;
+
+  // The API rejects create/update from non-admins; say so up front instead of after editing.
+  if (!isAdmin) {
+    return (
+      <Alert>
+        <AlertDescription>{es.pl.soloAdmin}</AlertDescription>
+      </Alert>
+    );
+  }
 
   if (loadError) {
     return (

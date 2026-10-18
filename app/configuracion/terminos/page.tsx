@@ -75,7 +75,9 @@ export default function TerminosPage() {
   async function handleSave() {
     setSaving(true);
     try {
-      const res = await saveTerms(draft!.sections, draft!.enabledQuote, draft!.enabledInvoice);
+      const saved = await saveTerms(draft!.sections, draft!.enabledQuote, draft!.enabledInvoice);
+      // Keep titles/order/defaults from the loaded settings if the response omits them.
+      const res = { ...settings, ...saved } as TermsSettings;
       setSettings(res);
       setSaved(toDraft(res));
       setDraft(toDraft(res));

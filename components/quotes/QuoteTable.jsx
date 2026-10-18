@@ -19,7 +19,8 @@ export default function QuoteTable({
   onConvertToInvoice,
   onViewInvoice,
   sentMap,
-  setSentMap
+  setSentMap,
+  onSent
 }) {
   if (quotes.length === 0) {
     return (
@@ -69,12 +70,16 @@ export default function QuoteTable({
 
             <td className={dt.tdRight}>
               <div className='flex items-center gap-2 justify-end'>
-                {sentMap[quote.quote_id] && <SentBadge />}
+                {sentMap[quote.quote_id] && quote.status !== 'Sent' && <SentBadge />}
                 {quote.status !== 'Draft' && (
                   <SendToClientButton
                     id={quote.quote_id}
                     type="quote"
-                    onSent={() => setSentMap(prev => ({ ...prev, [quote.quote_id]: true }))}
+                    onSent={() => {
+                      setSentMap(prev => ({ ...prev, [quote.quote_id]: true }))
+                      // Reload so the status pill shows Enviada without a manual refresh.
+                      if (onSent) onSent(quote.quote_id)
+                    }}
                   />
                 )}
                 <PrimaryActionButton

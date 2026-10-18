@@ -259,6 +259,7 @@ export default function QuotesPage() {
           onViewInvoice={handleViewInvoice}
           sentMap={sentMap}
           setSentMap={setSentMap}
+          onSent={() => fetchQuotes()}
         />
       )}
     </div>
