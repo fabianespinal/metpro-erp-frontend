@@ -115,7 +115,7 @@ export default function InvoiceDetailPage() {
 
           <div>
             <p className="text-muted">Estado</p>
-            <StatusPill status={invoice.status} />
+            <StatusPill status={invoice.status} gender="f" />
           </div>
 
           <div>

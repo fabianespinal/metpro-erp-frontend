@@ -1,5 +1,6 @@
 'use client'
 import { es } from "@/lib/i18n/es";
+import { getStatusLabel } from "@/lib/i18n/statusLabel";
 import ErrorBanner from "@/components/ui/ErrorBanner";
 import { useState, useEffect } from 'react'
 import { api } from "@/lib/api"
@@ -231,7 +232,7 @@ export default function QuotesPage() {
           <option value="Draft">{es.estados.draft}</option>
           <option value="Approved">{es.estados.approved}</option>
           <option value="Invoiced">{es.estados.invoiced}</option>
-          <option value="Cancelled">{es.estados.cancelled}</option>
+          <option value="Cancelled">{getStatusLabel("cancelled", "f")}</option>
         </select>
       </div>
 

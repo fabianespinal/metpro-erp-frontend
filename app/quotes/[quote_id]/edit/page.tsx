@@ -1,6 +1,7 @@
 "use client";
 
 import { es } from "@/lib/i18n/es";
+import { getStatusLabel } from "@/lib/i18n/statusLabel";
 import ErrorBanner from "@/components/ui/ErrorBanner";
 import { Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
@@ -295,7 +296,7 @@ function DraftEditor() {
   if (!isDraft) {
     return (
       <div className="mx-auto w-full max-w-4xl px-4 py-6 sm:px-6">
-        <PageHeader title={es.cot.tituloCotizacion} subtitle={es.cot.estadoLabel(es.estados[String(quote.status).toLowerCase()] ?? quote.status)} />
+        <PageHeader title={es.cot.tituloCotizacion} subtitle={es.cot.estadoLabel(getStatusLabel(String(quote.status), "f"))} />
         <Alert className="mb-4">
           <AlertDescription>
             Only draft quotes can be edited. This quote is {quote.status}.

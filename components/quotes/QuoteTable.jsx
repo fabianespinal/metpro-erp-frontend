@@ -56,7 +56,7 @@ export default function QuoteTable({
             </td>
 
             <td className={dt.td}>
-              <StatusPill status={quote.status} />
+              <StatusPill status={quote.status} gender="f" />
               <div className='text-xs text-muted mt-1'>
                 Created by {quote.created_by_name || '—'}
               </div>

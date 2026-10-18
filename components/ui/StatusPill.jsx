@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { es } from "@/lib/i18n/es";
+import { getStatusLabel } from "@/lib/i18n/statusLabel";
 
 /**
  * Unified status styles for all ERP modules.
@@ -38,14 +38,12 @@ const STATUS_STYLES = {
   partial: WARNING,
 };
 
-// Labels come from the Spanish dictionary (single source of truth).
-const STATUS_LABELS = es.estados;
-
-export default function StatusPill({ status }) {
+// gender: "f" for quotes and invoices, "m" for projects and payments (default).
+export default function StatusPill({ status, gender = "m" }) {
   const normalized = status?.toLowerCase() || "planning";
 
   const style = STATUS_STYLES[normalized] || NEUTRAL;
-  const label = STATUS_LABELS[normalized] || status || es.estados.unknown;
+  const label = getStatusLabel(status, gender);
 
   return (
     <span

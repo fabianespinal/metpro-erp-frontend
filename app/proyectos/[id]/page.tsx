@@ -128,7 +128,7 @@ export default function ProyectoDetallePage() {
         subtitle={proyecto.client_name ?? undefined}
         actions={
           <>
-            <StatusPill status={proyecto.status} />
+            <StatusPill status={proyecto.status} gender="m" />
             <Button variant="outline" asChild>
               <Link href="/proyectos">{es.comun.volver}</Link>
             </Button>

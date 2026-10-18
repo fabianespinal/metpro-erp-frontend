@@ -195,7 +195,7 @@ export default function ProyectosPage() {
                   <td className={dt.td}>{p.quote_label ?? es.comun.sinDatos}</td>
                   <td className={dt.td}>{p.invoice_number ?? es.comun.sinDatos}</td>
                   <td className={dt.td}>
-                    <StatusPill status={p.status} />
+                    <StatusPill status={p.status} gender="m" />
                   </td>
                   <td className={dt.td}>{p.start_date?.slice(0, 10)}</td>
                 </tr>

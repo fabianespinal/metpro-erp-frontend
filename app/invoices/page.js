@@ -1,5 +1,6 @@
 "use client";
 import { es } from "@/lib/i18n/es";
+import { getStatusLabel } from "@/lib/i18n/statusLabel";
 import ErrorBanner from "@/components/ui/ErrorBanner";
 import { dt } from "@/components/ui/data-table";
 
@@ -15,7 +16,7 @@ import { Button } from "@/components/ui/button";
 import InvoiceDocPreviewModal from "@/components/invoices/InvoiceDocPreviewModal";
 
 // Mirrors the backend manual matrix. Paid is reached only by recording payments.
-const STATUS_LABELS = { Pending: es.estados.pending, Paid: es.estados.paid, Cancelled: es.estados.cancelled, Overdue: es.estados.overdue };
+const STATUS_LABELS = { Pending: getStatusLabel("pending", "f"), Paid: getStatusLabel("paid", "f"), Cancelled: getStatusLabel("cancelled", "f"), Overdue: getStatusLabel("overdue", "f") };
 const MANUAL_NEXT = {
   Pending: ["Overdue", "Cancelled"],
   Overdue: ["Pending", "Cancelled"],
@@ -137,7 +138,7 @@ export default function InvoicesPage() {
                   </td>
 
                   <td className={dt.td}>
-                    <StatusPill status={inv.status} />
+                    <StatusPill status={inv.status} gender="f" />
                     <div className="text-xs text-muted mt-1">
                       Creado por {inv.created_by_name || "—"}
                     </div>
