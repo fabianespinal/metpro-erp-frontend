@@ -1,6 +1,7 @@
 import { es } from "@/lib/i18n/es";
 import { dt } from "@/components/ui/data-table";
 import StatusPill from '@/components/ui/StatusPill'
+import { localDate } from '@/lib/dates'
 import PrimaryActionButton from './PrimaryActionButton'
 import OverflowMenu from './OverflowMenu'
 import SentBadge from '@/components/SentBadge'
@@ -34,6 +35,8 @@ export default function QuoteTable({
   }
 
   return (
+    // E-04: the table scrolls inside its card on phones; the page itself no longer scrolls sideways.
+    <div className='overflow-x-auto'>
     <table className={dt.table}>
       <thead className={dt.thead}>
         <tr>
@@ -53,7 +56,7 @@ export default function QuoteTable({
             <td className={dt.td}>{quote.quote_number != null ? `Q-${quote.quote_number}` : '—'}</td>
             <td className={dt.td}>{quote.client_name}</td>
             <td className={dt.td}>{quote.project_name || '-'}</td>
-            <td className={dt.td}>{quote.created_at ? String(quote.created_at).slice(0, 10) : '—'}</td>
+            <td className={dt.td}>{quote.created_at ? localDate(String(quote.created_at)) : '—'}</td>
 
             <td className={dt.tdRight}>
               ${ Number(quote.grand_total ?? quote.total_amount ?? 0).toFixed(2) }
@@ -110,6 +113,7 @@ export default function QuoteTable({
         ))}
       </tbody>
     </table>
+    </div>
   )
 }
 

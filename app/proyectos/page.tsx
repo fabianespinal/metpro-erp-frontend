@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import { api } from "@/lib/api";
+import { businessToday } from "@/lib/dates";
 import { es, ESTADOS_PROYECTO } from "@/lib/i18n/es";
 import { createProyecto, listProyectos, type Proyecto } from "@/lib/projectsApi";
 import StatusPill from "@/components/ui/StatusPill";
@@ -21,7 +22,7 @@ interface ClienteOpt {
   company_name: string;
 }
 
-const today = () => new Date().toISOString().slice(0, 10);
+const today = () => businessToday(); // Santo Domingo date (E-05)
 
 export default function ProyectosPage() {
   const [proyectos, setProyectos] = useState<Proyecto[]>([]);

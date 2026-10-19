@@ -9,6 +9,8 @@ export default function ExpensesTable({ expenses, onDelete }) {
   }
 
   return (
+    // E-04: scroll inside the card on phones.
+    <div className="overflow-x-auto">
     <table className={dt.table}>
       <thead className={dt.thead}>
         <tr>
@@ -62,5 +64,6 @@ export default function ExpensesTable({ expenses, onDelete }) {
         ))}
       </tbody>
     </table>
+    </div>
   );
 }

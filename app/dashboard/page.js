@@ -1,5 +1,6 @@
 'use client'
 import { api } from "@/lib/api"
+import { businessMonth, localDateEsDO } from '@/lib/dates'
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
@@ -66,7 +67,7 @@ export default function DashboardPage() {
       const [clients, quotes, invoices, expenses] = data
 
       const sumBy = (rows, f) => (rows || []).reduce((acc, x) => acc + Number(f(x) || 0), 0)
-      const currentMonth = new Date().toISOString().slice(0, 7)
+      const currentMonth = businessMonth() // Santo Domingo month (E-05)
 
       const totalExpenses = sumBy(expenses, e => e.amount)
       const monthlyExpenses = sumBy((expenses || []).filter(e => String(e.date || '').startsWith(currentMonth)), e => e.amount)
@@ -337,7 +338,7 @@ export default function DashboardPage() {
             {recentQuotes.map((q) => (
               <li key={q.id} className="flex justify-between text-sm">
                 <span className="text-ink">#{q.id} — {q.client_name}</span>
-                <span className="text-muted">{new Date(q.created_at).toLocaleDateString("es-DO")}</span>
+                <span className="text-muted">{localDateEsDO(q.created_at)}</span>
               </li>
             ))}
           </ul>
@@ -353,7 +354,7 @@ export default function DashboardPage() {
             {recentInvoices.map((inv) => (
               <li key={inv.id} className="flex justify-between text-sm">
                 <span className="text-ink">#{inv.invoice_number} — {inv.client_name}</span>
-                <span className="text-muted">{new Date(inv.created_at).toLocaleDateString("es-DO")}</span>
+                <span className="text-muted">{localDateEsDO(inv.created_at)}</span>
               </li>
             ))}
           </ul>
@@ -369,7 +370,7 @@ export default function DashboardPage() {
             {recentExpenses.map((exp) => (
               <li key={exp.expense_id} className="flex justify-between text-sm">
                 <span className="text-ink">{exp.category} — ${Number(exp.amount).toFixed(2)}</span>
-                <span className="text-muted">{new Date(exp.created_at).toLocaleDateString("es-DO")}</span>
+                <span className="text-muted">{localDateEsDO(exp.created_at)}</span>
               </li>
             ))}
           </ul>

@@ -8,6 +8,7 @@ import { dt } from "@/components/ui/data-table";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import QuoteCostEstimate from "@/components/quotes/QuoteCostEstimate";
+import { localDate } from "@/lib/dates";
 
 
 interface QuoteItem {
@@ -167,7 +168,7 @@ export default function QuotePublicView() {
             <div className="text-xl font-semibold uppercase tracking-widest">COTIZACIÓN</div>
             <div className="mt-1 text-sm text-muted">No. {quote.quote_number != null ? `Q-${quote.quote_number}` : "—"}</div>
             <div className="mt-0.5 text-sm text-muted">
-              {quote.created_at?.slice(0, 10)}
+              {localDate(quote.created_at)}
             </div>
           </div>
         </div>

@@ -13,6 +13,7 @@ import ExpensesByCategoryReport, { categoriesCsv } from '@/components/reports/Ex
 import ProductProfitabilityReport, { productsCsv } from '@/components/reports/ProductProfitabilityReport'
 import ProjectVarianceReport, { varianceCsv } from '@/components/reports/ProjectVarianceReport'
 import { api } from '@/lib/api'
+import { businessToday } from '@/lib/dates'
 
 export default function ReportsPage() {
   const [reportType, setReportType] = useState('quotes-summary')
@@ -173,7 +174,7 @@ export default function ReportsPage() {
     const url = window.URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.setAttribute('href', url)
-    link.setAttribute('download', `${filename}_${new Date().toISOString().split('T')[0]}.csv`)
+    link.setAttribute('download', `${filename}_${businessToday()}.csv`)
     link.style.visibility = 'hidden'
     document.body.appendChild(link)
     link.click()

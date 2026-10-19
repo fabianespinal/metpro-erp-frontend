@@ -129,6 +129,7 @@ export default function InvoiceDetailPage() {
           {lines.length === 0 ? (
             <p className="text-muted">Sin líneas.</p>
           ) : (
+            <div className="overflow-x-auto">{/* E-04: scroll inside on phones */}
             <table className="min-w-full divide-y divide-line bg-surface text-sm">
               <thead className="bg-canvas">
                 <tr>
@@ -155,6 +156,7 @@ export default function InvoiceDetailPage() {
                 })}
               </tbody>
             </table>
+            </div>
           )}
         </div>
 
@@ -206,6 +208,7 @@ export default function InvoiceDetailPage() {
           {payments.length === 0 ? (
             <p className="text-muted">No hay pagos registrados.</p>
           ) : (
+            <div className="overflow-x-auto">{/* E-04: scroll inside on phones */}
             <table className="min-w-full divide-y divide-line bg-surface">
               <thead className="bg-canvas">
                 <tr>
@@ -239,6 +242,7 @@ export default function InvoiceDetailPage() {
                 ))}
               </tbody>
             </table>
+            </div>
           )}
         </div>
       </div>

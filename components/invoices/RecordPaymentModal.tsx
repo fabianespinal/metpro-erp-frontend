@@ -1,5 +1,6 @@
 "use client";
 
+import { businessToday } from "@/lib/dates";
 import { es } from "@/lib/i18n/es";
 import { useState } from "react";
 import { createPayment } from "@/lib/invoiceApi";
@@ -17,7 +18,7 @@ export default function RecordPaymentModal({
   onClose,
   onSuccess,
 }: Props) {
-  const today = new Date().toISOString().split("T")[0];
+  const today = businessToday(); // Santo Domingo date (E-05)
 
 const [form, setForm] = useState({
   amount: "",
