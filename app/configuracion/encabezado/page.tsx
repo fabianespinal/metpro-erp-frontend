@@ -66,9 +66,12 @@ export default function EncabezadoPage() {
   if (roleLoading) return <p className="p-6 text-sm text-muted">{es.comun.cargando}</p>;
   if (!isAdmin) {
     return (
-      <p role="alert" className="m-6 rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-        {t.soloAdmin}
-      </p>
+      <div>
+        <h1 className="sr-only">Encabezado</h1>
+        <p role="alert" className="m-6 rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          {t.soloAdmin}
+        </p>
+      </div>
     );
   }
   if (error) {

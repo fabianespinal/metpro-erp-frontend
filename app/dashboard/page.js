@@ -1,5 +1,6 @@
 'use client'
 import { api } from "@/lib/api"
+import { money } from "@/lib/money"
 import { businessMonth, localDateEsDO } from '@/lib/dates'
 
 import { useEffect, useState } from 'react'
@@ -16,6 +17,7 @@ export default function DashboardPage() {
   // Display name from GET /auth/me: full name, then username, then 'User'.
   const [displayName, setDisplayName] = useState('Usuario')
   const [loadErrors, setLoadErrors] = useState([])
+  const [loading, setLoading] = useState(true) // E-09: no 0 / $0.00 flash before data arrives
   const { isAdmin } = useCurrentRole()
   const [stats, setStats] = useState({
     clients: 0,
@@ -90,6 +92,7 @@ export default function DashboardPage() {
       setRecentQuotes(recent(quotes))
       setRecentInvoices(recent(invoices))
       setRecentExpenses(recent(expenses))
+      setLoading(false)
     }
 
     loadDashboardData()
@@ -279,26 +282,26 @@ export default function DashboardPage() {
       </div>
 
       {/* QUICK STATS */}
-      <div className="mt-12 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      <div className="mt-12 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6" aria-busy={loading}>
 
         <div className="bg-surface border border-line rounded-xl p-6 shadow-card">
           <div className="text-sm text-muted mb-1">Clientes Activos</div>
-          <div className="text-3xl font-bold text-ink">{stats.clients}</div>
+          <div className="text-3xl font-bold text-ink">{loading ? '…' : stats.clients}</div>
         </div>
 
         <div className="bg-surface border border-line rounded-xl p-6 shadow-card">
           <div className="text-sm text-muted mb-1">Cotizaciones Pendientes</div>
-          <div className="text-3xl font-bold text-ink">{stats.pendingQuotes}</div>
+          <div className="text-3xl font-bold text-ink">{loading ? '…' : stats.pendingQuotes}</div>
         </div>
 
         <div className="bg-surface border border-line rounded-xl p-6 shadow-card">
           <div className="text-sm text-muted mb-1">Facturas Abiertas</div>
-          <div className="text-3xl font-bold text-ink">{stats.openInvoices}</div>
+          <div className="text-3xl font-bold text-ink">{loading ? '…' : stats.openInvoices}</div>
         </div>
 
         <div className="bg-surface border border-line rounded-xl p-6 shadow-card">
           <div className="text-sm text-muted mb-1">Gastos Totales</div>
-          <div className="text-3xl font-bold">${stats.totalExpenses.toFixed(2)}</div>
+          <div className="text-3xl font-bold">{loading ? '…' : money(stats.totalExpenses)}</div>
         </div>
 
       </div>
@@ -308,18 +311,18 @@ export default function DashboardPage() {
 
         <div className="bg-surface border border-line rounded-xl p-6 shadow-card">
           <div className="text-sm text-muted mb-1">Cobrado (pagos recibidos)</div>
-          <div className="text-3xl font-bold text-emerald-600">${stats.revenue.toFixed(2)}</div>
+          <div className="text-3xl font-bold text-emerald-600">{loading ? '…' : money(stats.revenue)}</div>
         </div>
 
         <div className="bg-surface border border-line rounded-xl p-6 shadow-card">
           <div className="text-sm text-muted mb-1">Gastos del Mes</div>
-          <div className="text-3xl font-bold text-amber-600">${stats.monthlyExpenses.toFixed(2)}</div>
+          <div className="text-3xl font-bold text-amber-600">{loading ? '…' : money(stats.monthlyExpenses)}</div>
         </div>
 
         <div className="bg-surface border border-line rounded-xl p-6 shadow-card">
           <div className="text-sm text-muted mb-1">Ganancia Neta (cobrado − gastos)</div>
           <div className={`text-3xl font-bold ${stats.profit >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
-            ${stats.profit.toFixed(2)}
+            {loading ? '…' : money(stats.profit)}
           </div>
         </div>
 
@@ -369,7 +372,7 @@ export default function DashboardPage() {
           <ul className="space-y-3">
             {recentExpenses.map((exp) => (
               <li key={exp.expense_id} className="flex justify-between text-sm">
-                <span className="text-ink">{exp.category} — ${Number(exp.amount).toFixed(2)}</span>
+                <span className="text-ink">{exp.category} — {money(Number(exp.amount))}</span>
                 <span className="text-muted">{localDateEsDO(exp.created_at)}</span>
               </li>
             ))}

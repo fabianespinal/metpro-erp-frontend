@@ -1,5 +1,6 @@
 "use client";
 import { es } from "@/lib/i18n/es";
+import toast from "react-hot-toast"
 import { dt } from "@/components/ui/data-table";
 export const dynamic = "force-dynamic";
 
@@ -10,6 +11,7 @@ import CSVImportModal from '@/components/client/CSVImportModal'
 import { useCurrentRole } from '@/lib/currentRole'
 import { PageHeader } from '@/components/ui/page-header'
 import { Button } from '@/components/ui/button'
+import ErrorBanner from '@/components/ui/ErrorBanner'
 
 export default function ClientsPage() {
   const { isAdmin } = useCurrentRole()
@@ -26,6 +28,7 @@ export default function ClientsPage() {
   const [editingClient, setEditingClient] = useState(null)
   const [loading, setLoading] = useState(false)
   const [importModalOpen, setImportModalOpen] = useState(false)
+  const [loadError, setLoadError] = useState(null) // E-07: visible load failure with retry
 
   useEffect(() => {
     fetchClients()
@@ -35,14 +38,12 @@ export default function ClientsPage() {
   try {
     const data = await api.get("/clients");
     setClients(Array.isArray(data) ? data : []);
+    setLoadError(null);
   } catch (error) {
     console.error("Failed to fetch clients:", error);
     setClients([]);
-    if (error.message.includes("401") || error.message.includes("unauthorized")) {
-      alert(es.cli.sesionExpirada);
-    } else {
-      alert(es.cli.errorCargar);
-    }
+    // A 401 is already sent to the login page by api(). Anything else stays visible with a retry.
+    setLoadError(error.code === 'NETWORK_ERROR' ? error.message : `${es.cli.errorCargar} ${error.message}`);
   }
 };
 
@@ -66,9 +67,9 @@ export default function ClientsPage() {
         tax_id: '',
         notes: ''
       })
-      alert(es.cli.creado)
+      toast.success(es.cli.creado)
     } catch (error) {
-      alert(es.cli.errorGenerico + error.message)
+      toast.error(es.cli.errorGenerico + error.message)
     } finally {
       setLoading(false)
     }
@@ -86,9 +87,9 @@ export default function ClientsPage() {
 
       await fetchClients()
       setEditingClient(null)
-      alert(es.cli.actualizado)
+      toast.success(es.cli.actualizado)
     } catch (error) {
-      alert(es.cli.errorGenerico + error.message)
+      toast.error(es.cli.errorGenerico + error.message)
     } finally {
       setLoading(false)
     }
@@ -100,9 +101,9 @@ export default function ClientsPage() {
     try {
       await api(`/clients/${clientId}`, { method: 'DELETE' })
       await fetchClients()
-      alert(es.cli.eliminado)
+      toast.success(es.cli.eliminado)
     } catch (error) {
-      alert(es.cli.errorEliminar + error.message)
+      toast.error(es.cli.errorEliminar + error.message)
     }
   }
 
@@ -127,6 +128,8 @@ export default function ClientsPage() {
         }
       />
 
+      <ErrorBanner message={loadError} onRetry={fetchClients} />
+
       {/* Create/Edit Client Form */}
       <div className='bg-surface rounded-lg shadow p-6 mb-8'>
         <h2 className='text-xl font-semibold mb-4'>
@@ -137,7 +140,7 @@ export default function ClientsPage() {
           onSubmit={editingClient ? handleUpdateClient : handleCreateClient}
           className='grid grid-cols-1 md:grid-cols-2 gap-4'
         >
-          <input
+          <input aria-label={es.cli.empresa}
             type='text'
             placeholder={es.cli.empresa}
             value={editingClient ? editingClient.company_name : newClient.company_name}
@@ -150,7 +153,7 @@ export default function ClientsPage() {
             required
           />
 
-          <input
+          <input aria-label={es.cli.contacto}
             type='text'
             placeholder={es.cli.contacto}
             value={editingClient ? editingClient.contact_name : newClient.contact_name}
@@ -162,7 +165,7 @@ export default function ClientsPage() {
             className='border p-2 rounded'
           />
 
-          <input
+          <input aria-label={es.cli.correo}
             type='email'
             placeholder={es.cli.correo}
             value={editingClient ? editingClient.email : newClient.email}
@@ -174,7 +177,7 @@ export default function ClientsPage() {
             className='border p-2 rounded'
           />
 
-          <input
+          <input aria-label={es.cli.telefono}
             type='tel'
             placeholder={es.cli.telefono}
             value={editingClient ? editingClient.phone : newClient.phone}
@@ -186,7 +189,7 @@ export default function ClientsPage() {
             className='border p-2 rounded'
           />
 
-          <input
+          <input aria-label={es.cli.direccion}
             type='text'
             placeholder={es.cli.direccion}
             value={editingClient ? editingClient.address : newClient.address}
@@ -198,7 +201,7 @@ export default function ClientsPage() {
             className='border p-2 rounded md:col-span-2'
           />
 
-          <input
+          <input aria-label={es.cli.rnc}
             type='text'
             placeholder={es.cli.rnc}
             value={editingClient ? editingClient.tax_id : newClient.tax_id}
@@ -210,7 +213,7 @@ export default function ClientsPage() {
             className='border p-2 rounded'
           />
 
-          <textarea
+          <textarea aria-label={es.cli.notas}
             placeholder={es.cli.notas}
             value={editingClient ? editingClient.notes : newClient.notes}
             onChange={(e) =>

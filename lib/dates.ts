@@ -47,3 +47,19 @@ export function localDateEsDO(value: string | null | undefined): string {
   const d = /^\d{4}-\d{2}-\d{2}$/.test(value) ? new Date(value + "T12:00:00Z") : parseBackendTimestamp(value);
   return Number.isNaN(d.getTime()) ? "" : d.toLocaleDateString("es-DO", { timeZone: BUSINESS_TZ });
 }
+
+/**
+ * Calendar date (invoice_date, expense date, payment_date, valid_until, start_date) as dd/mm/aaaa
+ * (debug E-03, approved 2026-10-18). Printed as stored: no time-zone shift, because these values
+ * are calendar days (invoice_date is stored at midnight UTC of its day).
+ */
+export function fmtDay(value: string | null | undefined): string {
+  if (!value) return "";
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(value));
+  return m ? `${m[3]}/${m[2]}/${m[1]}` : String(value);
+}
+
+/** Timestamp (created_at) as dd/mm/aaaa on its Santo Domingo day (E-03 + E-05). */
+export function fmtTimestamp(value: string | null | undefined): string {
+  return fmtDay(localDate(value));
+}

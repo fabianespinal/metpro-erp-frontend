@@ -1,7 +1,8 @@
 import { es } from "@/lib/i18n/es";
+import { money } from "@/lib/money"
 import { dt } from "@/components/ui/data-table";
 import StatusPill from '@/components/ui/StatusPill'
-import { localDate } from '@/lib/dates'
+import { fmtTimestamp } from '@/lib/dates'
 import PrimaryActionButton from './PrimaryActionButton'
 import OverflowMenu from './OverflowMenu'
 import SentBadge from '@/components/SentBadge'
@@ -56,10 +57,10 @@ export default function QuoteTable({
             <td className={dt.td}>{quote.quote_number != null ? `Q-${quote.quote_number}` : '—'}</td>
             <td className={dt.td}>{quote.client_name}</td>
             <td className={dt.td}>{quote.project_name || '-'}</td>
-            <td className={dt.td}>{quote.created_at ? localDate(String(quote.created_at)) : '—'}</td>
+            <td className={dt.td}>{quote.created_at ? fmtTimestamp(String(quote.created_at)) : '—'}</td>
 
             <td className={dt.tdRight}>
-              ${ Number(quote.grand_total ?? quote.total_amount ?? 0).toFixed(2) }
+              {money(Number(quote.grand_total ?? quote.total_amount ?? 0))}
             </td>
 
             <td className={dt.td}>

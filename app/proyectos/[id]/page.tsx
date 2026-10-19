@@ -205,11 +205,11 @@ export default function ProyectoDetallePage() {
       <form onSubmit={handleSave} className="mb-6 grid gap-3 rounded-lg border border-line bg-surface p-4 shadow-card sm:grid-cols-2">
         <div>
           <label className={fb.label}>{t.nombre} *</label>
-          <input className={inputClass} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+          <input aria-label={t.nombre} className={inputClass} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
         </div>
         <div>
           <label className={fb.label}>{es.comun.estado}</label>
-          <select className={inputClass} value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>
+          <select aria-label={es.comun.estado} className={inputClass} value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>
             {ESTADOS_PROYECTO.map((s) => (
               <option key={s} value={s}>
                 {es.estadosProyecto[s]}
@@ -219,27 +219,27 @@ export default function ProyectoDetallePage() {
         </div>
         <div className="sm:col-span-2">
           <label className={fb.label}>{t.direccionObra}</label>
-          <input className={inputClass} value={form.job_site_address} onChange={(e) => setForm({ ...form, job_site_address: e.target.value })} />
+          <input aria-label={t.direccionObra} className={inputClass} value={form.job_site_address} onChange={(e) => setForm({ ...form, job_site_address: e.target.value })} />
         </div>
         <div className="sm:col-span-2">
           <label className={fb.label}>{t.descripcionCorta}</label>
-          <input className={inputClass} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+          <input aria-label={t.descripcionCorta} className={inputClass} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
         </div>
         <div>
           <label className={fb.label}>{es.comun.fechaInicio} *</label>
-          <input type="date" className={inputClass} value={form.start_date} onChange={(e) => setForm({ ...form, start_date: e.target.value })} />
+          <input aria-label={es.comun.fechaInicio} type="date" className={inputClass} value={form.start_date} onChange={(e) => setForm({ ...form, start_date: e.target.value })} />
         </div>
         <div>
           <label className={fb.label}>{es.comun.fechaFin}</label>
-          <input type="date" className={inputClass} value={form.end_date} onChange={(e) => setForm({ ...form, end_date: e.target.value })} />
+          <input aria-label={es.comun.fechaFin} type="date" className={inputClass} value={form.end_date} onChange={(e) => setForm({ ...form, end_date: e.target.value })} />
         </div>
         <div>
           <label className={fb.label}>{t.presupuesto}</label>
-          <input type="number" min="0" step="0.01" className={inputClass} value={form.estimated_budget} onChange={(e) => setForm({ ...form, estimated_budget: e.target.value })} />
+          <input aria-label={t.presupuesto} type="number" min="0" step="0.01" className={inputClass} value={form.estimated_budget} onChange={(e) => setForm({ ...form, estimated_budget: e.target.value })} />
         </div>
         <div className="sm:col-span-2">
           <label className={fb.label}>{es.comun.notas}</label>
-          <textarea rows={3} className={areaClass} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
+          <textarea aria-label={es.comun.notas} rows={3} className={areaClass} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
         </div>
         <div className="flex gap-2 sm:col-span-2">
           <Button type="submit" disabled={saving}>

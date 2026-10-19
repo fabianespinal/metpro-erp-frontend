@@ -18,6 +18,22 @@ export function unwrapEnvelope<T = unknown>(body: unknown): T {
   return body as T;
 }
 
+/** Shown when the browser cannot reach the API at all (debug E-06; was "Failed to fetch"). */
+export const NETWORK_ERROR_MESSAGE =
+  "No se pudo conectar con el servidor. Verifique su conexión e intente de nuevo.";
+
+/** fetch() with a Spanish message on network failure. HTTP errors are returned as usual. */
+export async function safeFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
+  try {
+    return await fetch(input, init);
+  } catch (e) {
+    if (e instanceof DOMException && e.name === "AbortError") throw e;
+    const err = new Error(NETWORK_ERROR_MESSAGE) as Error & { code?: string };
+    err.code = "NETWORK_ERROR";
+    throw err;
+  }
+}
+
 export async function api(endpoint: string, options: RequestInit = {}) {
   const rawBase = process.env.NEXT_PUBLIC_API_URL;
   if (!rawBase) throw new Error("Backend URL missing");
@@ -39,7 +55,7 @@ export async function api(endpoint: string, options: RequestInit = {}) {
     headers["Content-Type"] = "application/json";
   }
 
-  const res = await fetch(`${BASE_URL}${endpoint}`, {
+  const res = await safeFetch(`${BASE_URL}${endpoint}`, {
     ...options,
     method: options.method || "GET",
     headers,

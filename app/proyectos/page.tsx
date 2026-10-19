@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import { api } from "@/lib/api";
-import { businessToday } from "@/lib/dates";
+import { businessToday, fmtDay } from "@/lib/dates";
 import { es, ESTADOS_PROYECTO } from "@/lib/i18n/es";
 import { createProyecto, listProyectos, type Proyecto } from "@/lib/projectsApi";
 import StatusPill from "@/components/ui/StatusPill";
@@ -104,7 +104,7 @@ export default function ProyectosPage() {
         <form onSubmit={handleCreate} className="mb-6 grid gap-3 rounded-lg border border-line bg-surface p-4 shadow-card sm:grid-cols-2">
           <div>
             <label className={fb.label}>{es.comun.cliente} *</label>
-            <select className={inputClass} value={form.client_id} onChange={(e) => setForm({ ...form, client_id: e.target.value })}>
+            <select aria-label={es.comun.cliente} className={inputClass} value={form.client_id} onChange={(e) => setForm({ ...form, client_id: e.target.value })}>
               <option value="">—</option>
               {clientes.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -115,19 +115,19 @@ export default function ProyectosPage() {
           </div>
           <div>
             <label className={fb.label}>{t.nombre} *</label>
-            <input className={inputClass} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+            <input aria-label={t.nombre} className={inputClass} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
           </div>
           <div>
             <label className={fb.label}>{t.direccionObra}</label>
-            <input className={inputClass} value={form.job_site_address} onChange={(e) => setForm({ ...form, job_site_address: e.target.value })} />
+            <input aria-label={t.direccionObra} className={inputClass} value={form.job_site_address} onChange={(e) => setForm({ ...form, job_site_address: e.target.value })} />
           </div>
           <div>
             <label className={fb.label}>{es.comun.fechaInicio} *</label>
-            <input type="date" className={inputClass} value={form.start_date} onChange={(e) => setForm({ ...form, start_date: e.target.value })} />
+            <input aria-label={es.comun.fechaInicio} type="date" className={inputClass} value={form.start_date} onChange={(e) => setForm({ ...form, start_date: e.target.value })} />
           </div>
           <div className="sm:col-span-2">
             <label className={fb.label}>{t.descripcionCorta}</label>
-            <input className={inputClass} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+            <input aria-label={t.descripcionCorta} className={inputClass} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
           </div>
           <div className="sm:col-span-2">
             <Button type="submit" disabled={saving}>
@@ -140,7 +140,7 @@ export default function ProyectosPage() {
       <div className={fb.bar}>
         <div className="w-56">
           <label className={fb.label}>{es.comun.estado}</label>
-          <select className={fb.control} value={status} onChange={(e) => setStatus(e.target.value)}>
+          <select aria-label={es.comun.estado} className={fb.control} value={status} onChange={(e) => setStatus(e.target.value)}>
             <option value="">{es.comun.todos}</option>
             {ESTADOS_PROYECTO.map((s) => (
               <option key={s} value={s}>
@@ -198,7 +198,7 @@ export default function ProyectosPage() {
                   <td className={dt.td}>
                     <StatusPill status={p.status} gender="m" />
                   </td>
-                  <td className={dt.td}>{p.start_date?.slice(0, 10)}</td>
+                  <td className={dt.td}>{fmtDay(p.start_date)}</td>
                 </tr>
               ))
             )}

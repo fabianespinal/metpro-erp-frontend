@@ -1,9 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { fmtDay } from "@/lib/dates"
+import { money } from "@/lib/money"
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { fetchInvoiceWithPayments } from "@/lib/invoiceApi";
+import { fetchInvoiceWithPayments, voidPayment } from "@/lib/invoiceApi";
+import { useCurrentRole } from "@/lib/currentRole";
+import toast from "react-hot-toast";
 import RecordPaymentModal from "@/components/invoices/RecordPaymentModal";
 import StatusPill from "@/components/ui/StatusPill";
 import { PageHeader } from "@/components/ui/page-header";
@@ -18,6 +22,8 @@ interface Payment {
   method: string;
   notes: string | null;
   payment_date: string;
+  voided_at?: string | null;
+  void_reason?: string | null;
 }
 
 interface Invoice {
@@ -52,6 +58,31 @@ export default function InvoiceDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [paymentOpen, setPaymentOpen] = useState(false);
   const [preview, setPreview] = useState<InvoiceDocKind | null>(null);
+  const { isAdmin } = useCurrentRole();
+  // B-14: payment being voided (admin) and the reason typed for it.
+  const [voiding, setVoiding] = useState<Payment | null>(null);
+  const [voidReason, setVoidReason] = useState("");
+  const [voidBusy, setVoidBusy] = useState(false);
+
+  const confirmVoid = async () => {
+    if (!voiding) return;
+    if (voidReason.trim().length < 3) {
+      toast.error("Indique el motivo de la anulación.");
+      return;
+    }
+    setVoidBusy(true);
+    try {
+      await voidPayment(invoiceId, voiding.id, voidReason.trim());
+      toast.success("Pago anulado. El saldo se recalculó.");
+      setVoiding(null);
+      setVoidReason("");
+      await loadInvoice();
+    } catch (err) {
+      toast.error("No se pudo anular el pago: " + (err instanceof Error ? err.message : ""));
+    } finally {
+      setVoidBusy(false);
+    }
+  };
 
   const loadInvoice = async () => {
     try {
@@ -109,7 +140,7 @@ export default function InvoiceDetailPage() {
           <div>
             <p className="text-muted">Fecha</p>
             <p className="font-medium">
-              {invoice.invoice_date?.split("T")[0]}
+              {fmtDay(invoice.invoice_date)}
             </p>
           </div>
 
@@ -148,9 +179,9 @@ export default function InvoiceDetailPage() {
                     <tr key={i}>
                       <td className="px-4 py-2">{l.product_name}</td>
                       <td className="px-4 py-2 text-right">{Number(l.quantity || 0)}</td>
-                      <td className="px-4 py-2 text-right">${Number(l.unit_price || 0).toFixed(2)}</td>
-                      <td className="px-4 py-2 text-right">${Number(l.discount_value || 0).toFixed(2)}</td>
-                      <td className="px-4 py-2 text-right font-medium">${Number(total).toFixed(2)}</td>
+                      <td className="px-4 py-2 text-right">{money(Number(l.unit_price || 0))}</td>
+                      <td className="px-4 py-2 text-right">{money(Number(l.discount_value || 0))}</td>
+                      <td className="px-4 py-2 text-right font-medium">{money(Number(total))}</td>
                     </tr>
                   );
                 })}
@@ -167,21 +198,21 @@ export default function InvoiceDetailPage() {
             <div>
               <p className="text-muted">Total</p>
               <p className="font-bold text-lg">
-                ${(invoice.total_amount ?? 0).toFixed(2)}
+                {money((invoice.total_amount ?? 0))}
               </p>
             </div>
 
             <div>
               <p className="text-muted">Pagado</p>
               <p className="font-bold text-lg text-emerald-600">
-                ${(invoice.amount_paid ?? 0).toFixed(2)}
+                {money((invoice.amount_paid ?? 0))}
               </p>
             </div>
 
             <div>
               <p className="text-muted">Pendiente</p>
               <p className="font-bold text-lg text-red-600">
-                ${(invoice.amount_due ?? 0).toFixed(2)}
+                {money((invoice.amount_due ?? 0))}
               </p>
             </div>
           </div>
@@ -190,7 +221,7 @@ export default function InvoiceDetailPage() {
         <div className="bg-canvas p-4 rounded-lg mb-6">
           <h2 className="text-xl font-semibold mb-3">Acciones</h2>
           <div className="flex flex-wrap gap-2">
-            <SendToClientButton id={invoiceId} type="invoice" />
+            {invoice.status !== "Cancelled" && <SendToClientButton id={invoiceId} type="invoice" />}
             <Button onClick={() => setPreview("factura")}>Vista previa Factura</Button>
             <Button onClick={() => setPreview("conduce")}>Vista previa Conduce</Button>
             <Button onClick={() => setPaymentOpen(true)}>Pago</Button>
@@ -224,20 +255,35 @@ export default function InvoiceDetailPage() {
                   <th className="px-4 py-2 text-left text-xs font-medium text-muted uppercase">
                     Notas
                   </th>
+                  {isAdmin && <th className="px-4 py-2"><span className="sr-only">Acciones</span></th>}
                 </tr>
               </thead>
 
               <tbody className="divide-y divide-line">
                 {payments.map((p) => (
-                  <tr key={p.id}>
+                  <tr key={p.id} className={p.voided_at ? "text-muted" : undefined}>
                     <td className="px-4 py-2">
-                      {p.payment_date?.split("T")[0]}
+                      {fmtDay(p.payment_date)}
                     </td>
                     <td className="px-4 py-2">{p.method}</td>
-                    <td className="px-4 py-2 text-right font-medium">
-                      ${(p.amount ?? 0).toFixed(2)}
+                    <td className={`px-4 py-2 text-right font-medium ${p.voided_at ? "line-through" : ""}`}>
+                      {money((p.amount ?? 0))}
                     </td>
-                    <td className="px-4 py-2">{p.notes || "-"}</td>
+                    <td className="px-4 py-2">
+                      {p.notes || "-"}
+                      {p.voided_at && (
+                        <div className="text-xs text-red-700">Anulado: {p.void_reason}</div>
+                      )}
+                    </td>
+                    {isAdmin && (
+                      <td className="px-4 py-2 text-right">
+                        {!p.voided_at && (
+                          <Button variant="outline" onClick={() => { setVoiding(p); setVoidReason(""); }}>
+                            Anular pago
+                          </Button>
+                        )}
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>
@@ -246,6 +292,30 @@ export default function InvoiceDetailPage() {
           )}
         </div>
       </div>
+
+      {voiding && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" role="dialog" aria-modal="true" aria-labelledby="void-title">
+          <div className="w-full max-w-md rounded-lg bg-surface p-6 shadow-card">
+            <h2 id="void-title" className="text-lg font-semibold text-ink">Anular pago</h2>
+            <p className="mt-1 text-sm text-muted">
+              {money(voiding.amount)} del {fmtDay(voiding.payment_date)} ({voiding.method}). El pago queda en el historial como
+              anulado y deja de contar en el saldo y los reportes.
+            </p>
+            <label htmlFor="void-reason" className="mt-4 block text-sm font-medium text-ink">Motivo</label>
+            <textarea
+              id="void-reason"
+              rows={3}
+              className="mt-1 w-full rounded border border-line px-3 py-2 text-sm"
+              value={voidReason}
+              onChange={(e) => setVoidReason(e.target.value)}
+            />
+            <div className="mt-4 flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setVoiding(null)} disabled={voidBusy}>Cancelar</Button>
+              <Button onClick={confirmVoid} disabled={voidBusy}>{voidBusy ? "Anulando…" : "Anular pago"}</Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {preview && (
         <InvoiceDocPreviewModal

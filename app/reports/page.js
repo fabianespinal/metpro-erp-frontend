@@ -1,7 +1,9 @@
 'use client'
 import { es } from "@/lib/i18n/es";
+import toast from "react-hot-toast"
+import { money } from "@/lib/money"
 import ErrorBanner from "@/components/ui/ErrorBanner";
-import { unwrapEnvelope, checkUnauthorized } from "@/lib/api"
+import { unwrapEnvelope, checkUnauthorized, safeFetch } from "@/lib/api"
 import { PageHeader } from "@/components/ui/page-header"
 import { Button } from "@/components/ui/button"
 import { fb } from "@/components/ui/filter-bar"
@@ -13,7 +15,7 @@ import ExpensesByCategoryReport, { categoriesCsv } from '@/components/reports/Ex
 import ProductProfitabilityReport, { productsCsv } from '@/components/reports/ProductProfitabilityReport'
 import ProjectVarianceReport, { varianceCsv } from '@/components/reports/ProjectVarianceReport'
 import { api } from '@/lib/api'
-import { businessToday } from '@/lib/dates'
+import { businessToday, fmtDay, fmtTimestamp } from '@/lib/dates'
 
 export default function ReportsPage() {
   const [reportType, setReportType] = useState('quotes-summary')
@@ -55,7 +57,7 @@ export default function ReportsPage() {
 
   const fetchClients = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/`, {
+      const res = await safeFetch(`${process.env.NEXT_PUBLIC_API_URL}/clients/`, {
         method: 'GET',
         headers: { ...getAuthHeaders() }
       })
@@ -75,7 +77,7 @@ export default function ReportsPage() {
 
   const runReport = async () => {
     if (!isCostReport && (!filters.start_date || !filters.end_date)) {
-      alert(es.rep.fechasRequeridas)
+      toast.error(es.rep.fechasRequeridas)
       return
     }
 
@@ -90,7 +92,7 @@ export default function ReportsPage() {
 
       const apiUrl = process.env.NEXT_PUBLIC_API_URL
 
-      const res = await fetch(
+      const res = await safeFetch(
         `${apiUrl}/reports/${reportType}?${params}`,
         {
           method: 'GET',
@@ -107,7 +109,7 @@ export default function ReportsPage() {
       setReportData(unwrapEnvelope(await res.json()))
     } catch (error) {
       console.error('Report generation failed:', error)
-      alert(`${es.led.errorReporte}${error.message}`)
+      toast.error(`${es.led.errorReporte}${error.message}`)
     } finally {
       setLoading(false)
     }
@@ -192,7 +194,7 @@ export default function ReportsPage() {
 
           <div>
             <label className={fb.label}>Tipo de reporte</label>
-            <select
+            <select aria-label="Tipo de reporte"
               value={reportType}
               onChange={(e) => {
                 setReportType(e.target.value)
@@ -213,7 +215,7 @@ export default function ReportsPage() {
           {!isCostReport && (<>
           <div>
             <label className={fb.label}>Desde</label>
-            <input
+            <input aria-label="Desde"
               type="date"
               value={filters.start_date}
               onChange={(e) => setFilters({ ...filters, start_date: e.target.value })}
@@ -223,7 +225,7 @@ export default function ReportsPage() {
 
           <div>
             <label className={fb.label}>Hasta</label>
-            <input
+            <input aria-label="Hasta"
               type="date"
               value={filters.end_date}
               onChange={(e) => setFilters({ ...filters, end_date: e.target.value })}
@@ -246,7 +248,7 @@ export default function ReportsPage() {
           {usesProject && (
             <div>
               <label className={fb.label}>{es.led.colProyecto}</label>
-              <select
+              <select aria-label={es.led.colProyecto}
                 value={filters.project_id}
                 onChange={(e) => setFilters({ ...filters, project_id: e.target.value })}
                 className={`${fb.control} md:w-64`}
@@ -264,7 +266,7 @@ export default function ReportsPage() {
           {usesClient && (
           <div>
             <label className={fb.label}>Cliente</label>
-            <select
+            <select aria-label="Cliente"
               value={filters.client_id}
               onChange={(e) => setFilters({ ...filters, client_id: e.target.value })}
               className={`${fb.control} md:w-64`}
@@ -305,7 +307,7 @@ export default function ReportsPage() {
             <p className='text-sm text-muted'>
               {isCostReport
                 ? <>{es.cst.todoHistorial}{reportType === 'product-profitability' && filters.only_with_cost && ` | ${es.cst.soloConCosto}`}</>
-                : <>{es.rep.rangoFechas} {filters.start_date} {es.rep.hasta} {filters.end_date}</>}
+                : <>{es.rep.rangoFechas} {fmtDay(filters.start_date)} {es.rep.hasta} {fmtDay(filters.end_date)}</>}
               {filters.client_id && usesClient &&
                 ` | ${es.rep.cliente} ${clients.find(c => c.id == filters.client_id)?.company_name}`}
               {filters.project_id && usesProject &&
@@ -385,21 +387,21 @@ export default function ReportsPage() {
 
                 <div className='rounded-lg border border-line bg-surface p-4 text-center shadow-card'>
                   <div className='text-2xl font-semibold tabular-nums text-emerald-600'>
-                    ${((reportData.revenue_breakdown?.find(r => r.key === 'invoiced')?.total_revenue) ?? 0).toFixed(2)}
+                    {money(((reportData.revenue_breakdown?.find(r => r.key === 'invoiced')?.total_revenue) ?? 0))}
                   </div>
                   <div className='mt-1 text-sm text-muted'>Facturado</div>
                 </div>
 
                 <div className='rounded-lg border border-line bg-surface p-4 text-center shadow-card'>
                   <div className='text-2xl font-semibold tabular-nums text-amber-600'>
-                    ${((reportData.revenue_breakdown?.find(r => r.key === 'outstanding')?.total_revenue) ?? 0).toFixed(2)}
+                    {money(((reportData.revenue_breakdown?.find(r => r.key === 'outstanding')?.total_revenue) ?? 0))}
                   </div>
                   <div className='mt-1 text-sm text-muted'>Por cobrar</div>
                 </div>
 
                 <div className='rounded-lg border border-line bg-surface p-4 text-center shadow-card'>
                   <div className='text-2xl font-semibold tabular-nums text-ink'>
-                    ${(reportData.grand_total ?? 0).toFixed(2)}
+                    {money((reportData.grand_total ?? 0))}
                   </div>
                   <div className='mt-1 text-sm text-muted'>Cobrado (pagos recibidos)</div>
                 </div>
@@ -421,7 +423,7 @@ export default function ReportsPage() {
                       <tr key={i} className={dt.tr}>
                         <td className={dt.td}>{es.estados[row.status] ?? row.status}</td>
                         <td className={dt.tdRight}>
-                          ${(row.total_revenue ?? 0).toFixed(2)}
+                          {money((row.total_revenue ?? 0))}
                         </td>
                         <td className={dt.tdRight}>
                           {row.count ?? row.quote_count}
@@ -464,7 +466,7 @@ export default function ReportsPage() {
 
                 <div className='rounded-lg border border-line bg-surface p-4 text-center shadow-card'>
                   <div className='text-2xl font-semibold tabular-nums text-emerald-600'>
-                    ${(reportData.summary?.total_revenue ?? 0).toFixed(2)}
+                    {money((reportData.summary?.total_revenue ?? 0))}
                   </div>
                   <div className='mt-1 text-sm text-muted'>{es.rep.totalIngresos}</div>
                 </div>
@@ -491,10 +493,10 @@ export default function ReportsPage() {
                           {row.quote_count}
                         </td>
                         <td className={dt.tdRight}>
-                          ${(row.total_quoted ?? 0).toFixed(2)}
+                          {money((row.total_quoted ?? 0))}
                         </td>
                         <td className={dt.td}>
-                          {row.last_quote_date || es.rep.noAplica}
+                          {row.last_quote_date ? fmtTimestamp(row.last_quote_date) : es.rep.noAplica}
                         </td>
                       </tr>
                     ))}

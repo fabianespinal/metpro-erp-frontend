@@ -1,5 +1,6 @@
 "use client";
 import { unwrapEnvelope } from "@/lib/api";
+import { fmtDay } from "@/lib/dates"
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
@@ -124,7 +125,7 @@ export default function PublicQuotePage() {
           {quote.valid_until && (
             <div className="flex justify-between gap-4 border-b border-line pb-3">
               <dt className="text-muted">Válida hasta</dt>
-              <dd className="text-right">{String(quote.valid_until).slice(0, 10)}</dd>
+              <dd className="text-right">{fmtDay(String(quote.valid_until))}</dd>
             </div>
           )}
         </dl>

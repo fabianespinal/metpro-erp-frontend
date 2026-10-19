@@ -8,7 +8,7 @@ import { es } from "@/lib/i18n/es";
  * Both require the Bearer token, so they are fetched as blobs (a plain link cannot send the header).
  */
 
-import { checkUnauthorized } from "@/lib/api";
+import { checkUnauthorized, safeFetch } from "@/lib/api";
 
 export type InvoiceDocKind = "factura" | "conduce";
 
@@ -32,7 +32,7 @@ export async function fetchInvoiceDoc(kind: InvoiceDocKind, invoiceId: number): 
   if (!rawBase) throw new Error(es.fact.backendFalta);
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
-  const res = await fetch(`${rawBase.replace(/\/+$/, "")}${PATHS[kind](invoiceId)}`, {
+  const res = await safeFetch(`${rawBase.replace(/\/+$/, "")}${PATHS[kind](invoiceId)}`, {
     method: "GET",
     headers: token ? { Authorization: `Bearer ${token}` } : {},
     cache: "no-store",

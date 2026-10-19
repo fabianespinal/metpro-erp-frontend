@@ -1,4 +1,6 @@
 import { dt } from "@/components/ui/data-table";
+import { fmtDay } from "@/lib/dates"
+import { money } from "@/lib/money"
 export default function ExpensesTable({ expenses, onDelete }) {
   if (expenses.length === 0) {
     return (
@@ -28,13 +30,13 @@ export default function ExpensesTable({ expenses, onDelete }) {
       <tbody className={dt.tbody}>
         {expenses.map(exp => (
           <tr key={exp.expense_id} className={dt.tr}>
-            <td className={dt.td}>{exp.date}</td>
+            <td className={dt.td}>{fmtDay(exp.date)}</td>
             <td className={dt.td}>{exp.client_name || "-"}</td>
             <td className={dt.td}>{exp.category}</td>
             <td className={dt.td}>{exp.description || "-"}</td>
 
             <td className={dt.tdRight}>
-              ${Number(exp.amount).toFixed(2)}
+              {money(Number(exp.amount))}
             </td>
 
             <td className={dt.td}>

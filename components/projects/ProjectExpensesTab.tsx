@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { fmtDay } from "@/lib/dates"
 import Link from "next/link";
 import { es } from "@/lib/i18n/es";
 import { getProyectoGastos, type ProjectLedger } from "@/lib/projectsApi";
@@ -133,7 +134,7 @@ export default function ProjectExpensesTab({ projectId }: { projectId: number | 
                 <tbody className={dt.tbody}>
                   {data.expenses.map((e) => (
                     <tr key={e.expense_id} className={dt.tr}>
-                      <td className={dt.td}>{String(e.date).slice(0, 10)}</td>
+                      <td className={dt.td}>{fmtDay(String(e.date))}</td>
                       <td className={dt.td}>{e.category}</td>
                       <td className={dt.td}>{e.description || es.comun.sinDatos}</td>
                       <td className={dt.td}>{e.payment_method || es.comun.sinDatos}</td>

@@ -1,6 +1,7 @@
 'use client';
 
 import { es } from "@/lib/i18n/es";
+import toast from "react-hot-toast"
 import ErrorBanner from "@/components/ui/ErrorBanner";
 import { useState, useEffect } from "react";
 import ExpenseForm from "@/components/expenses/ExpenseForm";
@@ -124,9 +125,9 @@ export default function ExpensesPage() {
     try {
       await api.post("/expenses/", formData);
       await loadExpenses();
-      alert(es.gas.creado);
+      toast.success(es.gas.creado);
     } catch (e) {
-      alert(es.gas.errorCrear + e.message);
+      toast.error(es.gas.errorCrear + e.message);
     } finally {
       setLoading(false);
     }
@@ -142,7 +143,7 @@ export default function ExpensesPage() {
       await api.delete(`/expenses/${id}`);
       await loadExpenses();
     } catch (e) {
-      alert(es.gas.errorEliminar + e.message);
+      toast.error(es.gas.errorEliminar + e.message);
     }
   }
 
@@ -151,7 +152,7 @@ export default function ExpensesPage() {
   // -----------------------------
   function exportExpensesCSV(expensesToExport) {
     if (!expensesToExport || expensesToExport.length === 0) {
-      alert(es.gas.nadaQueExportar);
+      toast.error(es.gas.nadaQueExportar);
       return;
     }
 

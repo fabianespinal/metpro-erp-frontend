@@ -1,6 +1,6 @@
 "use client";
 
-import { api, checkUnauthorized } from "@/lib/api";
+import { api, checkUnauthorized, safeFetch } from "@/lib/api";
 
 export interface TermsSettings {
   enabled_quote: boolean;
@@ -29,7 +29,7 @@ export async function fetchTermsPreview(sections: Record<string, string>): Promi
   if (!rawBase) throw new Error("Backend URL missing");
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
-  const res = await fetch(`${rawBase.replace(/\/+$/, "")}/terms/preview`, {
+  const res = await safeFetch(`${rawBase.replace(/\/+$/, "")}/terms/preview`, {
     method: "POST",
     headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
     body: JSON.stringify({ sections }),

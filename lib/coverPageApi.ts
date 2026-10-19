@@ -1,6 +1,6 @@
 "use client";
 
-import { api, checkUnauthorized } from "@/lib/api";
+import { api, checkUnauthorized, safeFetch } from "@/lib/api";
 
 export type CoverDocType = "quote" | "invoice";
 
@@ -30,7 +30,7 @@ export async function fetchCoverPreview(docType: CoverDocType, body: string): Pr
   if (!rawBase) throw new Error("Backend URL missing");
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
-  const res = await fetch(`${rawBase.replace(/\/+$/, "")}/cover-page/${docType}/preview`, {
+  const res = await safeFetch(`${rawBase.replace(/\/+$/, "")}/cover-page/${docType}/preview`, {
     method: "POST",
     headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
     body: JSON.stringify({ body }),

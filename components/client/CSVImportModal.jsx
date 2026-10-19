@@ -1,6 +1,6 @@
 'use client'
 import { es } from "@/lib/i18n/es";
-import { unwrapEnvelope } from "@/lib/api"
+import { unwrapEnvelope, safeFetch } from "@/lib/api"
 
 import { useState, useCallback } from 'react'
 import { Button } from "@/components/ui/button"
@@ -83,7 +83,7 @@ export default function CSVImportModal({ isOpen, onClose, onImportComplete }) {
 
       const apiUrl = process.env.NEXT_PUBLIC_API_URL
 
-      const response = await fetch(`${apiUrl}/clients/bulk-import`, {
+      const response = await safeFetch(`${apiUrl}/clients/bulk-import`, {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${token}`

@@ -1,5 +1,5 @@
 import { es } from "@/lib/i18n/es";
-import { unwrapEnvelope, checkUnauthorized } from "@/lib/api";
+import { unwrapEnvelope, checkUnauthorized, safeFetch } from "@/lib/api";
 /**
  * QuoteActions.js
  * Centralized module for all quote-related API operations
@@ -49,7 +49,7 @@ async function handleResponse(response) {
 export async function previewPDF(quoteId, token) {
   try {
     const url = API_URL + "/pdf/quotes/" + quoteId;
-    const response = await fetch(url, {
+    const response = await safeFetch(url, {
       method: "GET",
       headers: getHeaders(token, false),
     });
@@ -69,7 +69,7 @@ export async function previewPDF(quoteId, token) {
 export async function downloadPDF(quoteId, token) {
   try {
     const url = API_URL + "/pdf/quotes/" + quoteId;
-    const response = await fetch(url, {
+    const response = await safeFetch(url, {
       method: "GET",
       headers: getHeaders(token, false),
     });
@@ -89,7 +89,7 @@ export async function downloadPDF(quoteId, token) {
 export async function approveQuote(quoteId, token) {
   try {
     const url = API_URL + "/quotes/" + quoteId + "/approve";
-    const response = await fetch(url, {
+    const response = await safeFetch(url, {
       method: "POST",
       headers: getHeaders(token, true),
     });
@@ -109,7 +109,7 @@ export async function approveQuote(quoteId, token) {
 export async function duplicateQuote(quoteId, token) {
   try {
     const url = API_URL + "/quotes/" + quoteId + "/duplicate";
-    const response = await fetch(url, {
+    const response = await safeFetch(url, {
       method: "POST",
       headers: getHeaders(token, true),
     });
@@ -137,7 +137,7 @@ export async function deleteQuote(quoteId, token) {
     }
 
     const url = API_URL + "/quotes/" + quoteId;
-    const response = await fetch(url, {
+    const response = await safeFetch(url, {
       method: "DELETE",
       headers: getHeaders(token, true),
     });
@@ -163,7 +163,7 @@ export async function deleteQuote(quoteId, token) {
 export async function editQuote(quoteId, token, payload) {
   try {
     const url = API_URL + "/quotes/" + quoteId;
-    const response = await fetch(url, {
+    const response = await safeFetch(url, {
       method: "PUT",
       headers: getHeaders(token, true),
       body: JSON.stringify(payload),
@@ -184,7 +184,7 @@ export async function editQuote(quoteId, token, payload) {
 export async function convertToInvoice(quoteId, token) {
   try {
     const url = API_URL + "/quotes/" + quoteId + "/convert-to-invoice";
-    const response = await fetch(url, {
+    const response = await safeFetch(url, {
       method: "POST",
       headers: getHeaders(token, true),
     });
@@ -204,7 +204,7 @@ export async function convertToInvoice(quoteId, token) {
 export async function updateQuoteStatus(quoteId, token, newStatus) {
   try {
     const url = API_URL + "/quotes/" + quoteId + "/status";
-    const response = await fetch(url, {
+    const response = await safeFetch(url, {
       method: "PATCH",
       headers: getHeaders(token, true),
       body: JSON.stringify({ status: newStatus }),
@@ -225,7 +225,7 @@ export async function updateQuoteStatus(quoteId, token, newStatus) {
 export async function generateConduce(invoiceId, token) {
   try {
     const url = API_URL + "/pdf/invoices/" + invoiceId + "/conduce";
-    const response = await fetch(url, {
+    const response = await safeFetch(url, {
       method: "GET",
       headers: getHeaders(token, false),
     });
@@ -252,7 +252,7 @@ export async function fetchQuotes(token, params) {
       }
     }
     
-    const response = await fetch(url, {
+    const response = await safeFetch(url, {
       method: "GET",
       headers: getHeaders(token, true),
     });
@@ -272,7 +272,7 @@ export async function fetchQuotes(token, params) {
 export async function fetchQuote(quoteId, token) {
   try {
     const url = API_URL + "/quotes/" + quoteId;
-    const response = await fetch(url, {
+    const response = await safeFetch(url, {
       method: "GET",
       headers: getHeaders(token, true),
     });
@@ -292,7 +292,7 @@ export async function fetchQuote(quoteId, token) {
 export async function createQuote(token, payload) {
   try {
     const url = API_URL + "/quotes";
-    const response = await fetch(url, {
+    const response = await safeFetch(url, {
       method: "POST",
       headers: getHeaders(token, true),
       body: JSON.stringify(payload),

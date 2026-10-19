@@ -49,7 +49,7 @@ export default function QuoteForm({
             {selectedClient ? selectedClient.company_name : es.cot.cargandoCliente}
           </div>
         ) : (
-          <select
+          <select aria-label={es.cot.cliente}
             value={selectedClient ? selectedClient.id : ''}
             onChange={(e) => setSelectedClient(clients.find(c => c.id == e.target.value) || null)}
             className='w-full border p-2 rounded'
@@ -79,6 +79,7 @@ export default function QuoteForm({
             </p>
           ) : (
             <select
+              aria-label={es.cot.contacto ?? 'Contacto'}
               value={selectedContact ? selectedContact.id : ''}
               onChange={(e) => setSelectedContact(contacts.find(c => c.id == e.target.value) || null)}
               className='w-full border p-2 rounded'
@@ -97,7 +98,7 @@ export default function QuoteForm({
       {/* PROJECT NAME */}
       <div className='mb-4'>
         <label className='block text-sm font-medium mb-2'>{es.cot.proyectoOpcional}</label>
-        <input
+        <input aria-label={es.cot.ingreseProyecto}
           type='text'
           value={projectName}
           onChange={(e) => setProjectName(e.target.value)}
@@ -109,7 +110,7 @@ export default function QuoteForm({
       {/* PAYMENT TERMS */}
       <div className='mb-4'>
         <label className='block text-sm font-medium mb-2'>Términos de Pago</label>
-        <textarea
+        <textarea aria-label='Términos de pago'
           value={paymentTerms}
           onChange={(e) => setPaymentTerms(e.target.value)}
           className='w-full border p-2 rounded'
@@ -121,7 +122,7 @@ export default function QuoteForm({
       {/* VALID UNTIL */}
       <div className='mb-4'>
         <label className='block text-sm font-medium mb-2'>Válida Hasta</label>
-        <input
+        <input aria-label="Válida Hasta"
           type='date'
           value={validUntil}
           onChange={(e) => setValidUntil(e.target.value)}
@@ -162,7 +163,7 @@ export default function QuoteForm({
       {/* NOTES */}
       <div className='mb-4 mt-4'>
         <label className='block text-sm font-medium mb-2'>{es.cot.notasOpcional}</label>
-        <textarea
+        <textarea aria-label="Notas"
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           className='w-full border p-2 rounded'

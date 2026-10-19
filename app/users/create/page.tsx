@@ -57,7 +57,7 @@ export default function CreateUserPage() {
 
   const input = "mt-1 w-full rounded border px-3 py-2";
 
-  if (!roleLoading && !isAdmin) return <p className="text-sm text-muted">{es.usr.sinAcceso}</p>;
+  if (!roleLoading && !isAdmin) return <div><h1 className="sr-only">Nuevo usuario</h1><p className="text-sm text-muted">{es.usr.sinAcceso}</p></div>;
 
   return (
     <div className="mx-auto max-w-xl">

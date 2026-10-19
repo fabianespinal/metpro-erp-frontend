@@ -159,7 +159,7 @@ export default function UsersPage() {
     }
   };
 
-  if (!roleLoading && !isAdmin) return <p className="text-sm text-muted">{es.usr.sinAcceso}</p>;
+  if (!roleLoading && !isAdmin) return <div><h1 className="sr-only">Usuarios</h1><p className="text-sm text-muted">{es.usr.sinAcceso}</p></div>;
   if (loading) return <p className="text-sm text-muted">{es.usr.cargando}</p>;
 
   const inputCls = "mt-1 w-full rounded border px-3 py-2";

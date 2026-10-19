@@ -36,7 +36,7 @@ export default function ExpenseForm({ clients, projects = [], onSubmit, loading 
         {/* Fecha */}
         <div>
           <label className="block mb-1 font-medium">Fecha</label>
-          <input
+          <input aria-label="Fecha"
             type="date"
             name="date"
             value={form.date}
@@ -49,7 +49,7 @@ export default function ExpenseForm({ clients, projects = [], onSubmit, loading 
         {/* Categoría */}
         <div>
           <label className="block mb-1 font-medium">Categoría</label>
-          <input
+          <input aria-label="Categoría"
             type="text"
             name="category"
             placeholder="Combustible, Herramientas, Reparaciones..."
@@ -63,7 +63,7 @@ export default function ExpenseForm({ clients, projects = [], onSubmit, loading 
         {/* Cliente (solo referencia) */}
         <div>
           <label className="block mb-1 font-medium">Cliente</label>
-          <input
+          <input aria-label="Cliente"
             type="text"
             name="client_name"
             placeholder="Nombre del cliente..."
@@ -76,7 +76,7 @@ export default function ExpenseForm({ clients, projects = [], onSubmit, loading 
         {/* Monto */}
         <div>
           <label className="block mb-1 font-medium">Monto ($)</label>
-          <input
+          <input aria-label="Monto ($)"
             type="number"
             name="amount"
             value={form.amount}
@@ -89,7 +89,7 @@ export default function ExpenseForm({ clients, projects = [], onSubmit, loading 
         {/* Método de pago */}
         <div>
           <label className="block mb-1 font-medium">Método de Pago</label>
-          <input
+          <input aria-label="Método de pago"
             type="text"
             name="payment_method"
             placeholder="Efectivo, Transferencia, Tarjeta..."
@@ -102,7 +102,7 @@ export default function ExpenseForm({ clients, projects = [], onSubmit, loading 
         {/* Proyecto (opcional) */}
         <div>
           <label className="block mb-1 font-medium">{es.led.proyectoOpcional}</label>
-          <select
+          <select aria-label={es.led.proyectoOpcional}
             name="project_id"
             value={form.project_id}
             onChange={handleChange}
@@ -120,7 +120,7 @@ export default function ExpenseForm({ clients, projects = [], onSubmit, loading 
         {/* Cotización (opcional) */}
         <div>
           <label className="block mb-1 font-medium">Cotización (opcional)</label>
-          <input
+          <input aria-label="Cotización (opcional)"
             type="text"
             name="quote_id"
             value={form.quote_id}
@@ -132,7 +132,7 @@ export default function ExpenseForm({ clients, projects = [], onSubmit, loading 
         {/* Descripción */}
         <div className="md:col-span-2">
           <label className="block mb-1 font-medium">Descripción</label>
-          <textarea
+          <textarea aria-label="Descripción"
             name="description"
             placeholder="Detalles del gasto..."
             value={form.description}

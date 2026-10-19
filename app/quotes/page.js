@@ -1,5 +1,6 @@
 'use client'
 import { es } from "@/lib/i18n/es";
+import toast from "react-hot-toast"
 import { getStatusLabel } from "@/lib/i18n/statusLabel";
 import ErrorBanner from "@/components/ui/ErrorBanner";
 import { useState, useEffect } from 'react'
@@ -103,7 +104,7 @@ export default function QuotesPage() {
       setPreviewModal({ isOpen: true, quoteId, pdfUrl: url })
     } catch (e) {
       console.error("PDF Preview Error:", e)
-      alert(es.cot.errorVistaPrevia + e.message)
+      toast.error(es.cot.errorVistaPrevia + e.message)
     }
   }
 
@@ -121,7 +122,7 @@ export default function QuotesPage() {
       document.body.removeChild(link)
     } catch (e) {
       console.error("PDF Download Error:", e)
-      alert(es.cot.errorDescarga + e.message)
+      toast.error(es.cot.errorDescarga + e.message)
     }
   }
 
@@ -129,7 +130,7 @@ export default function QuotesPage() {
     const mergedQuotes = mergeQuotesWithInvoices(quotes, invoices)
     const quote = mergedQuotes.find(q => q.quote_id === quoteId)
     if (!quote || !quote.has_invoice) {
-      alert(es.cot.sinFactura)
+      toast.error(es.cot.sinFactura)
       return
     }
 
@@ -143,7 +144,7 @@ export default function QuotesPage() {
       // Open the new Draft in the editor. The banner tells the user it was duplicated.
       window.location.assign(`/quotes/${data.quote_id}/edit?duplicated=1`)
     } catch (error) {
-      alert(es.cot.errorDuplicar + error.message)
+      toast.error(es.cot.errorDuplicar + error.message)
     }
   }
 
@@ -157,12 +158,12 @@ export default function QuotesPage() {
     if (!confirm(es.cot.confirmarConvertir(quoteLabel(quoteId)))) return
     try {
       const data = await convertToInvoice(quoteId, token)
-      alert(es.cot.exitoConversion(data.invoice_number ?? data.invoice_id))
+      toast.success(es.cot.exitoConversion(data.invoice_number ?? data.invoice_id))
       fetchQuotes()
       fetchInvoices()
     } catch (error) {
       console.error('Conversion Error:', error)
-      alert(es.cot.errorConversion + error.message)
+      toast.error(es.cot.errorConversion + error.message)
     }
   }
 
@@ -171,7 +172,7 @@ export default function QuotesPage() {
       await updateQuoteStatus(quoteId, token, newStatus)
       fetchQuotes()
     } catch (error) {
-      alert(es.cot.errorEstado + error.message)
+      toast.error(es.cot.errorEstado + error.message)
     }
   }
 
@@ -182,7 +183,7 @@ export default function QuotesPage() {
       setInvoices(prevInvoices => prevInvoices.filter(inv => inv.quote_id !== quoteId))
     } catch (error) {
       console.error('Delete Quote Error:', error)
-      alert(es.cot.errorEliminar + error.message)
+      toast.error(es.cot.errorEliminar + error.message)
     }
   }
 
@@ -197,7 +198,7 @@ export default function QuotesPage() {
     if (quote.has_invoice) {
       window.location.href = `/invoices?invoice_id=${quote.invoice_id}`
     } else {
-      alert(es.cot.sinFactura)
+      toast.error(es.cot.sinFactura)
     }
   }
 
@@ -233,6 +234,7 @@ export default function QuotesPage() {
         <h2 className="text-xl font-semibold">{es.cot.existentes}</h2>
 
         <select
+          aria-label="Filtrar por estado"
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
           className={`${fb.control} w-44`}

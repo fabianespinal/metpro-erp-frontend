@@ -8,7 +8,8 @@ import { dt } from "@/components/ui/data-table";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import QuoteCostEstimate from "@/components/quotes/QuoteCostEstimate";
-import { localDate } from "@/lib/dates";
+import { fmtDay, fmtTimestamp } from "@/lib/dates";
+import { money as libMoney } from "@/lib/money";
 
 
 interface QuoteItem {
@@ -46,12 +47,8 @@ interface Quote {
   included_charges: string | Record<string, unknown> | null;
 }
 
-function fmt(n: number) {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  }).format(n);
-}
+// One ERP money format (debug E-02): lib/money.
+const fmt = (n: number) => libMoney(n);
 
 // Stored totals (set at finalize) are the only source for the summary.
 // Legacy rows with no stored totals show a dash. No client-side tax math.
@@ -153,6 +150,7 @@ export default function QuotePublicView() {
   return (
     <div className="min-h-screen bg-canvas px-2 py-6 text-ink sm:px-4 sm:py-10 print:bg-white print:py-0">
       <div className="mx-auto max-w-[860px] rounded-lg border border-line bg-surface p-4 shadow-card sm:p-10 print:border-0 print:p-0 print:shadow-none">
+        <h1 className="sr-only">Cotización {quote.quote_number != null ? `Q-${quote.quote_number}` : ""}</h1>
 
         <ErrorBanner message={warning} />
 
@@ -168,7 +166,7 @@ export default function QuotePublicView() {
             <div className="text-xl font-semibold uppercase tracking-widest">COTIZACIÓN</div>
             <div className="mt-1 text-sm text-muted">No. {quote.quote_number != null ? `Q-${quote.quote_number}` : "—"}</div>
             <div className="mt-0.5 text-sm text-muted">
-              {localDate(quote.created_at)}
+              {fmtTimestamp(quote.created_at)}
             </div>
           </div>
         </div>
@@ -201,7 +199,7 @@ export default function QuotePublicView() {
             )}
             {quote.valid_until && (
               <div>
-                <span className="font-semibold">Válido hasta:</span> {quote.valid_until}
+                <span className="font-semibold">Válido hasta:</span> {fmtDay(quote.valid_until)}
               </div>
             )}
             {quote.payment_terms && (

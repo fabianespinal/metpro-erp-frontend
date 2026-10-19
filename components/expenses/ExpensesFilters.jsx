@@ -30,7 +30,7 @@ export default function ExpensesFilters({ onFilter, projects = [] }) {
         {/* Categoría */}
         <div>
           <label className={fb.label}>Categoría</label>
-          <input
+          <input aria-label="Categoría"
             name="category"
             value={filters.category}
             onChange={handleChange}
@@ -42,7 +42,7 @@ export default function ExpensesFilters({ onFilter, projects = [] }) {
         {/* Fecha Desde */}
         <div>
           <label className={fb.label}>Fecha Desde</label>
-          <input
+          <input aria-label="Fecha Desde"
             type="date"
             name="dateFrom"
             value={filters.dateFrom}
@@ -54,7 +54,7 @@ export default function ExpensesFilters({ onFilter, projects = [] }) {
         {/* Fecha Hasta */}
         <div>
           <label className={fb.label}>Fecha Hasta</label>
-          <input
+          <input aria-label="Fecha Hasta"
             type="date"
             name="dateTo"
             value={filters.dateTo}
@@ -66,7 +66,7 @@ export default function ExpensesFilters({ onFilter, projects = [] }) {
         {/* Proyecto (solo referencia, módulo independiente) */}
         <div>
           <label className={fb.label}>{es.led.colProyecto}</label>
-          <select
+          <select aria-label={es.led.colProyecto}
             name="project_id"
             value={filters.project_id}
             onChange={handleChange}
@@ -85,7 +85,7 @@ export default function ExpensesFilters({ onFilter, projects = [] }) {
         {/* Cotización (solo referencia, módulo independiente) */}
         <div>
           <label className={fb.label}>Cotización (referencia opcional)</label>
-          <input
+          <input aria-label="Cotización (referencia opcional)"
             name="quote_id"
             value={filters.quote_id}
             onChange={handleChange}

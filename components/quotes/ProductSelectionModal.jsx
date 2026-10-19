@@ -1,4 +1,5 @@
 import { es } from "@/lib/i18n/es";
+import { money } from "@/lib/money"
 import { useState } from 'react'
 
 export default function ProductSelectionModal({ isOpen, onClose, onSelect, products }) {
@@ -71,7 +72,7 @@ export default function ProductSelectionModal({ isOpen, onClose, onSelect, produ
                   </div>
 
                   <div className='font-bold text-accent bg-accent/10 px-3 py-1 rounded whitespace-nowrap'>
-                    ${ (Number(product.unit_price ?? 0) || 0).toFixed(2) }
+                    {money((Number(product.unit_price ?? 0) || 0))}
                   </div>
                 </div>
               ))}

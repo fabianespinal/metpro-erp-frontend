@@ -1,3 +1,5 @@
+import { money } from "@/lib/money";
+
 export default function ExpensesSummary({ expenses }) {
   const total = expenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
 
@@ -6,7 +8,7 @@ export default function ExpensesSummary({ expenses }) {
       <h2 className="text-xl font-semibold mb-4">Resumen de Gastos</h2>
 
       <div className="text-3xl font-bold text-accent-strong">
-        ${total.toFixed(2)}
+        {money(total)}
       </div>
 
       <p className="text-muted mt-1">Total acumulado</p>

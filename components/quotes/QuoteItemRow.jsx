@@ -1,4 +1,5 @@
 import { es } from "@/lib/i18n/es";
+import { money } from "@/lib/money"
 export default function QuoteItemRow({ 
   item, 
   index, 
@@ -41,7 +42,7 @@ const lineTotal = (base - discount).toFixed(2)
         <div className='md:col-span-2'>
           <label className='block text-xs font-medium mb-1'>{es.cot.productoServicio}</label>
           <div className='flex gap-2'>
-            <input
+            <input aria-label={es.cot.ingreseNombreProducto}
               type='text'
               value={item.product_name}
               onChange={(e) => onChange(index, 'product_name', e.target.value)}
@@ -60,7 +61,7 @@ const lineTotal = (base - discount).toFixed(2)
         </div>
         <div>
           <label className='block text-xs font-medium mb-1'>{es.cot.cantidad}</label>
-          <input
+          <input aria-label={es.cot.cantidad}
             type='number'
             value={item.quantity}
             onChange={(e) => onChange(index, 'quantity', parseFloat(e.target.value) || 0)}
@@ -71,7 +72,7 @@ const lineTotal = (base - discount).toFixed(2)
         </div>
         <div>
           <label className='block text-xs font-medium mb-1'>{es.cot.precioUnitarioUsd}</label>
-          <input
+          <input aria-label={es.cot.precioUnitarioUsd}
             type='number'
             value={item.unit_price}
             onChange={(e) => onChange(index, 'unit_price', parseFloat(e.target.value) || 0)}
@@ -85,7 +86,7 @@ const lineTotal = (base - discount).toFixed(2)
       <div className='grid grid-cols-1 md:grid-cols-3 gap-3'>
         <div>
           <label className='block text-xs font-medium mb-1'>{es.cot.tipoDescuento}</label>
-          <select
+          <select aria-label={es.cot.tipoDescuento}
             value={item.discount_type}
             onChange={(e) => onChange(index, 'discount_type', e.target.value)}
             className='w-full border p-2 rounded text-sm'
@@ -97,7 +98,7 @@ const lineTotal = (base - discount).toFixed(2)
         </div>
         <div>
           <label className='block text-xs font-medium mb-1'>{es.cot.valorDescuento}</label>
-          <input
+          <input aria-label={es.cot.valorDescuento}
             type='number'
             value={item.discount_value}
             onChange={(e) => onChange(index, 'discount_value', parseFloat(e.target.value) || 0)}
@@ -110,7 +111,7 @@ const lineTotal = (base - discount).toFixed(2)
         <div>
           <label className='block text-xs font-medium mb-1'>{es.cot.totalLinea}</label>
           <div className='w-full border p-2 rounded bg-canvas font-bold text-sm'>
-            ${lineTotal}
+            {money(lineTotal)}
           </div>
         </div>
       </div>

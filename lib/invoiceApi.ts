@@ -43,6 +43,11 @@ export async function createPayment(
   return api.post(`/invoices/${invoiceId}/payments`, data);
 }
 
+/** Void a payment entered by mistake (admin). The record is kept; balances are recomputed (debug B-14). */
+export async function voidPayment(invoiceId: number, paymentId: number, reason: string) {
+  return api.post(`/invoices/${invoiceId}/payments/${paymentId}/void`, { reason });
+}
+
 export async function fetchInvoicePayments(invoiceId: number) {
   return api.get(`/invoices/${invoiceId}/payments`);
 }

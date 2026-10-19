@@ -1,5 +1,6 @@
 'use client'
 import { es } from "@/lib/i18n/es";
+import toast from "react-hot-toast"
 import ErrorBanner from "@/components/ui/ErrorBanner";
 import { dt } from "@/components/ui/data-table";
 
@@ -54,9 +55,9 @@ export default function ProductsPage() {
 
       await fetchProducts()
       setNewProduct({ name: '', description: '', unit_price: 0, cost: '' })
-      alert(es.prod.creado)
+      toast.success(es.prod.creado)
     } catch (error) {
-      alert(es.prod.errorGenerico + error.message)
+      toast.error(es.prod.errorGenerico + error.message)
     } finally {
       setLoading(false)
     }
@@ -76,9 +77,9 @@ const handleUpdateProduct = async (e) => {
 
     await fetchProducts()
     setEditingProduct(null)
-    alert(es.prod.actualizado)
+    toast.success(es.prod.actualizado)
   } catch (error) {
-    alert(es.prod.errorGenerico + error.message)
+    toast.error(es.prod.errorGenerico + error.message)
   } finally {
     setLoading(false)
   }
@@ -91,9 +92,9 @@ const handleUpdateProduct = async (e) => {
     try {
       await api(`/products/${productId}/`, { method: 'DELETE' })
       await fetchProducts()
-      alert(es.prod.eliminado)
+      toast.success(es.prod.eliminado)
     } catch (error) {
-      alert(es.prod.errorEliminar + error.message)
+      toast.error(es.prod.errorEliminar + error.message)
     }
   }
 
@@ -101,7 +102,7 @@ const handleUpdateProduct = async (e) => {
   const handleCsvImport = async (e) => {
     e.preventDefault()
     if (!csvFile) {
-      alert(es.prod.seleccioneCsv)
+      toast.error(es.prod.seleccioneCsv)
       return
     }
 
@@ -119,9 +120,9 @@ const handleUpdateProduct = async (e) => {
       setImportResult(data)
       await fetchProducts()
       setCsvFile(null)
-      alert(es.cst.importados(data.imported))
+      toast.success(es.cst.importados(data.imported))
     } catch (error) {
-      alert(es.prod.errorCsv + error.message)
+      toast.error(es.prod.errorCsv + error.message)
     } finally {
       setLoading(false)
     }
@@ -137,6 +138,7 @@ const handleUpdateProduct = async (e) => {
         <h2 className='text-lg font-semibold tracking-tight text-ink mb-4'>Importar Productos desde CSV</h2>
         <form onSubmit={handleCsvImport} className='flex flex-col gap-3 sm:flex-row sm:items-center'>
           <input
+            aria-label='Archivo CSV de productos'
             type='file'
             accept='.csv'
             onChange={(e) => setCsvFile(e.target.files[0])}
@@ -165,7 +167,7 @@ const handleUpdateProduct = async (e) => {
           onSubmit={editingProduct ? handleUpdateProduct : handleCreateProduct}
           className='grid grid-cols-1 md:grid-cols-3 gap-4'
         >
-          <input
+          <input aria-label={es.prod.nombre}
             type='text'
             placeholder={es.prod.nombre}
             value={editingProduct ? editingProduct.name : newProduct.name}
@@ -178,7 +180,7 @@ const handleUpdateProduct = async (e) => {
             required
           />
 
-          <input
+          <input aria-label={es.prod.descripcion}
             type='text'
             placeholder={es.prod.descripcion}
             value={editingProduct ? editingProduct.description : newProduct.description}
@@ -190,7 +192,7 @@ const handleUpdateProduct = async (e) => {
             className='border p-2 rounded md:col-span-2'
           />
 
-          <input
+          <input aria-label={es.prod.precio}
             type='number'
             placeholder={es.prod.precio}
             value={editingProduct ? editingProduct.unit_price : newProduct.unit_price}
@@ -207,7 +209,7 @@ const handleUpdateProduct = async (e) => {
 
           <label className='md:col-span-2 flex flex-col gap-1 text-sm text-muted'>
             {es.cst.costoProducto}
-            <input
+            <input aria-label={es.cst.costoProducto}
               type='number'
               placeholder={es.cst.costoProducto}
               value={editingProduct ? (editingProduct.cost ?? '') : newProduct.cost}
@@ -264,7 +266,7 @@ const handleUpdateProduct = async (e) => {
                   <td className={dt.td}>{product.description || '-'}</td>
 
                   <td className={dt.tdRight}>
-                    ${ (product.unit_price ?? 0).toFixed(2) }
+                    {money((product.unit_price ?? 0))}
                   </td>
 
                   <td className={dt.tdRight}>

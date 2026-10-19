@@ -1,5 +1,8 @@
 "use client";
 import { es } from "@/lib/i18n/es";
+import toast from "react-hot-toast"
+import { fmtDay } from "@/lib/dates"
+import { money } from "@/lib/money"
 import { getStatusLabel } from "@/lib/i18n/statusLabel";
 import ErrorBanner from "@/components/ui/ErrorBanner";
 import { dt } from "@/components/ui/data-table";
@@ -74,7 +77,7 @@ export default function InvoicesPage() {
         });
       }
     } catch (error) {
-      alert(es.fact.errorEstado + error.message);
+      toast.error(es.fact.errorEstado + error.message);
     }
   }
 
@@ -120,21 +123,21 @@ export default function InvoicesPage() {
                 <tr key={inv.id} className={dt.tr}>
                   <td className={dt.td}>{inv.invoice_number}</td>
                   <td className={dt.td}>{inv.client_name}</td>
-                  <td className={dt.td}>{inv.invoice_date?.split("T")[0]}</td>
+                  <td className={dt.td}>{fmtDay(inv.invoice_date)}</td>
 
                   <td className={dt.tdRight}>
-                    ${(inv.total_amount ?? 0).toFixed(2)}
+                    {money((inv.total_amount ?? 0))}
                   </td>
 
                   <td className={dt.tdRight}>
-                    ${(inv.amount_paid ?? 0).toFixed(2)}
+                    {money((inv.amount_paid ?? 0))}
                   </td>
 
                   <td className={dt.tdRight}>
-                    ${(
+                    {money(
                       inv.amount_due ??
                       (inv.total_amount ?? 0) - (inv.amount_paid ?? 0)
-                    ).toFixed(2)}
+                    )}
                   </td>
 
                   <td className={dt.td}>
@@ -147,11 +150,13 @@ export default function InvoicesPage() {
                   <td className={dt.tdRight}>
                     <div className="flex flex-wrap items-center justify-end gap-2">
                     {sentMap[inv.id] && <SentBadge />}
-                    <SendToClientButton
-                      id={inv.id}
-                      type="invoice"
-                      onSent={() => setSentMap(prev => ({ ...prev, [inv.id]: true }))}
-                    />
+                    {inv.status !== "Cancelled" && ( // B-10: cancelled invoices cannot be emailed
+                      <SendToClientButton
+                        id={inv.id}
+                        type="invoice"
+                        onSent={() => setSentMap(prev => ({ ...prev, [inv.id]: true }))}
+                      />
+                    )}
                     <Button onClick={() => setPreview({ kind: "factura", id: inv.id, number: inv.invoice_number })}>
                       Vista previa Factura
                     </Button>
