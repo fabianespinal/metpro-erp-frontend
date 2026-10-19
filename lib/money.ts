@@ -6,3 +6,9 @@ export function money(v: unknown): string {
   // Negative amounts read -$81,660.50 (was $-81,660.50). Values that round to 0.00 carry no sign.
   return `${x < 0 && body !== "0.00" ? "-" : ""}$${body}`;
 }
+
+/** Quantity display (E-11): whole numbers print as "120", fractions keep up to 2 decimals ("2.5", "0.25"). */
+export function qty(v: unknown): string {
+  const n = Number(v);
+  return (Number.isFinite(n) ? n : 0).toLocaleString("en-US", { maximumFractionDigits: 2 });
+}

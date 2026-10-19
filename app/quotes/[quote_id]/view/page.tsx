@@ -9,7 +9,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import QuoteCostEstimate from "@/components/quotes/QuoteCostEstimate";
 import { fmtDay, fmtTimestamp } from "@/lib/dates";
-import { money as libMoney } from "@/lib/money";
+import { money as libMoney, qty } from "@/lib/money";
 
 
 interface QuoteItem {
@@ -231,7 +231,7 @@ export default function QuotePublicView() {
                   return (
                     <tr key={i} className={dt.tr}>
                       <td className="px-1 py-2.5 text-xs text-ink sm:px-4 sm:py-3 sm:text-sm">{item.product_name}</td>
-                      <td className="whitespace-nowrap px-1 py-2.5 text-right text-xs tabular-nums text-ink sm:px-4 sm:py-3 sm:text-sm">{item.quantity.toFixed(2)}</td>
+                      <td className="whitespace-nowrap px-1 py-2.5 text-right text-xs tabular-nums text-ink sm:px-4 sm:py-3 sm:text-sm">{qty(item.quantity)}</td>
                       <td className="whitespace-nowrap px-1 py-2.5 text-right text-xs tabular-nums text-ink sm:px-4 sm:py-3 sm:text-sm">{fmt(item.unit_price)}</td>
                       <td className="whitespace-nowrap px-1 py-2.5 text-right text-xs tabular-nums text-ink sm:px-4 sm:py-3 sm:text-sm">{fmt(lineTotal)}</td>
                     </tr>

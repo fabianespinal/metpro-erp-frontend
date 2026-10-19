@@ -17,3 +17,16 @@ describe("money (E-02)", () => {
     expect(money(Number.NaN)).toBe("$0.00");
   });
 });
+
+import { qty } from "@/lib/money";
+
+describe("qty (E-11)", () => {
+  it("prints whole numbers without decimals and keeps real fractions", () => {
+    expect(qty(120)).toBe("120");
+    expect(qty("2.5")).toBe("2.5");
+    expect(qty(0.255)).toBe("0.26");
+    expect(qty(1200)).toBe("1,200");
+    expect(qty(null)).toBe("0");
+    expect(qty("abc")).toBe("0");
+  });
+});

@@ -1,4 +1,5 @@
 "use client";
+import { qty } from "@/lib/money"
 import { unwrapEnvelope } from "@/lib/api";
 import { fmtDay } from "@/lib/dates"
 
@@ -144,7 +145,7 @@ export default function PublicQuotePage() {
                 {quote.items.map((item, idx) => (
                   <tr key={idx} className="border-b border-line">
                     <td className="py-2">{item.product_name}</td>
-                    <td className="py-2 text-right tabular-nums">{Number(item.quantity).toFixed(2)}</td>
+                    <td className="py-2 text-right tabular-nums">{qty(item.quantity)}</td>
                     <td className="py-2 text-right tabular-nums">{fmt(item.unit_price)}</td>
                   </tr>
                 ))}
