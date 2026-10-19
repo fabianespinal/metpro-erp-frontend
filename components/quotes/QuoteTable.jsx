@@ -6,6 +6,9 @@ import OverflowMenu from './OverflowMenu'
 import SentBadge from '@/components/SentBadge'
 import SendToClientButton from '@/components/SendToClientButton'
 
+// Same list as the backend (quotes.service.SENDABLE_STATUSES). Invoiced and Rejected quotes cannot be emailed.
+const SENDABLE_QUOTE_STATUSES = ['Final', 'Sent', 'Approved']
+
 export default function QuoteTable({ 
   quotes,
   onPreviewPDF,
@@ -71,7 +74,7 @@ export default function QuoteTable({
             <td className={dt.tdRight}>
               <div className='flex items-center gap-2 justify-end'>
                 {sentMap[quote.quote_id] && quote.status !== 'Sent' && <SentBadge />}
-                {quote.status !== 'Draft' && (
+                {SENDABLE_QUOTE_STATUSES.includes(quote.status) && (
                   <SendToClientButton
                     id={quote.quote_id}
                     type="quote"
