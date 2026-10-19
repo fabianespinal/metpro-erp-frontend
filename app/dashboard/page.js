@@ -74,7 +74,15 @@ export default function DashboardPage() {
       const totalExpenses = sumBy(expenses, e => e.amount)
       const monthlyExpenses = sumBy((expenses || []).filter(e => String(e.date || '').startsWith(currentMonth)), e => e.amount)
       // Collected money: payments recorded on invoices, excluding cancelled ones.
-      const revenue = sumBy((invoices || []).filter(inv => inv.status !== 'Cancelled'), inv => inv.amount_paid)
+      const activeInvoices = (invoices || []).filter(inv => inv.status !== 'Cancelled')
+      const revenue = sumBy(activeInvoices, inv => inv.amount_paid)
+      // X-04: profit uses collected money WITHOUT ITBIS (tax owed to DGII), same basis as the reports:
+      // each payment counts its share (total - itbis) / total of its invoice.
+      const revenueNet = sumBy(activeInvoices, inv => {
+        const total = Number(inv.total_amount || 0)
+        const itbis = Number(inv.itbis_total || 0)
+        return total > 0 ? Number(inv.amount_paid || 0) * (total - itbis) / total : Number(inv.amount_paid || 0)
+      })
 
       setStats({
         clients: clients ? clients.length : 0,
@@ -83,7 +91,7 @@ export default function DashboardPage() {
         totalExpenses,
         monthlyExpenses,
         revenue,
-        profit: revenue - totalExpenses
+        profit: revenueNet - totalExpenses
       })
 
       const recent = (rows) => [...(rows || [])]
@@ -310,7 +318,7 @@ export default function DashboardPage() {
       <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
 
         <div className="bg-surface border border-line rounded-xl p-6 shadow-card">
-          <div className="text-sm text-muted mb-1">Cobrado (pagos recibidos)</div>
+          <div className="text-sm text-muted mb-1">Cobrado (pagos recibidos, con ITBIS)</div>
           <div className="text-3xl font-bold text-emerald-600">{loading ? '…' : money(stats.revenue)}</div>
         </div>
 
@@ -320,7 +328,7 @@ export default function DashboardPage() {
         </div>
 
         <div className="bg-surface border border-line rounded-xl p-6 shadow-card">
-          <div className="text-sm text-muted mb-1">Ganancia Neta (cobrado − gastos)</div>
+          <div className="text-sm text-muted mb-1">Ganancia Neta (cobrado sin ITBIS − gastos)</div>
           <div className={`text-3xl font-bold ${stats.profit >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
             {loading ? '…' : money(stats.profit)}
           </div>

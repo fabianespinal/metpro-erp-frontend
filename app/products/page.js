@@ -90,9 +90,10 @@ const handleUpdateProduct = async (e) => {
     if (!confirm(es.prod.confirmarEliminar)) return
 
     try {
-      await api(`/products/${productId}/`, { method: 'DELETE' })
+      const res = await api(`/products/${productId}/`, { method: 'DELETE' })
       await fetchProducts()
-      toast.success(es.prod.eliminado)
+      // X-05: a product used on quotes or invoices is archived (leaves the catalog, keeps history).
+      toast.success(res && res.archived ? es.prod.archivado : es.prod.eliminado)
     } catch (error) {
       toast.error(es.prod.errorEliminar + error.message)
     }

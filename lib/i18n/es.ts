@@ -522,6 +522,7 @@ export const es = {
     errorGenerico: "Error: ",
     confirmarEliminar: "¿Eliminar este producto?",
     eliminado: "¡Producto eliminado!",
+    archivado: "Producto archivado: se usa en cotizaciones o facturas y sale del catálogo.",
     errorEliminar: "Error al eliminar el producto: ",
   },
   con: {
