@@ -44,9 +44,9 @@ export default function TemplatePacksPage() {
           setPacks(Array.isArray(data) ? data : []);
           setError(null);
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         if (!cancelled) {
-          setError(err.message || es.pl.errorCargar);
+          setError((err as Error).message || es.pl.errorCargar);
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -80,8 +80,8 @@ export default function TemplatePacksPage() {
       setFormData({ name: "", description: "" });
       setShowForm(false);
       setError(null);
-    } catch (err: any) {
-      setError(err.message || es.pl.errorCrear);
+    } catch (err: unknown) {
+      setError((err as Error).message || es.pl.errorCrear);
     } finally {
       setCreating(false);
     }
@@ -96,8 +96,8 @@ export default function TemplatePacksPage() {
       setDeleteId(null);
       setDeleteConfirm(false);
       setError(null);
-    } catch (err: any) {
-      setError(err.message || es.pl.errorEliminar);
+    } catch (err: unknown) {
+      setError((err as Error).message || es.pl.errorEliminar);
     }
   };
 

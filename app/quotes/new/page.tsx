@@ -51,8 +51,8 @@ export default function NewQuotePage() {
   useEffect(() => {
     api("/clients")
       .then((data) => setClients(Array.isArray(data) ? (data as Client[]) : []))
-      .catch((err: any) => {
-        const msg = err?.message || es.cot.errorClientes;
+      .catch((err: unknown) => {
+        const msg = (err as Error | undefined)?.message || es.cot.errorClientes;
         setClientError(msg);
         console.error("Failed to load clients:", err);
       });
