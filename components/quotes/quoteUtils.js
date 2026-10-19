@@ -22,7 +22,11 @@ export const DEFAULT_CHARGES = {
  */
 export function mergeQuotesWithInvoices(quotes, invoices) {
   return quotes.map(quote => {
-    const invoice = invoices.find(inv => inv.quote_id === quote.quote_id)
+    // Only an active invoice counts (debug B-06). After a cancel the quote is Approved again
+    // and can be re-invoiced; the cancelled invoice stays in the invoice list for the record.
+    const invoice = invoices
+      .filter(inv => inv.quote_id === quote.quote_id && inv.status !== 'Cancelled')
+      .sort((a, b) => b.id - a.id)[0]
     if (invoice) {
       return {
         ...quote,
