@@ -39,6 +39,7 @@ import { LineCard, takeOffInputClass } from "@/components/quotes/takeoff/LineCar
 import { AddItemBar, type CatalogProduct } from "@/components/quotes/takeoff/AddItemBar";
 import SurchargeControls from "@/components/quotes/SurchargeControls";
 import QuoteTotalsDisplay from "@/components/quotes/QuoteTotalsDisplay";
+import QuoteCostEstimate from "@/components/quotes/QuoteCostEstimate";
 import { calculateQuoteTotals } from "@/components/quotes/quoteUtils";
 
 /**
@@ -367,6 +368,7 @@ function DraftEditor() {
             <>
               <SurchargeControls charges={charges} setCharges={handleChargesChange} />
               <QuoteTotalsDisplay totals={calculatedTotals} charges={charges} />
+              <QuoteCostEstimate items={toQuoteItems(lines)} charges={charges} />
             </>
           )}
 

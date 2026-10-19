@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { fb } from "@/components/ui/filter-bar";
 import { useCurrentRole } from "@/lib/currentRole";
 import ProjectExpensesTab from "@/components/projects/ProjectExpensesTab";
+import ProjectCostTab from "@/components/projects/ProjectCostTab";
 
 const t = es.proyectos;
 const inputClass =
@@ -52,7 +53,7 @@ export default function ProyectoDetallePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const [tab, setTab] = useState<"datos" | "gastos">("datos");
+  const [tab, setTab] = useState<"datos" | "gastos" | "costos">("datos");
 
   const load = useCallback(async () => {
     try {
@@ -144,6 +145,7 @@ export default function ProyectoDetallePage() {
         {([
           ["datos", es.led.tabDatos],
           ["gastos", es.led.tabGastos],
+          ["costos", es.cst.tabCostos],
         ] as const).map(([key, label]) => (
           <button
             key={key}
@@ -161,6 +163,8 @@ export default function ProyectoDetallePage() {
       </div>
 
       {tab === "gastos" && <ProjectExpensesTab projectId={proyecto.id} />}
+
+      {tab === "costos" && <ProjectCostTab projectId={proyecto.id} />}
 
       {tab === "datos" && (
       <>

@@ -10,6 +10,8 @@ import { dt } from "@/components/ui/data-table"
 import { useState, useEffect } from 'react'
 import ProjectProfitabilityReport, { profitabilityCsv } from '@/components/reports/ProjectProfitabilityReport'
 import ExpensesByCategoryReport, { categoriesCsv } from '@/components/reports/ExpensesByCategoryReport'
+import ProductProfitabilityReport, { productsCsv } from '@/components/reports/ProductProfitabilityReport'
+import ProjectVarianceReport, { varianceCsv } from '@/components/reports/ProjectVarianceReport'
 import { api } from '@/lib/api'
 
 export default function ReportsPage() {
@@ -19,10 +21,15 @@ export default function ReportsPage() {
     start_date: '',
     end_date: '',
     client_id: '',
-    project_id: ''
+    project_id: '',
+    only_with_cost: false
   })
   const [projects, setProjects] = useState([])
   const isLedgerReport = reportType === 'project-profitability' || reportType === 'expenses-by-category'
+  // Product Cost module reports: all-time, no date range.
+  const isCostReport = reportType === 'product-profitability' || reportType === 'project-variance'
+  const usesProject = isLedgerReport || reportType === 'project-variance'
+  const usesClient = reportType !== 'expenses-by-category' && reportType !== 'product-profitability'
   const [clients, setClients] = useState([])
   const [reportData, setReportData] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -66,7 +73,7 @@ export default function ReportsPage() {
   }
 
   const runReport = async () => {
-    if (!filters.start_date || !filters.end_date) {
+    if (!isCostReport && (!filters.start_date || !filters.end_date)) {
       alert(es.rep.fechasRequeridas)
       return
     }
@@ -74,10 +81,10 @@ export default function ReportsPage() {
     setLoading(true)
     try {
       const params = new URLSearchParams({
-        start_date: filters.start_date,
-        end_date: filters.end_date,
-        ...(filters.client_id && reportType !== 'expenses-by-category' && { client_id: filters.client_id }),
-        ...(filters.project_id && isLedgerReport && { project_id: filters.project_id })
+        ...(!isCostReport && { start_date: filters.start_date, end_date: filters.end_date }),
+        ...(filters.client_id && usesClient && { client_id: filters.client_id }),
+        ...(filters.project_id && usesProject && { project_id: filters.project_id }),
+        ...(reportType === 'product-profitability' && filters.only_with_cost && { only_with_cost: 'true' })
       }).toString()
 
       const apiUrl = process.env.NEXT_PUBLIC_API_URL
@@ -147,6 +154,16 @@ export default function ReportsPage() {
       csvContent = profitabilityCsv(reportData)
     }
 
+    else if (reportType === 'product-profitability') {
+      filename = 'rentabilidad_productos'
+      csvContent = productsCsv(reportData)
+    }
+
+    else if (reportType === 'project-variance') {
+      filename = 'variacion_proyecto'
+      csvContent = varianceCsv(reportData)
+    }
+
     else if (reportType === 'expenses-by-category') {
       filename = 'gastos_por_categoria'
       csvContent = categoriesCsv(reportData)
@@ -187,9 +204,12 @@ export default function ReportsPage() {
               <option value="client-activity">{es.rep.actividadClientes}</option>
               <option value="project-profitability">{es.led.rentabilidad}</option>
               <option value="expenses-by-category">{es.led.gastosCategoria}</option>
+              <option value="product-profitability">{es.cst.rentabilidadProductos}</option>
+              <option value="project-variance">{es.cst.variacionProyecto}</option>
             </select>
           </div>
 
+          {!isCostReport && (<>
           <div>
             <label className={fb.label}>Desde</label>
             <input
@@ -209,8 +229,20 @@ export default function ReportsPage() {
               className={`${fb.control} md:w-44`}
             />
           </div>
+          </>)}
 
-          {isLedgerReport && (
+          {reportType === 'product-profitability' && (
+            <label className="flex items-center gap-2 text-sm text-ink md:pb-2">
+              <input
+                type="checkbox"
+                checked={filters.only_with_cost}
+                onChange={(e) => setFilters({ ...filters, only_with_cost: e.target.checked })}
+              />
+              {es.cst.soloConCosto}
+            </label>
+          )}
+
+          {usesProject && (
             <div>
               <label className={fb.label}>{es.led.colProyecto}</label>
               <select
@@ -228,7 +260,7 @@ export default function ReportsPage() {
             </div>
           )}
 
-          {reportType !== 'expenses-by-category' && (
+          {usesClient && (
           <div>
             <label className={fb.label}>Cliente</label>
             <select
@@ -270,10 +302,12 @@ export default function ReportsPage() {
           <div className='mb-6 rounded-md border border-line bg-canvas p-4'>
             <p className='text-sm font-medium text-ink'>{es.rep.filtrosAplicados}</p>
             <p className='text-sm text-muted'>
-              {es.rep.rangoFechas} {filters.start_date} {es.rep.hasta} {filters.end_date}
-              {filters.client_id && reportType !== 'expenses-by-category' &&
+              {isCostReport
+                ? <>{es.cst.todoHistorial}{reportType === 'product-profitability' && filters.only_with_cost && ` | ${es.cst.soloConCosto}`}</>
+                : <>{es.rep.rangoFechas} {filters.start_date} {es.rep.hasta} {filters.end_date}</>}
+              {filters.client_id && usesClient &&
                 ` | ${es.rep.cliente} ${clients.find(c => c.id == filters.client_id)?.company_name}`}
-              {filters.project_id && isLedgerReport &&
+              {filters.project_id && usesProject &&
                 ` | ${es.led.colProyecto}: ${projects.find(p => p.id == filters.project_id)?.name ?? filters.project_id}`}
             </p>
           </div>
@@ -286,6 +320,8 @@ export default function ReportsPage() {
               {reportType === 'client-activity' && es.rep.tituloActividad}
               {reportType === 'project-profitability' && es.led.rentabilidad}
               {reportType === 'expenses-by-category' && es.led.gastosCategoria}
+              {reportType === 'product-profitability' && es.cst.rentabilidadProductos}
+              {reportType === 'project-variance' && es.cst.variacionProyecto}
             </h2>
 
             <Button variant="outline" onClick={exportCSV}>
@@ -403,6 +439,10 @@ export default function ReportsPage() {
           {reportType === 'project-profitability' && <ProjectProfitabilityReport data={reportData} />}
 
           {reportType === 'expenses-by-category' && <ExpensesByCategoryReport data={reportData} />}
+
+          {reportType === 'product-profitability' && <ProductProfitabilityReport data={reportData} />}
+
+          {reportType === 'project-variance' && <ProjectVarianceReport data={reportData} />}
 
           {reportType === 'client-activity' && (
             <div>

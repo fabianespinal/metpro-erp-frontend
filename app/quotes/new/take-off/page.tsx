@@ -19,6 +19,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import QuoteForm from "@/components/quotes/QuoteForm";
+import QuoteCostEstimate from "@/components/quotes/QuoteCostEstimate";
 import ProductSelectionModal from "@/components/quotes/ProductSelectionModal";
 
 /**
@@ -36,6 +37,7 @@ export default function TakeOffPage() {
 }
 
 interface QuoteItem {
+  product_id?: number | null; // catalog link; kept so cost estimates and reports can find the product
   product_name: string;
   quantity: number;
   unit_price: number;
@@ -116,6 +118,7 @@ function TakeOffScreen() {
           lines
             .filter((line) => line.include) // Only include selected items
             .map((line) => ({
+              product_id: line.product_id,
               product_name: line.name || "",
               quantity: line.quantity,
               unit_price: line.unit_price,
@@ -277,6 +280,16 @@ function TakeOffScreen() {
         onOpenProductModal={() => setProductModalOpen(true)}
       />
 
+      <QuoteCostEstimate
+        className="mt-4"
+        items={quoteItems.map((item) => ({
+          ...item,
+          discount_type: item.discount_type || "none",
+          item_type: item.item_type || "product",
+        }))}
+        charges={charges}
+      />
+
       {saveError ? (
         <Alert variant="destructive" className="mt-4">
           <AlertDescription>{saveError}</AlertDescription>
@@ -301,7 +314,8 @@ function TakeOffScreen() {
           handleAddItem();
           const newIndex = quoteItems.length;
           handleItemChange(newIndex, {
-            product_name: product.product_name,
+            product_id: product.id ?? null,
+            product_name: product.name ?? product.product_name ?? "",
             unit_price: product.unit_price || 0,
           });
           setProductModalOpen(false);

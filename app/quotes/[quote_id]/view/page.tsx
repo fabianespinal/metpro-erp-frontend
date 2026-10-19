@@ -7,6 +7,7 @@ import { dt } from "@/components/ui/data-table";
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import QuoteCostEstimate from "@/components/quotes/QuoteCostEstimate";
 
 
 interface QuoteItem {
@@ -293,6 +294,9 @@ export default function QuotePublicView() {
           Generado por METPRO · metprord.com
         </div>
       </div>
+
+      {/* Internal only, outside the document: not in the PDF or the public viewer. */}
+      <QuoteCostEstimate quoteId={quoteId} className="mt-6" />
     </div>
   );
 }

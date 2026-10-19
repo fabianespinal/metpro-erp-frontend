@@ -9,12 +9,16 @@ import { useCurrentRole } from "@/lib/currentRole"
 import { PageHeader } from '@/components/ui/page-header'
 import { Button } from '@/components/ui/button'
 import { fb } from '@/components/ui/filter-bar'
+import { money } from '@/lib/money'
+
+// Cost input: '' means no cost (sent as null).
+const costOut = (v) => (v === '' || v === null || v === undefined ? null : Number(v))
 
 export default function ProductsPage() {
   const { isAdmin } = useCurrentRole()
   const [products, setProducts] = useState([])
   const [loadError, setLoadError] = useState(null)
-  const [newProduct, setNewProduct] = useState({ name: '', description: '', unit_price: 0 })
+  const [newProduct, setNewProduct] = useState({ name: '', description: '', unit_price: 0, cost: '' })
   const [editingProduct, setEditingProduct] = useState(null)
   const [loading, setLoading] = useState(false)
   const [importResult, setImportResult] = useState(null)
@@ -45,11 +49,11 @@ export default function ProductsPage() {
       await api('/products/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newProduct)
+        body: JSON.stringify({ ...newProduct, cost: costOut(newProduct.cost) })
       })
 
       await fetchProducts()
-      setNewProduct({ name: '', description: '', unit_price: 0 })
+      setNewProduct({ name: '', description: '', unit_price: 0, cost: '' })
       alert(es.prod.creado)
     } catch (error) {
       alert(es.prod.errorGenerico + error.message)
@@ -67,7 +71,7 @@ const handleUpdateProduct = async (e) => {
     await api(`/products/${editingProduct.id}`, {   // <-- FIXED: removed trailing slash
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(editingProduct)
+      body: JSON.stringify({ ...editingProduct, cost: costOut(editingProduct.cost) })
     })
 
     await fetchProducts()
@@ -115,7 +119,7 @@ const handleUpdateProduct = async (e) => {
       setImportResult(data)
       await fetchProducts()
       setCsvFile(null)
-      alert(`Imported ${data.imported} products!`)
+      alert(es.cst.importados(data.imported))
     } catch (error) {
       alert(es.prod.errorCsv + error.message)
     } finally {
@@ -201,6 +205,23 @@ const handleUpdateProduct = async (e) => {
             required
           />
 
+          <label className='md:col-span-2 flex flex-col gap-1 text-sm text-muted'>
+            {es.cst.costoProducto}
+            <input
+              type='number'
+              placeholder={es.cst.costoProducto}
+              value={editingProduct ? (editingProduct.cost ?? '') : newProduct.cost}
+              onChange={(e) =>
+                editingProduct
+                  ? setEditingProduct({ ...editingProduct, cost: e.target.value })
+                  : setNewProduct({ ...newProduct, cost: e.target.value })
+              }
+              className='border p-2 rounded text-ink'
+              step='0.01'
+              min='0'
+            />
+          </label>
+
           <div className='md:col-span-3 flex gap-2'>
             <Button type='submit' disabled={loading}>
               {loading ? es.prod.guardando : editingProduct ? es.prod.actualizar : es.prod.agregar}
@@ -230,6 +251,8 @@ const handleUpdateProduct = async (e) => {
                 <th className={dt.th}>Nombre Producto</th>
                 <th className={dt.th}>Descripción</th>
                 <th className={dt.thRight}>Precio Unitario</th>
+                <th className={dt.thRight}>{es.cst.colCosto}</th>
+                <th className={dt.thRight}>{es.cst.colMargen}</th>
                 <th className={dt.thRight}>Acciones</th>
               </tr>
             </thead>
@@ -242,6 +265,24 @@ const handleUpdateProduct = async (e) => {
 
                   <td className={dt.tdRight}>
                     ${ (product.unit_price ?? 0).toFixed(2) }
+                  </td>
+
+                  <td className={dt.tdRight}>
+                    {product.cost === null || product.cost === undefined
+                      ? <span className='text-muted'>{es.cst.sinCosto}</span>
+                      : money(product.cost)}
+                  </td>
+
+                  <td className={dt.tdRight}>
+                    {product.cost === null || product.cost === undefined ? '—' : (() => {
+                      const m = (product.unit_price ?? 0) - product.cost
+                      const pct = product.unit_price ? (m / product.unit_price) * 100 : null
+                      return (
+                        <span className={m < 0 ? 'text-red-600' : ''}>
+                          {money(m)}{pct !== null ? ` · ${pct.toFixed(1)}%` : ''}
+                        </span>
+                      )
+                    })()}
                   </td>
 
                   <td className={dt.tdRight}>
