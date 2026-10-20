@@ -1,5 +1,8 @@
 import { es } from "@/lib/i18n/es";
-export default function PDFPreviewModal({ isOpen, onClose, quoteId, quoteLabel, pdfUrl }) {
+import SealCheckbox from "@/components/SealCheckbox";
+
+// sealAvailable: a company seal exists. printSeal / onSealChange: the per-document choice for this preview.
+export default function PDFPreviewModal({ isOpen, onClose, quoteId, quoteLabel, pdfUrl, sealAvailable = false, printSeal = false, onSealChange }) {
   if (!isOpen) return null
 
   return (
@@ -33,7 +36,10 @@ export default function PDFPreviewModal({ isOpen, onClose, quoteId, quoteLabel, 
           )}
         </div>
 
-        <div className='p-4 border-t bg-canvas flex justify-end gap-2'>
+        <div className='p-4 border-t bg-canvas flex items-center justify-end gap-4'>
+          {sealAvailable && onSealChange && (
+            <SealCheckbox checked={printSeal} onChange={onSealChange} disabled={!pdfUrl} />
+          )}
           <button
             onClick={onClose}
             className='px-4 py-2 border border-line rounded-lg hover:bg-canvas'

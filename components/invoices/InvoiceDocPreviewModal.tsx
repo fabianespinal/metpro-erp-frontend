@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import SealCheckbox from "@/components/SealCheckbox";
+import { useSealSettings } from "@/lib/useSealSettings";
 import {
   fetchInvoiceDoc,
   invoiceDocFilename,
@@ -22,36 +24,47 @@ interface Props {
   onClose: () => void;
 }
 
+interface DocResult {
+  key: string;
+  blob?: Blob;
+  url?: string;
+  error?: string;
+}
+
 /** Renders the backend-generated PDF in an iframe. Same file the download produces. */
 export default function InvoiceDocPreviewModal({ open, kind, invoiceId, invoiceNumber, onClose }: Props) {
-  const [blob, setBlob] = useState<Blob | null>(null);
-  const [url, setUrl] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  // Mounted fresh per preview (parent passes a key), so state starts clean.
-  const [loading, setLoading] = useState(true);
+  const seal = useSealSettings(open);
+  // null = follow the company default. The user can override it for this document.
+  const [sealChoice, setSealChoice] = useState<boolean | null>(null);
+  const printSeal = seal.configured && (sealChoice ?? seal.enabledByDefault);
+  const requestKey = `${kind}:${invoiceId}:${printSeal ? "seal" : "plain"}`;
+  // The result is tagged with the request it answers, so a change of option shows "Generando" until the new PDF arrives.
+  const [result, setResult] = useState<DocResult | null>(null);
+  const current = result?.key === requestKey ? result : null;
+  const loading = !current;
+  const blob = current?.blob ?? null;
+  const url = current?.url ?? null;
+  const error = current?.error ?? null;
 
   useEffect(() => {
-    if (!open) return;
+    // Wait for the seal setting so the first request already has the right option.
+    if (!open || !seal.ready) return;
     let cancelled = false;
     let objectUrl: string | null = null;
-    fetchInvoiceDoc(kind, invoiceId)
+    fetchInvoiceDoc(kind, invoiceId, printSeal)
       .then((b) => {
         if (cancelled) return;
         objectUrl = URL.createObjectURL(b);
-        setBlob(b);
-        setUrl(objectUrl);
+        setResult({ key: requestKey, blob: b, url: objectUrl });
       })
       .catch((err: Error) => {
-        if (!cancelled) setError(err.message || "No se pudo generar el documento.");
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) setResult({ key: requestKey, error: err.message || "No se pudo generar el documento." });
       });
     return () => {
       cancelled = true;
       if (objectUrl) URL.revokeObjectURL(objectUrl);
     };
-  }, [open, kind, invoiceId]);
+  }, [open, kind, invoiceId, printSeal, requestKey, seal.ready]);
 
   useEffect(() => {
     if (!open) return;
@@ -80,7 +93,8 @@ export default function InvoiceDocPreviewModal({ open, kind, invoiceId, invoiceN
           <h2 className="text-base font-semibold text-ink">
             {TITLES[kind]} · {invoiceNumber}
           </h2>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap items-center gap-3">
+            {seal.configured && <SealCheckbox checked={printSeal} onChange={setSealChoice} />}
             <Button
               onClick={() => blob && saveBlob(blob, invoiceDocFilename(kind, invoiceNumber))}
               disabled={!blob}
@@ -93,7 +107,7 @@ export default function InvoiceDocPreviewModal({ open, kind, invoiceId, invoiceN
           </div>
         </div>
         <div className="flex-1 bg-canvas">
-          {loading && <p className="p-6 text-sm text-muted">Generando documento…</p>}
+          {loading && !error && <p className="p-6 text-sm text-muted">Generando documento…</p>}
           {error && (
             <p role="alert" className="m-4 rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700">
               No se pudo generar el documento: {error}

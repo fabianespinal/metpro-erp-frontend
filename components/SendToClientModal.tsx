@@ -4,6 +4,8 @@ import { useRef, useState } from "react";
 import { sendQuoteToClient, sendInvoiceToClient } from "@/lib/api";
 import toast from "react-hot-toast";
 import { Button } from "@/components/ui/button";
+import SealCheckbox from "@/components/SealCheckbox";
+import { useSealSettings } from "@/lib/useSealSettings";
 import { es } from "@/lib/i18n/es";
 
 const t = es.envio;
@@ -36,6 +38,10 @@ export default function SendToClientModal({
   const [loading, setLoading] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
+  // Company seal: pre-checked from the company default, changeable for this email.
+  const seal = useSealSettings(open);
+  const [sealChoice, setSealChoice] = useState<boolean | null>(null);
+  const printSeal = seal.configured && (sealChoice ?? seal.enabledByDefault);
 
   if (!open) return null;
 
@@ -95,6 +101,7 @@ export default function SendToClientModal({
 
   const handleClose = () => {
     setFiles([]);
+    setSealChoice(null);
     onClose();
   };
 
@@ -103,14 +110,15 @@ export default function SendToClientModal({
 
     try {
       if (type === "quote") {
-        await sendQuoteToClient(id, files);
+        await sendQuoteToClient(id, files, printSeal);
       } else {
-        await sendInvoiceToClient(id, files);
+        await sendInvoiceToClient(id, files, printSeal);
       }
 
       toast.success(t.exito);
       // Discard the selection once the email is out.
       setFiles([]);
+      setSealChoice(null);
 
       if (onSent) onSent();
       onClose();
@@ -162,6 +170,12 @@ export default function SendToClientModal({
             </ul>
           )}
         </div>
+
+        {seal.configured && (
+          <div className="mb-6">
+            <SealCheckbox checked={printSeal} onChange={setSealChoice} disabled={loading} />
+          </div>
+        )}
 
         <div className="flex justify-end gap-3">
           <Button variant="outline" onClick={handleClose} disabled={loading}>

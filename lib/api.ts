@@ -119,24 +119,30 @@ api.delete = (endpoint: string) =>
 // SEND TO CLIENT (Quotes + Invoices)
 // ------------------------------------------------------
 
-/** Optional files are sent as multipart "files" parts, attached to the email and discarded by the backend. */
-function sendBody(files?: File[]): FormData | undefined {
-  if (!files || files.length === 0) return undefined;
+/**
+ * Optional files are sent as multipart "files" parts, attached to the email and discarded by the backend.
+ * printSeal adds the company seal to the emailed PDF. The field is sent only when true, so a send without
+ * a seal is byte for byte the request it always was.
+ */
+export function sendBody(files?: File[], printSeal: boolean = false): FormData | undefined {
+  const hasFiles = !!files && files.length > 0;
+  if (!hasFiles && printSeal !== true) return undefined;
   const fd = new FormData();
-  files.forEach((f) => fd.append("files", f, f.name));
+  (files ?? []).forEach((f) => fd.append("files", f, f.name));
+  if (printSeal === true) fd.append("print_seal", "true");
   return fd;
 }
 
-export async function sendQuoteToClient(quoteId: string | number, files?: File[]) {
+export async function sendQuoteToClient(quoteId: string | number, files?: File[], printSeal: boolean = false) {
   return api(`/quotes/${quoteId}/send`, {
     method: "POST",
-    body: sendBody(files),
+    body: sendBody(files, printSeal),
   });
 }
 
-export async function sendInvoiceToClient(invoiceId: string | number, files?: File[]) {
+export async function sendInvoiceToClient(invoiceId: string | number, files?: File[], printSeal: boolean = false) {
   return api(`/invoices/${invoiceId}/send`, {
     method: "POST",
-    body: sendBody(files),
+    body: sendBody(files, printSeal),
   });
 }

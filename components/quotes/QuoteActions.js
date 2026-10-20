@@ -6,6 +6,7 @@ import { unwrapEnvelope, checkUnauthorized, safeFetch } from "@/lib/api";
  */
 
 import { fetchCurrentRole, isAdminRole } from "@/lib/currentRole";
+import { sealQuery } from "@/lib/sealApi";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -46,9 +47,9 @@ async function handleResponse(response) {
 /**
  * Preview PDF - returns blob for caller to handle
  */
-export async function previewPDF(quoteId, token) {
+export async function previewPDF(quoteId, token, printSeal = false) {
   try {
-    const url = API_URL + "/pdf/quotes/" + quoteId;
+    const url = API_URL + "/pdf/quotes/" + quoteId + sealQuery(printSeal);
     const response = await safeFetch(url, {
       method: "GET",
       headers: getHeaders(token, false),
@@ -66,9 +67,9 @@ export async function previewPDF(quoteId, token) {
 /**
  * Download PDF - returns blob for caller to handle
  */
-export async function downloadPDF(quoteId, token) {
+export async function downloadPDF(quoteId, token, printSeal = false) {
   try {
-    const url = API_URL + "/pdf/quotes/" + quoteId;
+    const url = API_URL + "/pdf/quotes/" + quoteId + sealQuery(printSeal);
     const response = await safeFetch(url, {
       method: "GET",
       headers: getHeaders(token, false),

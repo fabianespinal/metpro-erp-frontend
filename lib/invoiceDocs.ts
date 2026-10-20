@@ -9,6 +9,7 @@ import { es } from "@/lib/i18n/es";
  */
 
 import { checkUnauthorized, safeFetch } from "@/lib/api";
+import { sealQuery } from "@/lib/sealApi";
 
 export type InvoiceDocKind = "factura" | "conduce";
 
@@ -27,12 +28,16 @@ export function invoiceDocFilename(kind: InvoiceDocKind, invoiceNumber: string |
   return kind === "factura" ? `${invoiceNumber}_factura.pdf` : `${conduceNumber(invoiceNumber)}_conduce.pdf`;
 }
 
-export async function fetchInvoiceDoc(kind: InvoiceDocKind, invoiceId: number): Promise<Blob> {
+export async function fetchInvoiceDoc(
+  kind: InvoiceDocKind,
+  invoiceId: number,
+  printSeal: boolean = false
+): Promise<Blob> {
   const rawBase = process.env.NEXT_PUBLIC_API_URL;
   if (!rawBase) throw new Error(es.fact.backendFalta);
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
-  const res = await safeFetch(`${rawBase.replace(/\/+$/, "")}${PATHS[kind](invoiceId)}`, {
+  const res = await safeFetch(`${rawBase.replace(/\/+$/, "")}${PATHS[kind](invoiceId)}${sealQuery(printSeal)}`, {
     method: "GET",
     headers: token ? { Authorization: `Bearer ${token}` } : {},
     cache: "no-store",

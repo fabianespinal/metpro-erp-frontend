@@ -3,13 +3,14 @@ import { es } from "@/lib/i18n/es";
 import toast from "react-hot-toast"
 import { getStatusLabel } from "@/lib/i18n/statusLabel";
 import ErrorBanner from "@/components/ui/ErrorBanner";
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { api } from "@/lib/api"
 import PDFPreviewModal from '@/components/quotes/PDFPreviewModal'
 import InvoiceDocPreviewModal from '@/components/invoices/InvoiceDocPreviewModal'
 import DeleteQuoteModal from '@/components/quotes/DeleteQuoteModal'
 import QuoteTable from '@/components/quotes/QuoteTable'
 import { useToken } from '@/components/quotes/useToken'
+import { useSealSettings } from '@/lib/useSealSettings'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { mergeQuotesWithInvoices, filterQuotesByStatus } from '@/components/quotes/quoteUtils'
@@ -40,7 +41,9 @@ export default function QuotesPage() {
 
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, quoteId: null, quoteStatus: null })
   const [conduceModal, setConduceModal] = useState(null)
-  const [previewModal, setPreviewModal] = useState({ isOpen: false, quoteId: null, pdfUrl: null })
+  const [previewModal, setPreviewModal] = useState({ isOpen: false, quoteId: null, pdfUrl: null, printSeal: false })
+  const previewRequest = useRef(0) // answers only the latest preview request
+  const seal = useSealSettings()
   const [sentMap, setSentMap] = useState({});
 
   async function fetchClients() {
@@ -99,18 +102,42 @@ export default function QuotesPage() {
 
   async function handlePreviewPDF(quoteId) {
     try {
-      const blob = await previewPDF(quoteId, token)
+      // The company default pre-checks the seal; the user can change it inside the preview.
+      const printSeal = seal.enabledByDefault
+      const request = ++previewRequest.current
+      const blob = await previewPDF(quoteId, token, printSeal)
       const url = window.URL.createObjectURL(blob)
-      setPreviewModal({ isOpen: true, quoteId, pdfUrl: url })
+      if (request !== previewRequest.current) { window.URL.revokeObjectURL(url); return }
+      setPreviewModal({ isOpen: true, quoteId, pdfUrl: url, printSeal })
     } catch (e) {
       console.error("PDF Preview Error:", e)
       toast.error(es.cot.errorVistaPrevia + e.message)
     }
   }
 
+  // Seal checkbox inside the quote preview: regenerate the PDF with the new choice.
+  async function handleSealToggle(checked) {
+    const { quoteId, pdfUrl: oldUrl } = previewModal
+    const request = ++previewRequest.current
+    setPreviewModal(m => ({ ...m, pdfUrl: null, printSeal: checked }))
+    if (oldUrl && oldUrl.startsWith("blob:")) window.URL.revokeObjectURL(oldUrl)
+    try {
+      const blob = await previewPDF(quoteId, token, checked)
+      const url = window.URL.createObjectURL(blob)
+      if (request !== previewRequest.current) { window.URL.revokeObjectURL(url); return }
+      setPreviewModal(m => ({ ...m, pdfUrl: url, printSeal: checked }))
+    } catch (e) {
+      if (request !== previewRequest.current) return
+      console.error("PDF Preview Error:", e)
+      toast.error(es.cot.errorVistaPrevia + e.message)
+      setPreviewModal(m => ({ ...m, isOpen: false, pdfUrl: null, printSeal: false }))
+    }
+  }
+
   async function handleDownloadPDF(quoteId) {
     try {
-      const blob = await downloadPDF(quoteId, token)
+      // Direct download from the list uses the company default. Use the preview to choose per document.
+      const blob = await downloadPDF(quoteId, token, seal.enabledByDefault)
       const url = window.URL.createObjectURL(blob)
       const link = document.createElement("a")
       link.href = url
@@ -278,14 +305,18 @@ export default function QuotesPage() {
     <PDFPreviewModal
       isOpen={previewModal.isOpen}
       onClose={() => {
+        previewRequest.current++
         if (previewModal.pdfUrl && previewModal.pdfUrl.startsWith("blob:")) {
           window.URL.revokeObjectURL(previewModal.pdfUrl);
         }
-        setPreviewModal({ isOpen: false, quoteId: null, pdfUrl: null });
+        setPreviewModal({ isOpen: false, quoteId: null, pdfUrl: null, printSeal: false });
       }}
       quoteId={previewModal.quoteId}
       quoteLabel={previewModal.quoteId ? quoteLabel(previewModal.quoteId) : null}
       pdfUrl={previewModal.pdfUrl}
+      sealAvailable={seal.configured}
+      printSeal={previewModal.printSeal}
+      onSealChange={handleSealToggle}
     />
 
     {conduceModal && (

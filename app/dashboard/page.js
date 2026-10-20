@@ -235,6 +235,18 @@ export default function DashboardPage() {
       )
     },
     {
+      name: 'Sello de la empresa',
+      description: 'Subir el sello que se imprime en cotizaciones, facturas y conduces',
+      href: '/configuracion/sello',
+      icon: (
+        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+            d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+      )
+    },
+    {
       name: 'Usuarios',
       description: 'Gestionar usuarios, contraseñas y accesos',
       href: '/users',
