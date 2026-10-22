@@ -124,6 +124,21 @@ export interface TaxType {
 }
 
 /** A3: is the "no imprimir" control switched on? Off (or a failed call) hides the control; hidden lines stay hidden. */
+/** Phase B switches. Both false while loading or on any failure, so a failed call only hides the new options. */
+export interface QuoteOptions {
+  blank_quotes_enabled: boolean;
+  duplicate_change_client_enabled: boolean;
+}
+
+export async function getQuoteOptions(): Promise<QuoteOptions> {
+  try {
+    const d = await call<Partial<QuoteOptions>>("/quotes/options");
+    return { blank_quotes_enabled: d?.blank_quotes_enabled === true, duplicate_change_client_enabled: d?.duplicate_change_client_enabled === true };
+  } catch {
+    return { blank_quotes_enabled: false, duplicate_change_client_enabled: false };
+  }
+}
+
 export async function getPrintControlsEnabled(): Promise<boolean> {
   try {
     const d = await call<{ print_controls_enabled?: boolean }>("/quotes/print-options");

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import {
+  getQuoteOptions,
   listTemplatePacks,
   type TemplatePackSummary,
 } from "@/lib/quotingApi";
@@ -43,10 +44,17 @@ export default function NewQuotePage() {
 
   const [packs, setPacks] = useState<TemplatePackSummary[]>([]);
   const [packId, setPackId] = useState<number | null>(null);
+  // B2: "no template" option, shown only when the backend switch is on.
+  const [blankEnabled, setBlankEnabled] = useState(false);
+  const [blank, setBlank] = useState(false);
 
   const [loadingPacks, setLoadingPacks] = useState(true);
   const [packError, setPackError] = useState<string | null>(null);
   const [clientError, setClientError] = useState<string | null>(null);
+
+  useEffect(() => {
+    getQuoteOptions().then((o) => setBlankEnabled(o.blank_quotes_enabled));
+  }, []);
 
   useEffect(() => {
     api("/clients")
@@ -95,15 +103,13 @@ export default function NewQuotePage() {
     [packs, packId]
   );
 
-  const canContinue = Boolean(clientId && contactId && packId);
+  const canContinue = Boolean(clientId && contactId && (packId || (blank && blankEnabled)));
 
   function handleContinue() {
     if (!canContinue) return;
-    const params = new URLSearchParams({
-      client_id: clientId,
-      contact_id: contactId,
-      pack_id: String(packId),
-    });
+    const params = new URLSearchParams({ client_id: clientId, contact_id: contactId });
+    if (blank && blankEnabled) params.set("blank", "1");
+    else params.set("pack_id", String(packId));
     router.push(`/quotes/new/take-off?${params.toString()}`);
   }
 
@@ -198,12 +204,28 @@ export default function NewQuotePage() {
 
         {loadingPacks ? (
           <p className="text-sm text-muted">{es.cot.cargandoPlantillas}</p>
-        ) : !packError && packs.length === 0 ? (
+        ) : !packError && packs.length === 0 && !blankEnabled ? (
           <p className="text-sm text-muted">
             {es.cot.sinPlantillas}
           </p>
         ) : (
           <div role="radiogroup" aria-label="Plantilla" className="grid gap-3 sm:grid-cols-2">
+            {blankEnabled && (
+              <button
+                type="button"
+                role="radio"
+                aria-checked={blank}
+                onClick={() => { setBlank(true); setPackId(null); }}
+                className={[
+                  "rounded-lg border bg-surface p-4 text-left shadow-card transition-colors",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent",
+                  blank ? "border-accent ring-1 ring-accent" : "border-line hover:bg-canvas",
+                ].join(" ")}
+              >
+                <span className="block text-sm font-semibold text-ink">{es.cot.sinPlantilla}</span>
+                <span className="mt-1 block text-sm text-muted">{es.cot.sinPlantillaDesc}</span>
+              </button>
+            )}
             {packs.map((pack) => {
               const selected = pack.id === packId;
               return (
@@ -212,7 +234,7 @@ export default function NewQuotePage() {
                   type="button"
                   role="radio"
                   aria-checked={selected}
-                  onClick={() => setPackId(pack.id)}
+                  onClick={() => { setPackId(pack.id); setBlank(false); }}
                   className={[
                     "rounded-lg border bg-surface p-4 text-left shadow-card transition-colors",
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent",
@@ -236,7 +258,7 @@ export default function NewQuotePage() {
       {/* FOOTER */}
       <div className="flex flex-col-reverse gap-3 border-t border-line pt-4 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-muted">
-          {selectedPack ? es.cot.plantillaSel(selectedPack.name) : es.cot.sinPlantillaSel}
+          {selectedPack ? es.cot.plantillaSel(selectedPack.name) : blank ? es.cot.cotizacionEnBlanco : es.cot.sinPlantillaSel}
         </p>
         <Button onClick={handleContinue} disabled={!canContinue} className="w-full sm:w-auto">
           {es.cot.continuar}

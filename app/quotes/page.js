@@ -13,6 +13,8 @@ import { useToken } from '@/components/quotes/useToken'
 import { useSealSettings } from '@/lib/useSealSettings'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { getQuoteOptions } from '@/lib/quotingApi'
+import DuplicateQuoteModal from '@/components/quotes/DuplicateQuoteModal'
 import { mergeQuotesWithInvoices, filterQuotesByStatus } from '@/components/quotes/quoteUtils'
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
@@ -31,6 +33,12 @@ export default function QuotesPage() {
   const router = useRouter()
 
   const [clients, setClients] = useState([])
+  const [dupChangeEnabled, setDupChangeEnabled] = useState(false)
+  const [dupQuoteId, setDupQuoteId] = useState(null)
+  const [dupBusy, setDupBusy] = useState(false)
+  useEffect(() => {
+    getQuoteOptions().then((o) => setDupChangeEnabled(o.duplicate_change_client_enabled))
+  }, [])
 
   const [loadError, setLoadError] = useState(null)
   const [quotes, setQuotes] = useState([])
@@ -164,14 +172,26 @@ export default function QuotesPage() {
     setConduceModal({ id: quote.invoice_id, number: quote.invoice_number })
   }
 
+  // B1: with the switch on, a dialog asks for the target; with it off, the old confirm and the old request.
   async function handleDuplicateQuote(quoteId) {
+    if (dupChangeEnabled) {
+      setDupQuoteId(quoteId)
+      return
+    }
     if (!confirm(es.cot.confirmarDuplicar)) return
+    await runDuplicate(quoteId, null)
+  }
+
+  async function runDuplicate(quoteId, target) {
+    setDupBusy(true)
     try {
-      const data = await duplicateQuote(quoteId, token)
+      const data = await duplicateQuote(quoteId, token, target || undefined)
       // Open the new Draft in the editor. The banner tells the user it was duplicated.
       window.location.assign(`/quotes/${data.quote_id}/edit?duplicated=1`)
     } catch (error) {
       toast.error(es.cot.errorDuplicar + error.message)
+    } finally {
+      setDupBusy(false)
     }
   }
 
@@ -339,6 +359,13 @@ export default function QuotesPage() {
       quoteId={deleteModal.quoteId}
       quoteLabel={deleteModal.quoteId ? quoteLabel(deleteModal.quoteId) : null}
       quoteStatus={deleteModal.quoteStatus}
+    />
+
+    <DuplicateQuoteModal
+      open={dupQuoteId !== null}
+      busy={dupBusy}
+      onClose={() => setDupQuoteId(null)}
+      onConfirm={(target) => { const id = dupQuoteId; setDupQuoteId(null); runDuplicate(id, target) }}
     />
 
   </div>
