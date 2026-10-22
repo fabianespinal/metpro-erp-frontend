@@ -19,6 +19,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import QuoteForm from "@/components/quotes/QuoteForm";
+import { useTaxTypes } from "@/components/quotes/useTaxTypes";
 import QuoteCostEstimate from "@/components/quotes/QuoteCostEstimate";
 import ProductSelectionModal from "@/components/quotes/ProductSelectionModal";
 import { PrintItemsToggle } from "@/components/quotes/PrintItemsToggle";
@@ -75,6 +76,9 @@ function TakeOffScreen() {
   const [notes, setNotes] = useState("");
   const [paymentTerms, setPaymentTerms] = useState("");
   const [validUntil, setValidUntil] = useState("");
+  // Tax type: "" = the default. The selector shows only when 2+ types are active.
+  const { taxTypes } = useTaxTypes();
+  const [taxTypeCode, setTaxTypeCode] = useState("");
   const [productModalOpen, setProductModalOpen] = useState(false);
   const [modalIndex, setModalIndex] = useState<number | null>(null);
 
@@ -209,6 +213,7 @@ function TakeOffScreen() {
         notes: notes.trim() || null,
         payment_terms: paymentTerms.trim() || null,
         valid_until: validUntil || null,
+        ...(taxTypeCode ? { tax_type_code: taxTypeCode } : {}),
         items: quoteItems.map((item) => ({
           ...item,
           discount_type: item.discount_type || "none",
@@ -298,6 +303,9 @@ function TakeOffScreen() {
           setModalIndex(typeof index === "number" ? index : null);
           setProductModalOpen(true);
         }}
+        taxTypes={taxTypes}
+        taxTypeCode={taxTypeCode}
+        setTaxTypeCode={setTaxTypeCode}
       />
 
       <QuoteCostEstimate

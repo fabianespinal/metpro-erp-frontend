@@ -4,6 +4,10 @@ import SurchargeControls from './SurchargeControls'
 import QuoteItemRow from './QuoteItemRow'
 import QuoteTotalsDisplay from './QuoteTotalsDisplay'
 import { calculateQuoteTotals } from './quoteUtils'
+import TaxTypeSelect from './TaxTypeSelect'
+
+/** @type {Array<{code: string, label: string, rate: number, is_default: boolean}>} */
+const NO_TAX_TYPES = []
 
 export default function QuoteForm({ 
   clients,
@@ -29,12 +33,18 @@ export default function QuoteForm({
   setValidUntil,
   onSubmit,
   loading,
-  onOpenProductModal
+  onOpenProductModal,
+  taxTypes: taxTypesProp,
+  taxTypeCode = '',
+  setTaxTypeCode
 }) {
+  const taxTypes = taxTypesProp ?? NO_TAX_TYPES
+  // The chosen type, or the default one. No types loaded: no rate passed, the backend decides on save.
+  const taxType = taxTypes.find((t) => t.code === taxTypeCode) || taxTypes.find((t) => t.is_default) || null
   // Derived from items and charges, never stored separately.
   const calculatedTotals = useMemo(
-    () => calculateQuoteTotals(quoteItems, charges, charges.dynamic_charges ?? []),
-    [quoteItems, charges],
+    () => calculateQuoteTotals(quoteItems, charges, charges.dynamic_charges ?? [], taxType ? taxType.rate : undefined),
+    [quoteItems, charges, taxType],
   )
 
   return (
@@ -157,8 +167,11 @@ export default function QuoteForm({
       {/* SURCHARGES */}
       <SurchargeControls charges={charges} setCharges={setCharges} />
 
+      {/* TAX TYPE. Hidden unless more than one type is active. */}
+      <TaxTypeSelect taxTypes={taxTypes} value={taxTypeCode} onChange={(c) => setTaxTypeCode && setTaxTypeCode(c)} />
+
       {/* TOTALS */}
-      <QuoteTotalsDisplay totals={calculatedTotals} charges={charges} />
+      <QuoteTotalsDisplay totals={calculatedTotals} charges={charges} taxLabel={taxType ? taxType.label : undefined} />
 
       {/* NOTES */}
       <div className='mb-4 mt-4'>

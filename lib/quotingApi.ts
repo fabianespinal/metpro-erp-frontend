@@ -5,7 +5,7 @@
  * template_packs/models.py and quotes/models.py (feat/quoting-v1-phase1).
  *
  * Money values are plain numbers from the backend. Totals are computed by the
- * backend (compute_totals, ITBIS 18%). The browser does not recompute them.
+ * backend (compute_totals, with the tax type's rate). The browser does not recompute them.
  */
 
 import { api } from "@/lib/api";
@@ -111,7 +111,24 @@ export interface QuoteLineInput {
   unit_of_measure?: string | null;
 }
 
+/** A5/A1: tax types come from the backend (tax_types). Rates and labels are never hardcoded in the UI. */
+export interface TaxType {
+  code: string;
+  label: string;
+  /** Fraction: 0.18 = 18%. */
+  rate: number;
+  active: boolean;
+  is_default: boolean;
+  sort_order: number;
+}
+
+export async function listTaxTypes(): Promise<TaxType[]> {
+  return call<TaxType[]>("/tax-types");
+}
+
 export interface DraftQuoteInput {
+  /** Omit for the default type. */
+  tax_type_code?: string | null;
   client_id: number;
   contact_id: number;
   project_name?: string | null;
@@ -158,6 +175,10 @@ export interface QuoteOut {
   subtotal?: number | null;
   discount_total?: number | null;
   tax_amount?: number | null;
+  /** Snapshot taken when the quote was created or its type was last chosen (Draft). */
+  tax_type_code?: string | null;
+  tax_rate?: number | null;
+  tax_label?: string | null;
   grand_total?: number | null;
   payment_terms: string | null;
   valid_until: string | null;
@@ -219,6 +240,8 @@ export async function getQuote(quoteId: string): Promise<QuoteOut> {
 }
 
 export interface DraftUpdateInput {
+  /** Only sent when the user picked a type. Draft only. */
+  tax_type_code?: string | null;
   project_name?: string | null;
   notes?: string | null;
   payment_terms?: string | null;
@@ -271,6 +294,7 @@ export interface TotalsPreview {
 }
 
 export interface TotalsPreviewInput {
+  tax_type_code?: string | null;
   items: QuoteLineInput[];
   included_charges: IncludedCharges;
   /** Estimate quotes only. Other callers omit it and get the default tax. */

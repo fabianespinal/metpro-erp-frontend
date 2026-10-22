@@ -1,3 +1,6 @@
+// Pre-A1 rate. Used only when a caller passes no rate; quotes carry their own (tax_rate).
+const LEGACY_TAX_RATE = 0.18
+
 /**
  * Default surcharge percentages
  * 5 static charges: supervision (10%), admin (4%), insurance (1%), transport (3%), contingency (3%)
@@ -65,9 +68,10 @@ export function mergeQuotesWithInvoices(quotes, invoices) {
  * @param {Array} quoteItems - Quote line items
  * @param {Object} charges - Charges config with static charges
  * @param {Array} [dynamicCharges] - Optional array of {id, name, enabled, percentage}
+ * @param {number} [taxRate] - The quote's tax rate as a fraction (0.18 = 18%), from its tax type. Omitted: the pre-A1 rate.
  * @returns {QuoteTotals} Totals breakdown with all charges
  */
-export function calculateQuoteTotals(quoteItems, charges, dynamicCharges) {
+export function calculateQuoteTotals(quoteItems, charges, dynamicCharges, taxRate) {
   const items_total = quoteItems.reduce((sum, item) => {
     const qty = Number(item.quantity ?? 0)
     const price = Number(item.unit_price ?? 0)
@@ -129,7 +133,8 @@ export function calculateQuoteTotals(quoteItems, charges, dynamicCharges) {
     contingency +
     dynamic_charges_total
 
-  const itbis = subtotal_general * 0.18
+  const rate = Number.isFinite(Number(taxRate)) && taxRate !== null && taxRate !== undefined ? Number(taxRate) : LEGACY_TAX_RATE
+  const itbis = subtotal_general * rate
   const grand_total = subtotal_general + itbis
 
   return {

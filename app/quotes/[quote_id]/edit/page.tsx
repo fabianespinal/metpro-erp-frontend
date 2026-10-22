@@ -48,6 +48,8 @@ import { LockedLines } from "@/components/quotes/estimate/LockedLines";
 import { PrintItemsToggle } from "@/components/quotes/PrintItemsToggle";
 import { usePdfOptions } from "@/lib/pdfOptions";
 import { TotalRow } from "@/components/quotes/takeoff/LineCard";
+import TaxTypeSelect from "@/components/quotes/TaxTypeSelect";
+import { useTaxTypes } from "@/components/quotes/useTaxTypes";
 
 /**
  * Quoting v1, module 7. Draft editor. Edits Draft quotes only.
@@ -104,6 +106,9 @@ function DraftEditor() {
   const [notes, setNotes] = useState("");
   const [paymentTerms, setPaymentTerms] = useState("");
   const [printItems, setPrintItems] = useState(true);
+  // Tax type of this quote (A1). Changeable while Draft; the backend stores the snapshot on save.
+  const { taxTypes } = useTaxTypes();
+  const [taxTypeCode, setTaxTypeCode] = useState("");
   const [products, setProducts] = useState<CatalogProduct[]>([]);
   const { medidas_enabled } = usePdfOptions();
   // Draft lines with a product and no unit set (null) show the product's current unit. It is saved with the
@@ -133,9 +138,14 @@ function DraftEditor() {
   const [finalizing, setFinalizing] = useState(false);
 
   // Derived, not stored: recomputed when lines or charges change.
+  // The rate comes from the chosen type; for a type not in the active list (e.g. a quote made earlier with a
+  // type that was later switched off) it falls back to the quote's own stored snapshot.
+  const chosen = taxTypes.find((t) => t.code === taxTypeCode) ?? null;
+  const taxRate = chosen ? chosen.rate : quote?.tax_rate != null ? Number(quote.tax_rate) : undefined;
+  const taxLabel = chosen ? chosen.label : quote?.tax_label ?? undefined;
   const calculatedTotals = useMemo(
-    () => (charges ? calculateQuoteTotals(toQuoteItems(lines), charges, charges.dynamic_charges ?? []) : null),
-    [lines, charges],
+    () => (charges ? calculateQuoteTotals(toQuoteItems(lines), charges, charges.dynamic_charges ?? [], taxRate) : null),
+    [lines, charges, taxRate],
   );
 
   const isEst = isEstimateQuote(quote);
@@ -165,12 +175,14 @@ function DraftEditor() {
     setNotes(q.notes ?? "");
     setPaymentTerms(q.payment_terms ?? "");
     setPrintItems(q.print_items !== false);
+    setTaxTypeCode(q.tax_type_code ?? "");
     setSavedSnapshot(
       snapshotOf({
         project_name: q.project_name ?? "",
         notes: q.notes ?? "",
         payment_terms: q.payment_terms ?? "",
         print_items: q.print_items !== false,
+        tax_type_code: q.tax_type_code ?? "",
         lines: loadedLines,
         charges: loadedCharges,
       })
@@ -233,10 +245,11 @@ function DraftEditor() {
       notes,
       payment_terms: paymentTerms,
       print_items: printItems,
+      tax_type_code: taxTypeCode,
       lines,
       charges: charges ?? DEFAULT_INCLUDED_CHARGES,
     }),
-    [projectName, notes, paymentTerms, printItems, lines, charges]
+    [projectName, notes, paymentTerms, printItems, taxTypeCode, lines, charges]
   );
   const dirty = savedSnapshot !== "" && snapshotOf(payload) !== savedSnapshot;
   const includedCount = lines.filter((l) => l.include).length;
@@ -287,6 +300,8 @@ function DraftEditor() {
         included_charges: charges,
         print_items: printItems,
         ...(reasonNeeded ? { edit_reason: editReason.trim() } : {}),
+        // Sent only when the stored type differs from the one chosen here.
+        ...(taxTypeCode && taxTypeCode !== quote?.tax_type_code ? { tax_type_code: taxTypeCode } : {}),
       });
       applyQuote(updated);
       setEditReason("");
@@ -425,6 +440,17 @@ function DraftEditor() {
           {charges && (
             <>
               {locked ? null : <SurchargeControls charges={charges} setCharges={handleChargesChange} />}
+              {isEst ? null : (
+                <TaxTypeSelect
+                  taxTypes={taxTypes}
+                  value={taxTypeCode}
+                  disabled={!canWrite}
+                  onChange={(c) => {
+                    setTaxTypeCode(c);
+                    setSaveMessage(null);
+                  }}
+                />
+              )}
               {isEst ? (
                 <section className="rounded-lg border border-line bg-surface p-4 shadow-card" data-testid="estimate-totals">
                   <h2 className="mb-3 text-sm font-semibold text-ink">{es.cot.totales}</h2>
@@ -438,7 +464,7 @@ function DraftEditor() {
                   </dl>
                 </section>
               ) : (
-                <QuoteTotalsDisplay totals={calculatedTotals} charges={charges} />
+                <QuoteTotalsDisplay totals={calculatedTotals} charges={charges} taxLabel={taxLabel} />
               )}
               {isEst ? null : <QuoteCostEstimate items={toQuoteItems(lines)} charges={charges} />}
             </>
@@ -529,7 +555,7 @@ function DraftEditor() {
               <dd className="text-ink">{isEst ? (backendTotals ? formatMoney(backendTotals.subtotal) : "—") : calculatedTotals ? formatMoney(parseFloat(calculatedTotals.subtotal_general)) : "—"}</dd>
             </div>
             <div className="flex justify-between">
-              <dt className="text-muted">{isEst ? (quote.tax_label ?? es.est.impuesto) : "ITBIS (18%)"}</dt>
+              <dt className="text-muted">{isEst ? (quote.tax_label ?? es.est.impuesto) : (taxLabel ?? es.cot.itbis)}</dt>
               <dd className="text-ink">{isEst ? (backendTotals ? formatMoney(backendTotals.tax_amount) : "—") : calculatedTotals ? formatMoney(parseFloat(calculatedTotals.itbis)) : "—"}</dd>
             </div>
             <div className="flex justify-between font-semibold">
@@ -556,6 +582,7 @@ function snapshotOf(p: {
   notes: string;
   payment_terms: string;
   print_items: boolean;
+  tax_type_code: string;
   lines: TakeOffLine[];
   charges: IncludedCharges;
 }): string {
@@ -564,6 +591,7 @@ function snapshotOf(p: {
     notes: p.notes.trim(),
     payment_terms: p.payment_terms.trim(),
     print_items: p.print_items,
+    tax_type_code: p.tax_type_code,
     items: toQuoteItems(p.lines),
     included_charges: p.charges,
   });

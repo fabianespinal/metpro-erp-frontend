@@ -11,7 +11,7 @@ import { toPreviewInput, type TakeOffLine } from "@/lib/takeOffLines";
 export function useTotalsPreview(
   lines: TakeOffLine[],
   charges: IncludedCharges,
-  taxTypeCode?: string,
+  taxTypeCode?: string | null,
   enabled: boolean = true
 ) {
   const [totals, setTotals] = useState<TotalsPreview | null>(null);

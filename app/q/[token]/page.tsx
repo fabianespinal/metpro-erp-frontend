@@ -32,6 +32,7 @@ interface PublicQuote {
   subtotal?: number | null;
   discount_total?: number | null;
   tax_amount?: number | null;
+  tax_label?: string | null;
   grand_total?: number | null;
 }
 
@@ -166,7 +167,7 @@ export default function PublicQuotePage() {
             <dd className="tabular-nums">{money(quote.subtotal)}</dd>
           </div>
           <div className="flex justify-between">
-            <dt className="text-muted">ITBIS (18%)</dt>
+            <dt className="text-muted">{quote.tax_label ?? "ITBIS"}</dt>
             <dd className="tabular-nums">{money(quote.tax_amount)}</dd>
           </div>
           <div className="mt-2 flex justify-between border-t-2 border-ink pt-3 text-base font-semibold">
