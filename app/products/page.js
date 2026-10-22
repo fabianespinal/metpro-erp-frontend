@@ -12,11 +12,29 @@ import { Button } from '@/components/ui/button'
 import { fb } from '@/components/ui/filter-bar'
 import { money } from '@/lib/money'
 
+// B3 dimensions: '' means empty (sent as null). Sent only when the backend switch is on.
+const DIM_FIELDS = ['length', 'width', 'height', 'thickness', 'area', 'volume']
+const dimsOut = (p, enabled) => {
+  if (!enabled) return {}
+  const out = { unit_of_measure: (p.unit_of_measure || '').trim() || null }
+  for (const f of DIM_FIELDS) out[f] = p[f] === '' || p[f] === null || p[f] === undefined ? null : Number(p[f])
+  return out
+}
+
 // Cost input: '' means no cost (sent as null).
 const costOut = (v) => (v === '' || v === null || v === undefined ? null : Number(v))
 
+const stripDims = (p) => {
+  const { length, width, height, thickness, area, volume, unit_of_measure, ...rest } = p
+  return rest
+}
+
 export default function ProductsPage() {
   const { isAdmin } = useCurrentRole()
+  const [dimsEnabled, setDimsEnabled] = useState(false)
+  useEffect(() => {
+    api('/products/options').then((o) => setDimsEnabled(o?.dimensions_enabled === true)).catch(() => setDimsEnabled(false))
+  }, [])
   const [products, setProducts] = useState([])
   const [loadError, setLoadError] = useState(null)
   const [newProduct, setNewProduct] = useState({ name: '', description: '', unit_price: 0, cost: '' })
@@ -50,7 +68,7 @@ export default function ProductsPage() {
       await api('/products/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...newProduct, cost: costOut(newProduct.cost) })
+        body: JSON.stringify({ ...stripDims(newProduct), cost: costOut(newProduct.cost), ...dimsOut(newProduct, dimsEnabled) })
       })
 
       await fetchProducts()
@@ -72,7 +90,7 @@ const handleUpdateProduct = async (e) => {
     await api(`/products/${editingProduct.id}`, {   // <-- FIXED: removed trailing slash
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...editingProduct, cost: costOut(editingProduct.cost) })
+      body: JSON.stringify({ ...stripDims(editingProduct), cost: costOut(editingProduct.cost), ...dimsOut(editingProduct, dimsEnabled) })
     })
 
     await fetchProducts()
@@ -224,6 +242,43 @@ const handleUpdateProduct = async (e) => {
               min='0'
             />
           </label>
+
+          {dimsEnabled && (
+            <fieldset className='md:col-span-3 grid grid-cols-2 gap-3 rounded border border-line p-3 md:grid-cols-4'>
+              <legend className='px-1 text-sm text-muted'>{es.prod.dimensiones}</legend>
+              {[...DIM_FIELDS].map((f) => (
+                <label key={f} className='flex flex-col gap-1 text-sm text-muted'>
+                  {es.prod.dim[f]}
+                  <input
+                    type='number'
+                    step='any'
+                    min='0'
+                    value={(editingProduct ? editingProduct[f] : newProduct[f]) ?? ''}
+                    onChange={(e) =>
+                      editingProduct
+                        ? setEditingProduct({ ...editingProduct, [f]: e.target.value })
+                        : setNewProduct({ ...newProduct, [f]: e.target.value })
+                    }
+                    className='border p-2 rounded text-ink'
+                  />
+                </label>
+              ))}
+              <label className='flex flex-col gap-1 text-sm text-muted'>
+                {es.prod.dim.unit_of_measure}
+                <input
+                  type='text'
+                  maxLength={20}
+                  value={(editingProduct ? editingProduct.unit_of_measure : newProduct.unit_of_measure) ?? ''}
+                  onChange={(e) =>
+                    editingProduct
+                      ? setEditingProduct({ ...editingProduct, unit_of_measure: e.target.value })
+                      : setNewProduct({ ...newProduct, unit_of_measure: e.target.value })
+                  }
+                  className='border p-2 rounded text-ink'
+                />
+              </label>
+            </fieldset>
+          )}
 
           <div className='md:col-span-3 flex gap-2'>
             <Button type='submit' disabled={loading}>

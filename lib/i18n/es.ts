@@ -539,6 +539,16 @@ export const es = {
     importando: "Importando...",
   },
   prod: {
+    dimensiones: "Dimensiones (opcional)",
+    dim: {
+      length: "Largo",
+      width: "Ancho",
+      height: "Alto",
+      thickness: "Espesor",
+      area: "Área",
+      volume: "Volumen",
+      unit_of_measure: "Unidad de medida",
+    },
     seleccioneCsv: "Seleccione un archivo CSV",
     errorCsv: "Error al importar el CSV: ",
     importar: "Importar CSV",
