@@ -22,10 +22,13 @@ export function LineCard({
   line,
   onChange,
   onRemove,
+  printControls = false,
 }: {
   line: TakeOffLine;
   onChange: (patch: Partial<TakeOffLine>) => void;
   onRemove?: () => void;
+  /** A3: show the "no imprimir" checkbox. A line that is already hidden always shows it, so it can be un-hidden. */
+  printControls?: boolean;
 }) {
   const problem = line.include ? lineProblem(line) : null;
   const isManual = line.source === "manual";
@@ -141,6 +144,19 @@ export function LineCard({
               </button>
             ) : null}
           </div>
+
+          {printControls || !line.print_on_pdf ? (
+            <label className="flex items-center gap-2 text-xs text-muted">
+              <input
+                type="checkbox"
+                checked={!line.print_on_pdf}
+                onChange={(e) => onChange({ print_on_pdf: !e.target.checked })}
+                className="h-4 w-4"
+              />
+              {es.cot.noImprimir}
+            </label>
+          ) : null}
+          {!line.print_on_pdf ? <p className="text-xs text-amber-700">{es.cot.ocultaAlCliente}</p> : null}
 
           {problem ? <p className="text-xs text-red-600">{problem}</p> : null}
         </div>

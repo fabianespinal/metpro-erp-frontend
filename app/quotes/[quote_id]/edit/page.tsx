@@ -35,6 +35,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { usePrintControls } from "@/components/quotes/usePrintControls";
 import { LineCard, takeOffInputClass } from "@/components/quotes/takeoff/LineCard";
 import { AddItemBar, type CatalogProduct } from "@/components/quotes/takeoff/AddItemBar";
 import SurchargeControls from "@/components/quotes/SurchargeControls";
@@ -108,6 +109,7 @@ function DraftEditor() {
   const [printItems, setPrintItems] = useState(true);
   // Tax type of this quote (A1). Changeable while Draft; the backend stores the snapshot on save.
   const { taxTypes } = useTaxTypes();
+  const printControls = usePrintControls();
   const [taxTypeCode, setTaxTypeCode] = useState("");
   const [products, setProducts] = useState<CatalogProduct[]>([]);
   const { medidas_enabled } = usePdfOptions();
@@ -428,6 +430,7 @@ function DraftEditor() {
                   line={line}
                   onChange={(patch) => updateLine(line.key, patch)}
                   onRemove={line.source === "pack" ? undefined : () => removeLine(line.key)}
+                  printControls={printControls}
                 />
               ))}
             </ul>

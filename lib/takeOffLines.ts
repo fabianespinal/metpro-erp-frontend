@@ -36,6 +36,8 @@ export interface TakeOffLine {
   item_type: ItemType;
   /** Medidas. null = never set: the backend takes the product's unit on save. "" = none. */
   unit_of_measure: string | null;
+  /** A3. false = counted in totals, hidden on customer documents. */
+  print_on_pdf: boolean;
 }
 
 /**
@@ -70,6 +72,7 @@ export function linesFromPack(pack: TemplatePack): TakeOffLine[] {
         discount_value: 0,
         item_type: "product",
         unit_of_measure: null,
+        print_on_pdf: item.print_on_pdf !== false,
       });
     }
   }
@@ -133,6 +136,7 @@ export function toQuoteItems(lines: TakeOffLine[]): QuoteLineInput[] {
       description: l.description.trim() || null,
       category: l.category,
       ...(l.unit_of_measure === null ? {} : { unit_of_measure: l.unit_of_measure.trim() }),
+      print_on_pdf: l.print_on_pdf,
     }));
 }
 
@@ -167,6 +171,7 @@ export function newManualLine(itemType: ItemType): TakeOffLine {
     discount_value: 0,
     item_type: itemType,
     unit_of_measure: "",
+    print_on_pdf: true,
   };
 }
 
@@ -185,6 +190,7 @@ export function newProductLine(product: { id: number; name: string; unit_price: 
     discount_value: 0,
     item_type: "product",
     unit_of_measure: product.unit_of_measure ?? "",
+    print_on_pdf: true,
   };
 }
 
@@ -209,6 +215,7 @@ export function linesFromQuote(items: QuoteItemOut[]): TakeOffLine[] {
     discount_value: Number(item.discount_value ?? 0),
     item_type: item.item_type ?? "product",
     unit_of_measure: item.unit_of_measure ?? "",  // saved: null means none, so a save does not re-fill it
+    print_on_pdf: item.print_on_pdf !== false,
   }));
 }
 

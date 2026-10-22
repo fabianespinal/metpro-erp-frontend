@@ -16,6 +16,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import { getTemplatePack, MAX_PACK_CHARGES } from "@/lib/quotingApi";
+import { usePrintControls } from "@/components/quotes/usePrintControls";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useCurrentRole } from "@/lib/currentRole";
@@ -32,6 +33,8 @@ interface DraftItem {
   product_id: number;
   default_qty: number;
   optional: boolean;
+  /** A3. false = counted in totals, hidden on customer documents. */
+  print_on_pdf: boolean;
   /** Raw input text. Empty = no override (catalog price). */
   override: string;
 }
@@ -77,9 +80,12 @@ export default function TemplatePackBuilder({ packId }: { packId?: number }) {
   const isEdit = typeof packId === "number";
   const { isAdmin, loading: roleLoading } = useCurrentRole();
 
+  const printControlsOn = usePrintControls();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [categories, setCategories] = useState<DraftCategory[]>([]);
+  // A3: the column shows when the switch is on, or when the pack already hides lines (so they can be un-hidden).
+  const showPrintCol = printControlsOn || categories.some((c) => c.items.some((i) => !i.print_on_pdf));
   const [charges, setCharges] = useState<DraftCharge[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
 
@@ -115,6 +121,7 @@ export default function TemplatePackBuilder({ packId }: { packId?: number }) {
                 product_id: i.product_id,
                 default_qty: Number(i.default_qty),
                 optional: i.optional,
+                print_on_pdf: i.print_on_pdf !== false,
                 override: i.pack_price_override == null ? "" : String(i.pack_price_override),
               })),
             }))
@@ -211,7 +218,7 @@ export default function TemplatePackBuilder({ packId }: { packId?: number }) {
         c.key === catKey
           ? {
               ...c,
-              items: [...c.items, { key: newKey("item"), product_id: productId, default_qty: 1, optional: false, override: "" }],
+              items: [...c.items, { key: newKey("item"), product_id: productId, default_qty: 1, optional: false, print_on_pdf: true, override: "" }],
             }
           : c
       )
@@ -286,6 +293,7 @@ export default function TemplatePackBuilder({ packId }: { packId?: number }) {
           product_id: i.product_id,
           default_qty: i.default_qty,
           optional: i.optional,
+          print_on_pdf: i.print_on_pdf,
           sort_order: ii,
           pack_price_override: parseOverride(i.override),
         })),
@@ -443,6 +451,7 @@ export default function TemplatePackBuilder({ packId }: { packId?: number }) {
                       <th className="py-2 pr-2 text-right">{es.pl.colCantidad}</th>
                       <th className="py-2 pr-2 text-right">{es.pl.colLinea}</th>
                       <th className="py-2 pr-2 text-center">{es.pl.colOpcional}</th>
+                      {showPrintCol && <th className="py-2 pr-2 text-center">{es.pl.colNoImprimir}</th>}
                       <th className="py-2" />
                     </tr>
                   </thead>
@@ -497,6 +506,17 @@ export default function TemplatePackBuilder({ packId }: { packId?: number }) {
                               disabled={saving}
                             />
                           </td>
+                          {showPrintCol && (
+                            <td className="py-2 pr-2 text-center">
+                              <input
+                                type="checkbox"
+                                checked={!item.print_on_pdf}
+                                onChange={(e) => patchItem(cat.key, item.key, { print_on_pdf: !e.target.checked })}
+                                aria-label={es.pl.itemNoImprimir}
+                                disabled={saving}
+                              />
+                            </td>
+                          )}
                           <td className="whitespace-nowrap py-2 text-right">
                             <button type="button" className="px-1 text-muted hover:text-ink disabled:opacity-30" onClick={() => moveItem(cat.key, ii, -1)} disabled={saving || ii === 0} aria-label={es.pl.subirItem}>
                               ↑
