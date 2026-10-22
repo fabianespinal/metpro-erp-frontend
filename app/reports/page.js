@@ -16,9 +16,11 @@ import ClientProfitabilityReport, { clientProfitabilityCsv } from '@/components/
 import ProductProfitabilityReport, { productsCsv } from '@/components/reports/ProductProfitabilityReport'
 import ProjectVarianceReport, { varianceCsv } from '@/components/reports/ProjectVarianceReport'
 import { api } from '@/lib/api'
+import { useCurrentRole } from '@/lib/currentRole'
 import { businessToday, fmtDay, fmtTimestamp } from '@/lib/dates'
 
 export default function ReportsPage() {
+  const { isAdmin } = useCurrentRole()
   const [reportType, setReportType] = useState('quotes-summary')
   const [loadError, setLoadError] = useState(null)
   const [filters, setFilters] = useState({
@@ -212,7 +214,7 @@ export default function ReportsPage() {
               <option value="revenue">{es.rep.ingresos}</option>
               <option value="client-activity">{es.rep.actividadClientes}</option>
               <option value="project-profitability">{es.led.rentabilidad}</option>
-              <option value="client-profitability">{es.cpr.titulo}</option>
+              {isAdmin && <option value="client-profitability">{es.cpr.titulo}</option>}
               <option value="expenses-by-category">{es.led.gastosCategoria}</option>
               <option value="product-profitability">{es.cst.rentabilidadProductos}</option>
               <option value="project-variance">{es.cst.variacionProyecto}</option>
