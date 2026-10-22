@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { api } from "@/lib/api";
 import {
-  DEFAULT_INCLUDED_CHARGES,
+  defaultChargesForEntry,
   createDraftQuote,
   getTemplatePack,
   hasErrorCode,
@@ -68,10 +68,11 @@ function TakeOffScreen() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [products, setProducts] = useState<any[]>([]);
   const [quoteItems, setQuoteItems] = useState<QuoteItem[]>([]);
-  const [charges, setCharges] = useState<IncludedCharges>({
-    ...DEFAULT_INCLUDED_CHARGES,
-    dynamic_charges: [],
-  });
+  // Entry point decides the start state: a pack starts with indirect charges ON (tax 1.8%),
+  // a blank quote starts with them OFF (tax 18%). The user can still change them.
+  const [charges, setCharges] = useState<IncludedCharges>(() =>
+    defaultChargesForEntry(packId ? "template" : "standard"),
+  );
   const [projectName, setProjectName] = useState("");
   const [notes, setNotes] = useState("");
   const [paymentTerms, setPaymentTerms] = useState("");

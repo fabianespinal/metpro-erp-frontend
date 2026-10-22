@@ -227,6 +227,27 @@ export const DEFAULT_INCLUDED_CHARGES: IncludedCharges = {
   contingency_percentage: 3,
 };
 
+/** Standard Product Quote start state: same percentages, all five indirect charges OFF (tax resolves to 18%). */
+export const NO_INDIRECT_CHARGES: IncludedCharges = {
+  ...DEFAULT_INCLUDED_CHARGES,
+  supervision: false,
+  admin: false,
+  insurance: false,
+  transport: false,
+  contingency: false,
+};
+
+export type QuoteEntryPoint = "standard" | "template" | "takeoff";
+
+/**
+ * Business rule (2026-10-22): the ENTRY POINT decides the starting indirect charges.
+ * standard (new quote, blank, manual lines) = OFF; template (pack) and takeoff (estimate) = ON.
+ * Nothing is stored. The backend still resolves the tax from the charges actually selected.
+ */
+export function defaultChargesForEntry(entry: QuoteEntryPoint): IncludedCharges {
+  return { ...(entry === "standard" ? NO_INDIRECT_CHARGES : DEFAULT_INCLUDED_CHARGES), dynamic_charges: [] };
+}
+
 // ------------------------------------------------------
 // Template packs (read: any authenticated user)
 // ------------------------------------------------------

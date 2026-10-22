@@ -68,3 +68,24 @@ describe("calculateQuoteTotals tax rate (A1)", () => {
     expect(calculateQuoteTotals(items, off, [], 0).itbis).toBe("0.00");
   });
 });
+
+import { defaultChargesForEntry } from "@/lib/quotingApi";
+
+describe("default indirect charges by entry point", () => {
+  const keys = ["supervision", "admin", "insurance", "transport", "contingency"] as const;
+  it("standard starts with all five OFF", () => {
+    const c = defaultChargesForEntry("standard");
+    keys.forEach((k) => expect(c[k]).toBe(false));
+    expect(c.dynamic_charges).toEqual([]);
+  });
+  it("template and takeoff start with all five ON and standard percentages", () => {
+    for (const e of ["template", "takeoff"] as const) {
+      const c = defaultChargesForEntry(e);
+      keys.forEach((k) => expect(c[k]).toBe(true));
+      expect([c.supervision_percentage, c.admin_percentage, c.insurance_percentage, c.transport_percentage, c.contingency_percentage]).toEqual([10, 4, 1, 3, 3]);
+    }
+  });
+  it("returns independent objects", () => {
+    expect(defaultChargesForEntry("standard")).not.toBe(defaultChargesForEntry("standard"));
+  });
+});
