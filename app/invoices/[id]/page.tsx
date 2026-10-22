@@ -5,7 +5,7 @@ import { fmtDay } from "@/lib/dates"
 import { money } from "@/lib/money"
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { fetchInvoiceWithPayments, voidPayment } from "@/lib/invoiceApi";
+import { fetchInvoiceWithPayments, voidPayment, correctPayment, fetchPaymentOptions } from "@/lib/invoiceApi";
 import { useCurrentRole } from "@/lib/currentRole";
 import toast from "react-hot-toast";
 import RecordPaymentModal from "@/components/invoices/RecordPaymentModal";
@@ -24,6 +24,13 @@ interface Payment {
   payment_date: string;
   voided_at?: string | null;
   void_reason?: string | null;
+  voided_by_name?: string | null;
+  created_at?: string | null;
+  created_by_name?: string | null;
+  backfilled?: boolean;
+  corrects_payment_id?: number | null;
+  corrected_by_payment_id?: number | null;
+  correction_chain_id?: number | null;
 }
 
 interface Invoice {
@@ -63,6 +70,51 @@ export default function InvoiceDetailPage() {
   const [voiding, setVoiding] = useState<Payment | null>(null);
   const [voidReason, setVoidReason] = useState("");
   const [voidBusy, setVoidBusy] = useState(false);
+
+  // A2: void-and-correct. The action only shows when the backend switch is on.
+  const [correctionEnabled, setCorrectionEnabled] = useState(false);
+  const [correcting, setCorrecting] = useState<Payment | null>(null);
+  const [corr, setCorr] = useState({ amount: "", method: "", notes: "", payment_date: "", reason: "" });
+  const [corrBusy, setCorrBusy] = useState(false);
+
+  useEffect(() => {
+    fetchPaymentOptions().then((o) => setCorrectionEnabled(o.correction_enabled));
+  }, []);
+
+  const openCorrection = (p: Payment) => {
+    setCorrecting(p);
+    setCorr({ amount: String(p.amount), method: p.method, notes: p.notes ?? "", payment_date: p.payment_date.slice(0, 10), reason: "" });
+  };
+
+  const confirmCorrection = async () => {
+    if (!correcting) return;
+    const amount = Number(corr.amount);
+    if (!Number.isFinite(amount) || amount <= 0) {
+      toast.error("El monto debe ser mayor que cero.");
+      return;
+    }
+    if (corr.reason.trim().length < 3) {
+      toast.error("Indique el motivo de la corrección.");
+      return;
+    }
+    setCorrBusy(true);
+    try {
+      await correctPayment(invoiceId, correcting.id, {
+        amount,
+        method: corr.method,
+        notes: corr.notes,
+        payment_date: corr.payment_date,
+        reason: corr.reason.trim(),
+      });
+      toast.success("Pago corregido");
+      setCorrecting(null);
+      await loadInvoice();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "No se pudo corregir el pago.");
+    } finally {
+      setCorrBusy(false);
+    }
+  };
 
   const confirmVoid = async () => {
     if (!voiding) return;
@@ -272,15 +324,33 @@ export default function InvoiceDetailPage() {
                     <td className="px-4 py-2">
                       {p.notes || "-"}
                       {p.voided_at && (
-                        <div className="text-xs text-red-700">Anulado: {p.void_reason}</div>
+                        <div className="text-xs text-red-700">
+                          Anulado{p.voided_by_name ? ` por ${p.voided_by_name}` : ""}: {p.void_reason}
+                        </div>
                       )}
+                      {p.corrects_payment_id != null && (
+                        <div className="text-xs text-muted">Corrige el pago #{p.corrects_payment_id}</div>
+                      )}
+                      {p.corrected_by_payment_id != null && (
+                        <div className="text-xs text-muted">Reemplazado por el pago #{p.corrected_by_payment_id}</div>
+                      )}
+                      <div className="text-xs text-muted">
+                        {p.backfilled
+                          ? "Registro anterior al control de auditoría"
+                          : `Registrado${p.created_by_name ? ` por ${p.created_by_name}` : ""}${p.created_at ? ` el ${fmtDay(p.created_at)}` : ""}`}
+                      </div>
                     </td>
                     {isAdmin && (
                       <td className="px-4 py-2 text-right">
                         {!p.voided_at && (
-                          <Button variant="outline" onClick={() => { setVoiding(p); setVoidReason(""); }}>
-                            Anular pago
-                          </Button>
+                          <div className="flex justify-end gap-2">
+                            {correctionEnabled && invoice.status !== "Cancelled" && (
+                              <Button variant="outline" onClick={() => openCorrection(p)}>Corregir pago</Button>
+                            )}
+                            <Button variant="outline" onClick={() => { setVoiding(p); setVoidReason(""); }}>
+                              Anular pago
+                            </Button>
+                          </div>
                         )}
                       </td>
                     )}
@@ -312,6 +382,37 @@ export default function InvoiceDetailPage() {
             <div className="mt-4 flex justify-end gap-2">
               <Button variant="outline" onClick={() => setVoiding(null)} disabled={voidBusy}>Cancelar</Button>
               <Button onClick={confirmVoid} disabled={voidBusy}>{voidBusy ? "Anulando…" : "Anular pago"}</Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {correcting && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" role="dialog" aria-modal="true" aria-labelledby="corr-title">
+          <div className="w-full max-w-md rounded-lg bg-surface p-6 shadow-card">
+            <h2 id="corr-title" className="text-lg font-semibold text-ink">Corregir pago</h2>
+            <p className="mt-1 text-sm text-muted">
+              El pago original ({money(correcting.amount)} del {fmtDay(correcting.payment_date)}) queda anulado en el historial y se
+              registra uno nuevo enlazado a él.
+            </p>
+            {(["amount", "method", "payment_date", "notes", "reason"] as const).map((f) => (
+              <div key={f} className="mt-3">
+                <label htmlFor={`corr-${f}`} className="block text-sm font-medium text-ink">
+                  {{ amount: "Monto", method: "Método", payment_date: "Fecha", notes: "Notas", reason: "Motivo de la corrección" }[f]}
+                </label>
+                <input
+                  id={`corr-${f}`}
+                  type={f === "amount" ? "number" : f === "payment_date" ? "date" : "text"}
+                  step={f === "amount" ? "0.01" : undefined}
+                  className="mt-1 w-full rounded border border-line px-3 py-2 text-sm"
+                  value={corr[f]}
+                  onChange={(e) => setCorr({ ...corr, [f]: e.target.value })}
+                />
+              </div>
+            ))}
+            <div className="mt-4 flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setCorrecting(null)} disabled={corrBusy}>Cancelar</Button>
+              <Button onClick={confirmCorrection} disabled={corrBusy}>{corrBusy ? "Guardando…" : "Corregir pago"}</Button>
             </div>
           </div>
         </div>

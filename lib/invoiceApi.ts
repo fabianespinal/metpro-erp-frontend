@@ -48,6 +48,30 @@ export async function voidPayment(invoiceId: number, paymentId: number, reason: 
   return api.post(`/invoices/${invoiceId}/payments/${paymentId}/void`, { reason });
 }
 
+export interface PaymentOptions {
+  void_enabled: boolean;
+  correction_enabled: boolean;
+}
+
+/** Feature switches for payment actions. Falls back to "correction off" if the backend predates A2. */
+export async function fetchPaymentOptions(): Promise<PaymentOptions> {
+  try {
+    const d = (await api.get("/invoices/payment-options")) as Partial<PaymentOptions>;
+    return { void_enabled: d?.void_enabled !== false, correction_enabled: d?.correction_enabled === true };
+  } catch {
+    return { void_enabled: true, correction_enabled: false };
+  }
+}
+
+/** Void a payment and record the corrected one in a single step (admin, A2). */
+export async function correctPayment(
+  invoiceId: number,
+  paymentId: number,
+  data: { amount: number; method: string; notes?: string; payment_date: string; reason: string }
+) {
+  return api.post(`/invoices/${invoiceId}/payments/${paymentId}/correct`, data);
+}
+
 export async function fetchInvoicePayments(invoiceId: number) {
   return api.get(`/invoices/${invoiceId}/payments`);
 }
