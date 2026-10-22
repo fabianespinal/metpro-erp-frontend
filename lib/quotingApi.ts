@@ -42,6 +42,7 @@ export interface TemplatePackItem {
   default_qty: number;
   optional: boolean;
   sort_order: number;
+  print_on_pdf?: boolean;
 }
 
 export interface TemplatePackCategory {
@@ -107,6 +108,8 @@ export interface QuoteLineInput {
   item_type: ItemType;
   description?: string | null;
   category?: string | null;
+  /** A3. false = counted in totals, never printed on customer documents. Always send it so a save never un-hides a line. */
+  print_on_pdf?: boolean;
 }
 
 /** A5/A1: tax types come from the backend (tax_types). Rates and labels are never hardcoded in the UI. */
@@ -118,6 +121,16 @@ export interface TaxType {
   active: boolean;
   is_default: boolean;
   sort_order: number;
+}
+
+/** A3: is the "no imprimir" control switched on? Off (or a failed call) hides the control; hidden lines stay hidden. */
+export async function getPrintControlsEnabled(): Promise<boolean> {
+  try {
+    const d = await call<{ print_controls_enabled?: boolean }>("/quotes/print-options");
+    return d?.print_controls_enabled === true;
+  } catch {
+    return false;
+  }
 }
 
 export async function listTaxTypes(): Promise<TaxType[]> {
@@ -149,6 +162,7 @@ export interface QuoteItemOut {
   item_type?: ItemType;
   description?: string | null;
   category?: string | null;
+  print_on_pdf?: boolean;
 }
 
 export interface QuoteOut {

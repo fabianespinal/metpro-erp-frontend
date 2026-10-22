@@ -34,6 +34,8 @@ export interface TakeOffLine {
   discount_type: DiscountType;
   discount_value: number;
   item_type: ItemType;
+  /** A3. false = counted in totals, hidden on customer documents. */
+  print_on_pdf: boolean;
 }
 
 /**
@@ -67,6 +69,7 @@ export function linesFromPack(pack: TemplatePack): TakeOffLine[] {
         discount_type: "none",
         discount_value: 0,
         item_type: "product",
+        print_on_pdf: item.print_on_pdf !== false,
       });
     }
   }
@@ -108,6 +111,7 @@ export function toQuoteItems(lines: TakeOffLine[]): QuoteLineInput[] {
       item_type: l.item_type,
       description: l.description.trim() || null,
       category: l.category,
+      print_on_pdf: l.print_on_pdf,
     }));
 }
 
@@ -139,6 +143,7 @@ export function newManualLine(itemType: ItemType): TakeOffLine {
     discount_type: "none",
     discount_value: 0,
     item_type: itemType,
+    print_on_pdf: true,
   };
 }
 
@@ -156,6 +161,7 @@ export function newProductLine(product: { id: number; name: string; unit_price: 
     discount_type: "none",
     discount_value: 0,
     item_type: "product",
+    print_on_pdf: true,
   };
 }
 
@@ -179,6 +185,7 @@ export function linesFromQuote(items: QuoteItemOut[]): TakeOffLine[] {
     discount_type: item.discount_type ?? "none",
     discount_value: Number(item.discount_value ?? 0),
     item_type: item.item_type ?? "product",
+    print_on_pdf: item.print_on_pdf !== false,
   }));
 }
 

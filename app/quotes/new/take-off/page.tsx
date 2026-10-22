@@ -131,6 +131,7 @@ function TakeOffScreen() {
               discount_type: line.discount_type as "none" | "percentage" | "fixed",
               discount_value: line.discount_value,
               category: line.category,
+              print_on_pdf: line.print_on_pdf,
             }))
         );
       })
