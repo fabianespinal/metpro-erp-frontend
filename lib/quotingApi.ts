@@ -153,8 +153,6 @@ export async function listTaxTypes(): Promise<TaxType[]> {
 }
 
 export interface DraftQuoteInput {
-  /** Omit for the default type. */
-  tax_type_code?: string | null;
   client_id: number;
   contact_id: number;
   project_name?: string | null;
@@ -192,7 +190,7 @@ export interface QuoteOut {
   subtotal?: number | null;
   discount_total?: number | null;
   tax_amount?: number | null;
-  /** Snapshot taken when the quote was created or its type was last chosen (Draft). */
+  /** Snapshot decided by the backend from the indirect charges on create and on save (Draft). */
   tax_type_code?: string | null;
   tax_rate?: number | null;
   tax_label?: string | null;
@@ -257,8 +255,6 @@ export async function getQuote(quoteId: string): Promise<QuoteOut> {
 }
 
 export interface DraftUpdateInput {
-  /** Only sent when the user picked a type. Draft only. */
-  tax_type_code?: string | null;
   project_name?: string | null;
   notes?: string | null;
   payment_terms?: string | null;
@@ -308,7 +304,6 @@ export interface TotalsPreview {
 }
 
 export interface TotalsPreviewInput {
-  tax_type_code?: string | null;
   items: QuoteLineInput[];
   included_charges: IncludedCharges;
 }

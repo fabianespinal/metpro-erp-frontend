@@ -548,6 +548,8 @@ export const es = {
       area: "Área",
       volume: "Volumen",
       unit_of_measure: "Unidad de medida",
+      calculado: "calculado",
+      manual: "Ingresar manualmente",
     },
     seleccioneCsv: "Seleccione un archivo CSV",
     errorCsv: "Error al importar el CSV: ",
