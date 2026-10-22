@@ -49,3 +49,22 @@ describe("mergeQuotesWithInvoices (B-06)", () => {
     expect(merged[1].invoice_number).toBe("F-2-2");
   });
 });
+
+describe("calculateQuoteTotals tax rate (A1)", () => {
+  const items = [{ quantity: 2, unit_price: 500, discount_type: "none", discount_value: 0 }];
+  const off = { supervision: false, admin: false, insurance: false, transport: false, contingency: false };
+
+  it("uses the rate passed from the quote's tax type", () => {
+    const t = calculateQuoteTotals(items, off, [], 0.018);
+    expect(t.itbis).toBe("18.00");
+    expect(t.grand_total).toBe("1018.00");
+  });
+  it("keeps the pre-A1 result when no rate is passed", () => {
+    const t = calculateQuoteTotals(items, off, []);
+    expect(t.itbis).toBe("180.00");
+    expect(t.grand_total).toBe("1180.00");
+  });
+  it("a zero rate is a rate, not a missing value", () => {
+    expect(calculateQuoteTotals(items, off, [], 0).itbis).toBe("0.00");
+  });
+});

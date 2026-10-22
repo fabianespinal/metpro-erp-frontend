@@ -34,6 +34,7 @@ interface Quote {
   subtotal?: number | null;
   discount_total?: number | null;
   tax_amount?: number | null;
+  tax_label?: string | null;
   grand_total?: number | null;
   terms?: string | null;
   finalized_at?: string | null;
@@ -269,7 +270,7 @@ export default function QuotePublicView() {
               <span>{money(quote.subtotal)}</span>
             </div>
             <div className="flex justify-between border-b border-line py-1.5 text-sm tabular-nums">
-              <span className="text-muted">ITBIS (18%)</span>
+              <span className="text-muted">{quote.tax_label ?? es.cot.itbis}</span>
               <span>{money(quote.tax_amount)}</span>
             </div>
             <div className="mt-1 flex justify-between border-t-2 border-ink pt-3 text-base font-semibold tabular-nums">

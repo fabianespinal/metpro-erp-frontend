@@ -1,6 +1,6 @@
 import { es } from "@/lib/i18n/es";
 import { money } from "@/lib/money"
-export default function QuoteTotalsDisplay({ totals, charges }) {
+export default function QuoteTotalsDisplay({ totals, charges, taxLabel }) {
   if (!totals) return null
 
   return (
@@ -72,7 +72,7 @@ export default function QuoteTotalsDisplay({ totals, charges }) {
       </div>
       
       <div className='flex justify-between text-sm'>
-        <span>ITBIS (18%):</span>
+        <span>{taxLabel || es.cot.itbis}:</span>
         <span className='font-medium'>{money(totals.itbis)}</span>
       </div>
       

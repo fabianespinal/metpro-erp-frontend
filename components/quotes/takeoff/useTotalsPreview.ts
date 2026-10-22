@@ -8,14 +8,14 @@ import { toPreviewInput, type TakeOffLine } from "@/lib/takeOffLines";
  * Debounced totals from the backend preview endpoint. The browser displays the
  * result and does no tax or charge math.
  */
-export function useTotalsPreview(lines: TakeOffLine[], charges: IncludedCharges) {
+export function useTotalsPreview(lines: TakeOffLine[], charges: IncludedCharges, taxTypeCode?: string | null) {
   const [totals, setTotals] = useState<TotalsPreview | null>(null);
   const [totalsError, setTotalsError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     const timer = window.setTimeout(() => {
-      previewQuoteTotals(toPreviewInput(lines, charges))
+      previewQuoteTotals(toPreviewInput(lines, charges, taxTypeCode))
         .then((t) => {
           if (!cancelled) {
             setTotals(t);
@@ -30,7 +30,7 @@ export function useTotalsPreview(lines: TakeOffLine[], charges: IncludedCharges)
       cancelled = true;
       window.clearTimeout(timer);
     };
-  }, [lines, charges]);
+  }, [lines, charges, taxTypeCode]);
 
   return { totals, totalsError };
 }

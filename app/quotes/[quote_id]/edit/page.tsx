@@ -41,6 +41,8 @@ import SurchargeControls from "@/components/quotes/SurchargeControls";
 import QuoteTotalsDisplay from "@/components/quotes/QuoteTotalsDisplay";
 import QuoteCostEstimate from "@/components/quotes/QuoteCostEstimate";
 import { calculateQuoteTotals } from "@/components/quotes/quoteUtils";
+import TaxTypeSelect from "@/components/quotes/TaxTypeSelect";
+import { useTaxTypes } from "@/components/quotes/useTaxTypes";
 
 /**
  * Quoting v1, module 7. Draft editor. Edits Draft quotes only.
@@ -92,6 +94,9 @@ function DraftEditor() {
   const [projectName, setProjectName] = useState("");
   const [notes, setNotes] = useState("");
   const [paymentTerms, setPaymentTerms] = useState("");
+  // Tax type of this quote (A1). Changeable while Draft; the backend stores the snapshot on save.
+  const { taxTypes } = useTaxTypes();
+  const [taxTypeCode, setTaxTypeCode] = useState("");
   const [products, setProducts] = useState<CatalogProduct[]>([]);
 
   // Snapshot of the last saved payload. Dirty = current differs.
@@ -107,9 +112,14 @@ function DraftEditor() {
   const [finalizing, setFinalizing] = useState(false);
 
   // Derived, not stored: recomputed when lines or charges change.
+  // The rate comes from the chosen type; for a type not in the active list (e.g. a quote made earlier with a
+  // type that was later switched off) it falls back to the quote's own stored snapshot.
+  const chosen = taxTypes.find((t) => t.code === taxTypeCode) ?? null;
+  const taxRate = chosen ? chosen.rate : quote?.tax_rate != null ? Number(quote.tax_rate) : undefined;
+  const taxLabel = chosen ? chosen.label : quote?.tax_label ?? undefined;
   const calculatedTotals = useMemo(
-    () => (charges ? calculateQuoteTotals(toQuoteItems(lines), charges, charges.dynamic_charges ?? []) : null),
-    [lines, charges],
+    () => (charges ? calculateQuoteTotals(toQuoteItems(lines), charges, charges.dynamic_charges ?? [], taxRate) : null),
+    [lines, charges, taxRate],
   );
 
   function applyQuote(q: QuoteOut) {
@@ -126,11 +136,13 @@ function DraftEditor() {
     setProjectName(q.project_name ?? "");
     setNotes(q.notes ?? "");
     setPaymentTerms(q.payment_terms ?? "");
+    setTaxTypeCode(q.tax_type_code ?? "");
     setSavedSnapshot(
       snapshotOf({
         project_name: q.project_name ?? "",
         notes: q.notes ?? "",
         payment_terms: q.payment_terms ?? "",
+        tax_type_code: q.tax_type_code ?? "",
         lines: loadedLines,
         charges: loadedCharges,
       })
@@ -192,10 +204,11 @@ function DraftEditor() {
       project_name: projectName,
       notes,
       payment_terms: paymentTerms,
+      tax_type_code: taxTypeCode,
       lines,
       charges: charges ?? DEFAULT_INCLUDED_CHARGES,
     }),
-    [projectName, notes, paymentTerms, lines, charges]
+    [projectName, notes, paymentTerms, taxTypeCode, lines, charges]
   );
   const dirty = savedSnapshot !== "" && snapshotOf(payload) !== savedSnapshot;
   const includedCount = lines.filter((l) => l.include).length;
@@ -238,6 +251,8 @@ function DraftEditor() {
         payment_terms: paymentTerms.trim() || null,
         items: toQuoteItems(lines),
         included_charges: charges,
+        // Sent only when the stored type differs from the one chosen here.
+        ...(taxTypeCode && taxTypeCode !== quote?.tax_type_code ? { tax_type_code: taxTypeCode } : {}),
       });
       applyQuote(updated);
       setSaveMessage(es.cot.borradorGuardado);
@@ -367,7 +382,16 @@ function DraftEditor() {
           {charges && (
             <>
               <SurchargeControls charges={charges} setCharges={handleChargesChange} />
-              <QuoteTotalsDisplay totals={calculatedTotals} charges={charges} />
+              <TaxTypeSelect
+                taxTypes={taxTypes}
+                value={taxTypeCode}
+                disabled={!canWrite}
+                onChange={(c) => {
+                  setTaxTypeCode(c);
+                  setSaveMessage(null);
+                }}
+              />
+              <QuoteTotalsDisplay totals={calculatedTotals} charges={charges} taxLabel={taxLabel} />
               <QuoteCostEstimate items={toQuoteItems(lines)} charges={charges} />
             </>
           )}
@@ -438,7 +462,7 @@ function DraftEditor() {
               <dd className="text-ink">{calculatedTotals ? formatMoney(parseFloat(calculatedTotals.subtotal_general)) : "—"}</dd>
             </div>
             <div className="flex justify-between">
-              <dt className="text-muted">ITBIS (18%)</dt>
+              <dt className="text-muted">{taxLabel ?? es.cot.itbis}</dt>
               <dd className="text-ink">{calculatedTotals ? formatMoney(parseFloat(calculatedTotals.itbis)) : "—"}</dd>
             </div>
             <div className="flex justify-between font-semibold">
@@ -464,6 +488,7 @@ function snapshotOf(p: {
   project_name: string;
   notes: string;
   payment_terms: string;
+  tax_type_code: string;
   lines: TakeOffLine[];
   charges: IncludedCharges;
 }): string {
@@ -471,6 +496,7 @@ function snapshotOf(p: {
     project_name: p.project_name.trim(),
     notes: p.notes.trim(),
     payment_terms: p.payment_terms.trim(),
+    tax_type_code: p.tax_type_code,
     items: toQuoteItems(p.lines),
     included_charges: p.charges,
   });
