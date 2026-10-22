@@ -12,6 +12,7 @@ import { dt } from "@/components/ui/data-table"
 import { useState, useEffect } from 'react'
 import ProjectProfitabilityReport, { profitabilityCsv } from '@/components/reports/ProjectProfitabilityReport'
 import ExpensesByCategoryReport, { categoriesCsv } from '@/components/reports/ExpensesByCategoryReport'
+import ClientProfitabilityReport, { clientProfitabilityCsv } from '@/components/reports/ClientProfitabilityReport'
 import ProductProfitabilityReport, { productsCsv } from '@/components/reports/ProductProfitabilityReport'
 import ProjectVarianceReport, { varianceCsv } from '@/components/reports/ProjectVarianceReport'
 import { api } from '@/lib/api'
@@ -157,6 +158,11 @@ export default function ReportsPage() {
       csvContent = profitabilityCsv(reportData)
     }
 
+    else if (reportType === 'client-profitability') {
+      filename = 'rentabilidad_clientes'
+      csvContent = clientProfitabilityCsv(reportData)
+    }
+
     else if (reportType === 'product-profitability') {
       filename = 'rentabilidad_productos'
       csvContent = productsCsv(reportData)
@@ -206,6 +212,7 @@ export default function ReportsPage() {
               <option value="revenue">{es.rep.ingresos}</option>
               <option value="client-activity">{es.rep.actividadClientes}</option>
               <option value="project-profitability">{es.led.rentabilidad}</option>
+              <option value="client-profitability">{es.cpr.titulo}</option>
               <option value="expenses-by-category">{es.led.gastosCategoria}</option>
               <option value="product-profitability">{es.cst.rentabilidadProductos}</option>
               <option value="project-variance">{es.cst.variacionProyecto}</option>
@@ -322,6 +329,7 @@ export default function ReportsPage() {
               {reportType === 'revenue' && es.rep.tituloIngresos}
               {reportType === 'client-activity' && es.rep.tituloActividad}
               {reportType === 'project-profitability' && es.led.rentabilidad}
+              {reportType === 'client-profitability' && es.cpr.titulo}
               {reportType === 'expenses-by-category' && es.led.gastosCategoria}
               {reportType === 'product-profitability' && es.cst.rentabilidadProductos}
               {reportType === 'project-variance' && es.cst.variacionProyecto}
@@ -440,6 +448,8 @@ export default function ReportsPage() {
           {/* CLIENT ACTIVITY */}
           {/* ----------------------------- */}
           {reportType === 'project-profitability' && <ProjectProfitabilityReport data={reportData} />}
+
+          {reportType === 'client-profitability' && <ClientProfitabilityReport data={reportData} />}
 
           {reportType === 'expenses-by-category' && <ExpensesByCategoryReport data={reportData} />}
 
