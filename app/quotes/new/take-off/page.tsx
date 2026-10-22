@@ -48,6 +48,7 @@ interface QuoteItem {
   item_type?: "product" | "service";
   category?: string | null;
   unit_of_measure?: string | null; // Medidas; omitted = the backend takes the product's unit
+  print_on_pdf?: boolean;
 }
 
 function TakeOffScreen() {
@@ -56,7 +57,9 @@ function TakeOffScreen() {
   const clientId = params.get("client_id") ?? "";
   const contactId = params.get("contact_id") ?? "";
   const packId = params.get("pack_id") ?? "";
-  const paramsOk = Boolean(clientId && contactId && packId);
+  // B2: blank=1 starts without a template pack. The screen is the same, the item list starts empty.
+  const blank = params.get("blank") === "1";
+  const paramsOk = Boolean(clientId && contactId && (packId || blank));
 
   const [client, setClient] = useState<{ id: number; company_name: string } | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -255,7 +258,7 @@ function TakeOffScreen() {
     <div className="mx-auto w-full max-w-4xl px-4 py-6 sm:px-6">
       <PageHeader
         title={es.cot.armarTitulo}
-        subtitle={pack ? es.cot.plantillaSel(pack.name) : es.cot.armarSubtitulo}
+        subtitle={pack ? es.cot.plantillaSel(pack.name) : blank ? es.cot.cotizacionEnBlanco : es.cot.armarSubtitulo}
         actions={
           <Button asChild variant="outline">
             <Link href="/quotes/new">{es.cot.cambiarPlantilla}</Link>

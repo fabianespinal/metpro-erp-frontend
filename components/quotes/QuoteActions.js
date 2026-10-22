@@ -107,12 +107,14 @@ export async function approveQuote(quoteId, token) {
 /**
  * Duplicate quote
  */
-export async function duplicateQuote(quoteId, token) {
+export async function duplicateQuote(quoteId, token, target) {
   try {
     const url = API_URL + "/quotes/" + quoteId + "/duplicate";
+    // B1: target = { client_id, contact_id } moves the copy to another client. No target = same client, no body.
     const response = await safeFetch(url, {
       method: "POST",
       headers: getHeaders(token, true),
+      ...(target ? { body: JSON.stringify(target) } : {}),
     });
 
     await handleResponse(response);
