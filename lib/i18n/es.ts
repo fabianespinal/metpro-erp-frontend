@@ -61,6 +61,12 @@ export const es = {
     sesionIniciadaComo: "Sesión iniciada como",
     fallo: "Error al iniciar sesión",
   },
+  ajustes: {
+    titulo: "Ajustes",
+    subtitulo: "Configuración del sistema",
+    volver: "Volver al panel",
+    soloAdmin: "Solo los administradores pueden ver los ajustes.",
+  },
   dashboard: {
     titulo: "Panel",
     subtitulo: "Sistema ERP Metpro",
