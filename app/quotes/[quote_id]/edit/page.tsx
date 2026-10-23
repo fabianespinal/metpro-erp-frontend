@@ -46,6 +46,7 @@ import { isEstimateQuote, moneyChanged, moneyLocked, needsEditReason } from "@/l
 import { useTotalsPreview } from "@/components/quotes/takeoff/useTotalsPreview";
 import { LockedLines } from "@/components/quotes/estimate/LockedLines";
 import { PrintItemsToggle } from "@/components/quotes/PrintItemsToggle";
+import { usePdfOptions } from "@/lib/pdfOptions";
 import { TotalRow } from "@/components/quotes/takeoff/LineCard";
 
 /**
@@ -97,13 +98,27 @@ function DraftEditor() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [contactName, setContactName] = useState<string | null>(null);
 
-  const [lines, setLines] = useState<TakeOffLine[]>([]);
+  const [rawLines, setLines] = useState<TakeOffLine[]>([]);
   const [charges, setCharges] = useState<IncludedCharges | null>(null);
   const [projectName, setProjectName] = useState("");
   const [notes, setNotes] = useState("");
   const [paymentTerms, setPaymentTerms] = useState("");
   const [printItems, setPrintItems] = useState(true);
   const [products, setProducts] = useState<CatalogProduct[]>([]);
+  const { medidas_enabled } = usePdfOptions();
+  // Draft lines with a product and no unit set (null) show the product's current unit. It is saved with the
+  // next save, so the draft's PDF picks it up. A unit cleared on purpose is "" and stays blank.
+  const lines = useMemo(
+    () =>
+      medidas_enabled
+        ? rawLines.map((l) =>
+            l.unit_of_measure === null && l.product_id != null
+              ? { ...l, unit_of_measure: products.find((p) => p.id === l.product_id)?.unit_of_measure ?? null }
+              : l
+          )
+        : rawLines,
+    [rawLines, products, medidas_enabled]
+  );
 
   // Snapshot of the last saved payload. Dirty = current differs.
   const [savedSnapshot, setSavedSnapshot] = useState<string>("");
@@ -134,7 +149,9 @@ function DraftEditor() {
   );
 
   function applyQuote(q: QuoteOut) {
-    const loadedLines = linesFromQuote(q.items ?? []);
+    const loadedLines = linesFromQuote(q.items ?? []).map((l) =>
+      q.status === "Draft" && l.product_id != null && !l.unit_of_measure ? { ...l, unit_of_measure: null } : l
+    );
     const loadedCharges = parseIncludedCharges(q.included_charges);
     // Legacy quotes have no dynamic_charges: default to none.
     const chargesWithDynamic: IncludedCharges = {
