@@ -1,6 +1,7 @@
 "use client";
 import { es } from "@/lib/i18n/es";
 import toast from "react-hot-toast"
+import Link from "next/link";
 import { fmtDay } from "@/lib/dates"
 import { money } from "@/lib/money"
 import { getStatusLabel } from "@/lib/i18n/statusLabel";
@@ -122,7 +123,11 @@ export default function InvoicesPage() {
             <tbody className={dt.tbody}>
               {filteredInvoices.map((inv) => (
                 <tr key={inv.id} className={dt.tr}>
-                  <td className={dt.td}>{inv.invoice_number}</td>
+                  <td className={dt.td}>
+                    <Link href={`/invoices/${inv.id}`} className="text-accent underline" title="Ver detalle y pagos">
+                      {inv.invoice_number}
+                    </Link>
+                  </td>
                   <td className={dt.td}>{inv.client_name}</td>
                   <td className={dt.td}>{fmtDay(inv.invoice_date)}</td>
 
