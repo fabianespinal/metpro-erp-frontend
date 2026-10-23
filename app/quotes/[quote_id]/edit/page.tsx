@@ -45,6 +45,7 @@ import { useCurrentRole } from "@/lib/currentRole";
 import { isEstimateQuote, moneyChanged, moneyLocked, needsEditReason } from "@/lib/estimatorCalc";
 import { useTotalsPreview } from "@/components/quotes/takeoff/useTotalsPreview";
 import { LockedLines } from "@/components/quotes/estimate/LockedLines";
+import { PrintItemsToggle } from "@/components/quotes/PrintItemsToggle";
 import { TotalRow } from "@/components/quotes/takeoff/LineCard";
 
 /**
@@ -101,6 +102,7 @@ function DraftEditor() {
   const [projectName, setProjectName] = useState("");
   const [notes, setNotes] = useState("");
   const [paymentTerms, setPaymentTerms] = useState("");
+  const [printItems, setPrintItems] = useState(true);
   const [products, setProducts] = useState<CatalogProduct[]>([]);
 
   // Snapshot of the last saved payload. Dirty = current differs.
@@ -145,11 +147,13 @@ function DraftEditor() {
     setProjectName(q.project_name ?? "");
     setNotes(q.notes ?? "");
     setPaymentTerms(q.payment_terms ?? "");
+    setPrintItems(q.print_items !== false);
     setSavedSnapshot(
       snapshotOf({
         project_name: q.project_name ?? "",
         notes: q.notes ?? "",
         payment_terms: q.payment_terms ?? "",
+        print_items: q.print_items !== false,
         lines: loadedLines,
         charges: loadedCharges,
       })
@@ -211,10 +215,11 @@ function DraftEditor() {
       project_name: projectName,
       notes,
       payment_terms: paymentTerms,
+      print_items: printItems,
       lines,
       charges: charges ?? DEFAULT_INCLUDED_CHARGES,
     }),
-    [projectName, notes, paymentTerms, lines, charges]
+    [projectName, notes, paymentTerms, printItems, lines, charges]
   );
   const dirty = savedSnapshot !== "" && snapshotOf(payload) !== savedSnapshot;
   const includedCount = lines.filter((l) => l.include).length;
@@ -263,6 +268,7 @@ function DraftEditor() {
         payment_terms: paymentTerms.trim() || null,
         items: toQuoteItems(lines),
         included_charges: charges,
+        print_items: printItems,
         ...(reasonNeeded ? { edit_reason: editReason.trim() } : {}),
       });
       applyQuote(updated);
@@ -447,6 +453,14 @@ function DraftEditor() {
               className={takeOffInputClass}
               aria-label={es.cot.terminosPago}
             />
+            <PrintItemsToggle
+              checked={printItems}
+              onChange={(v) => {
+                setPrintItems(v);
+                setSaveMessage(null);
+              }}
+              disabled={!canWrite}
+            />
           </section>
 
           {reasonNeeded ? (
@@ -524,6 +538,7 @@ function snapshotOf(p: {
   project_name: string;
   notes: string;
   payment_terms: string;
+  print_items: boolean;
   lines: TakeOffLine[];
   charges: IncludedCharges;
 }): string {
@@ -531,6 +546,7 @@ function snapshotOf(p: {
     project_name: p.project_name.trim(),
     notes: p.notes.trim(),
     payment_terms: p.payment_terms.trim(),
+    print_items: p.print_items,
     items: toQuoteItems(p.lines),
     included_charges: p.charges,
   });

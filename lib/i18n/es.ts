@@ -203,6 +203,12 @@ export const es = {
     soloAdmin: "Solo los administradores pueden editar los términos.",
     vistaPreviaTitulo: "Vista previa de los términos",
   },
+  pdf: {
+    mostrarProductos: "Mostrar productos en el PDF",
+    mostrarProductosAyuda: "Si lo desmarca, el PDF muestra solo el proyecto, los cargos y los totales. Los totales no cambian.",
+    medidas: "Medidas",
+    medidasPlaceholder: "Unidad, Ft, M2…",
+  },
   cot: {
     // Lista
     existentes: "Cotizaciones existentes",

@@ -3,6 +3,8 @@
 import { es } from "@/lib/i18n/es";
 import { formatMoney, lineProblem, lineTotal, type TakeOffLine } from "@/lib/takeOffLines";
 import type { DiscountType } from "@/lib/quotingApi";
+import { usePdfOptions } from "@/lib/pdfOptions";
+import { UnitInput } from "@/components/quotes/UnitInput";
 
 export const takeOffInputClass =
   "w-full rounded-md border border-line bg-surface px-2 py-1.5 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-accent";
@@ -27,6 +29,7 @@ export function LineCard({
 }) {
   const problem = line.include ? lineProblem(line) : null;
   const isManual = line.source === "manual";
+  const { medidas_enabled } = usePdfOptions();
 
   return (
     <li className={`rounded-lg border bg-surface p-4 shadow-card ${line.include ? "border-line" : "border-line opacity-60"}`}>
@@ -70,7 +73,18 @@ export function LineCard({
             />
           ) : null}
 
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div className={`grid grid-cols-2 gap-3 ${medidas_enabled ? "sm:grid-cols-5" : "sm:grid-cols-4"}`}>
+            {medidas_enabled ? (
+              <label className="block text-xs text-muted">
+                {es.pdf.medidas}
+                <UnitInput
+                  value={line.unit_of_measure ?? ""}
+                  onChange={(v) => onChange({ unit_of_measure: v })}
+                  label={es.pdf.medidas}
+                  className={takeOffInputClass}
+                />
+              </label>
+            ) : null}
             <label className="block text-xs text-muted">
               {es.cot.cantAbrev}
               <input

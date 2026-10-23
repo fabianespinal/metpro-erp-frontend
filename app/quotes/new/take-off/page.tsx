@@ -21,6 +21,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import QuoteForm from "@/components/quotes/QuoteForm";
 import QuoteCostEstimate from "@/components/quotes/QuoteCostEstimate";
 import ProductSelectionModal from "@/components/quotes/ProductSelectionModal";
+import { PrintItemsToggle } from "@/components/quotes/PrintItemsToggle";
 
 /**
  * Quoting v1, module 6c. Take-off: items from the template pack, the catalog,
@@ -45,6 +46,7 @@ interface QuoteItem {
   discount_value: number;
   item_type?: "product" | "service";
   category?: string | null;
+  unit_of_measure?: string | null; // Medidas; omitted = the backend takes the product's unit
 }
 
 function TakeOffScreen() {
@@ -76,6 +78,7 @@ function TakeOffScreen() {
   const [productModalOpen, setProductModalOpen] = useState(false);
   const [modalIndex, setModalIndex] = useState<number | null>(null);
 
+  const [printItems, setPrintItems] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [catalogError, setCatalogError] = useState<string | null>(null);
@@ -212,6 +215,7 @@ function TakeOffScreen() {
           item_type: item.item_type || "product",
         })),
         included_charges: charges,
+        ...(printItems ? {} : { print_items: false }),
       });
       router.push(`/quotes/${quote.quote_id}/edit`);
     } catch (err) {
@@ -306,6 +310,10 @@ function TakeOffScreen() {
         charges={charges}
       />
 
+      <div className="mt-4">
+        <PrintItemsToggle checked={printItems} onChange={setPrintItems} disabled={saving} />
+      </div>
+
       {saveError ? (
         <Alert variant="destructive" className="mt-4">
           <AlertDescription>{saveError}</AlertDescription>
@@ -331,6 +339,7 @@ function TakeOffScreen() {
             product_id: product.id ?? null,
             product_name: product.name ?? product.product_name ?? "",
             unit_price: Number(product.unit_price) || 0,
+            unit_of_measure: product.unit_of_measure ?? "",
           };
           if (modalIndex !== null && modalIndex >= 0 && modalIndex < quoteItems.length) {
             // Fill the row the user clicked. Quantity and discount stay as typed.

@@ -107,6 +107,8 @@ export interface QuoteLineInput {
   item_type: ItemType;
   description?: string | null;
   category?: string | null;
+  /** Medidas. Omit = the backend takes the product's unit. "" = none. */
+  unit_of_measure?: string | null;
 }
 
 export interface DraftQuoteInput {
@@ -118,6 +120,8 @@ export interface DraftQuoteInput {
   valid_until?: string | null; // YYYY-MM-DD
   items: QuoteLineInput[];
   included_charges: IncludedCharges;
+  /** false = PDFs show no item table. Totals unchanged. Omit = on. */
+  print_items?: boolean;
 }
 
 export interface QuoteItemOut {
@@ -132,6 +136,7 @@ export interface QuoteItemOut {
   item_type?: ItemType;
   description?: string | null;
   category?: string | null;
+  unit_of_measure?: string | null;
 }
 
 export interface QuoteOut {
@@ -142,6 +147,8 @@ export interface QuoteOut {
   notes: string | null;
   /** null or "standard" = normal quote. "engineering_estimate" = locked money (I4). */
   quote_type?: string | null;
+  /** false = PDFs show no item table. Absent on older backends = true. */
+  print_items?: boolean;
   tax_type_code?: string | null;
   tax_label?: string | null;
   tax_rate?: number | null;
@@ -217,6 +224,7 @@ export interface DraftUpdateInput {
   payment_terms?: string | null;
   items: QuoteLineInput[];
   included_charges: IncludedCharges;
+  print_items?: boolean;
   /** Estimate quotes, admin, when money changes. Audited. */
   edit_reason?: string;
 }

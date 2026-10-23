@@ -34,6 +34,8 @@ export interface TakeOffLine {
   discount_type: DiscountType;
   discount_value: number;
   item_type: ItemType;
+  /** Medidas. null = never set: the backend takes the product's unit on save. "" = none. */
+  unit_of_measure: string | null;
 }
 
 /**
@@ -67,6 +69,7 @@ export function linesFromPack(pack: TemplatePack): TakeOffLine[] {
         discount_type: "none",
         discount_value: 0,
         item_type: "product",
+        unit_of_measure: null,
       });
     }
   }
@@ -129,6 +132,7 @@ export function toQuoteItems(lines: TakeOffLine[]): QuoteLineInput[] {
       item_type: l.item_type,
       description: l.description.trim() || null,
       category: l.category,
+      ...(l.unit_of_measure === null ? {} : { unit_of_measure: l.unit_of_measure.trim() }),
     }));
 }
 
@@ -162,10 +166,11 @@ export function newManualLine(itemType: ItemType): TakeOffLine {
     discount_type: "none",
     discount_value: 0,
     item_type: itemType,
+    unit_of_measure: "",
   };
 }
 
-export function newProductLine(product: { id: number; name: string; unit_price: number }): TakeOffLine {
+export function newProductLine(product: { id: number; name: string; unit_price: number; unit_of_measure?: string | null }): TakeOffLine {
   return {
     key: `product-${product.id}-${Date.now()}`,
     source: "product",
@@ -179,6 +184,7 @@ export function newProductLine(product: { id: number; name: string; unit_price: 
     discount_type: "none",
     discount_value: 0,
     item_type: "product",
+    unit_of_measure: product.unit_of_measure ?? "",
   };
 }
 
@@ -202,6 +208,7 @@ export function linesFromQuote(items: QuoteItemOut[]): TakeOffLine[] {
     discount_type: item.discount_type ?? "none",
     discount_value: Number(item.discount_value ?? 0),
     item_type: item.item_type ?? "product",
+    unit_of_measure: item.unit_of_measure ?? "",  // saved: null means none, so a save does not re-fill it
   }));
 }
 

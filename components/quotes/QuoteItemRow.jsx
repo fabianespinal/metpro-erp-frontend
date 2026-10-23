@@ -1,5 +1,7 @@
 import { es } from "@/lib/i18n/es";
 import { money } from "@/lib/money"
+import { usePdfOptions } from "@/lib/pdfOptions";
+import { UnitInput } from "@/components/quotes/UnitInput";
 export default function QuoteItemRow({ 
   item, 
   index, 
@@ -8,6 +10,7 @@ export default function QuoteItemRow({
   onOpenProductModal,
   showRemove = true 
 }) {
+  const { medidas_enabled } = usePdfOptions()
   const qty = item.quantity ?? 0
 const price = item.unit_price ?? 0
 const discountVal = item.discount_value ?? 0
@@ -38,7 +41,7 @@ const lineTotal = (base - discount).toFixed(2)
         )}
       </div>
       
-      <div className='grid grid-cols-1 md:grid-cols-4 gap-3 mb-3'>
+      <div className={`grid grid-cols-1 gap-3 mb-3 ${medidas_enabled ? 'md:grid-cols-5' : 'md:grid-cols-4'}`}>
         <div className='md:col-span-2'>
           <label className='block text-xs font-medium mb-1'>{es.cot.productoServicio}</label>
           <div className='flex gap-2'>
@@ -59,6 +62,17 @@ const lineTotal = (base - discount).toFixed(2)
             </button>
           </div>
         </div>
+        {medidas_enabled && (
+          <div>
+            <label className='block text-xs font-medium mb-1'>{es.pdf.medidas}</label>
+            <UnitInput
+              value={item.unit_of_measure ?? ''}
+              onChange={(v) => onChange(index, 'unit_of_measure', v)}
+              label={es.pdf.medidas}
+              className='w-full border p-2 rounded text-sm'
+            />
+          </div>
+        )}
         <div>
           <label className='block text-xs font-medium mb-1'>{es.cot.cantidad}</label>
           <input aria-label={es.cot.cantidad}

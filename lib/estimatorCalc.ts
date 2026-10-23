@@ -163,7 +163,10 @@ export function moneyChanged(savedSnapshot: string, currentSnapshot: string): bo
   try {
     const a = JSON.parse(savedSnapshot);
     const b = JSON.parse(currentSnapshot);
-    return JSON.stringify([a.items, a.included_charges]) !== JSON.stringify([b.items, b.included_charges]);
+    // Medidas is a label, not money: changing a unit never needs an edit reason.
+    const money = (items: unknown) =>
+      Array.isArray(items) ? items.map((i) => ({ ...(i as Record<string, unknown>), unit_of_measure: undefined })) : items;
+    return JSON.stringify([money(a.items), a.included_charges]) !== JSON.stringify([money(b.items), b.included_charges]);
   } catch {
     return true; // fail closed: treat as a money change
   }

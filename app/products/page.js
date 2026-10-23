@@ -5,6 +5,8 @@ import ErrorBanner from "@/components/ui/ErrorBanner";
 import { dt } from "@/components/ui/data-table";
 
 import { useState, useEffect } from 'react'
+import { usePdfOptions } from '@/lib/pdfOptions'
+import { UnitInput } from '@/components/quotes/UnitInput'
 import { api } from "@/lib/api"
 import { useCurrentRole } from "@/lib/currentRole"
 import { PageHeader } from '@/components/ui/page-header'
@@ -18,8 +20,9 @@ const costOut = (v) => (v === '' || v === null || v === undefined ? null : Numbe
 export default function ProductsPage() {
   const { isAdmin } = useCurrentRole()
   const [products, setProducts] = useState([])
+  const { medidas_enabled } = usePdfOptions()
   const [loadError, setLoadError] = useState(null)
-  const [newProduct, setNewProduct] = useState({ name: '', description: '', unit_price: 0, cost: '' })
+  const [newProduct, setNewProduct] = useState({ name: '', description: '', unit_price: 0, cost: '', unit_of_measure: '' })
   const [editingProduct, setEditingProduct] = useState(null)
   const [loading, setLoading] = useState(false)
   const [importResult, setImportResult] = useState(null)
@@ -54,7 +57,7 @@ export default function ProductsPage() {
       })
 
       await fetchProducts()
-      setNewProduct({ name: '', description: '', unit_price: 0, cost: '' })
+      setNewProduct({ name: '', description: '', unit_price: 0, cost: '', unit_of_measure: '' })
       toast.success(es.prod.creado)
     } catch (error) {
       toast.error(es.prod.errorGenerico + error.message)
@@ -208,6 +211,22 @@ const handleUpdateProduct = async (e) => {
             required
           />
 
+          {medidas_enabled && (
+            <label className='flex flex-col gap-1 text-sm text-muted'>
+              {es.pdf.medidas}
+              <UnitInput
+                value={editingProduct ? (editingProduct.unit_of_measure ?? '') : newProduct.unit_of_measure}
+                onChange={(v) =>
+                  editingProduct
+                    ? setEditingProduct({ ...editingProduct, unit_of_measure: v })
+                    : setNewProduct({ ...newProduct, unit_of_measure: v })
+                }
+                label={es.pdf.medidas}
+                className='border p-2 rounded text-ink'
+              />
+            </label>
+          )}
+
           <label className='md:col-span-2 flex flex-col gap-1 text-sm text-muted'>
             {es.cst.costoProducto}
             <input aria-label={es.cst.costoProducto}
@@ -253,6 +272,7 @@ const handleUpdateProduct = async (e) => {
               <tr>
                 <th className={dt.th}>Nombre Producto</th>
                 <th className={dt.th}>Descripción</th>
+                {medidas_enabled && <th className={dt.th}>{es.pdf.medidas}</th>}
                 <th className={dt.thRight}>Precio Unitario</th>
                 <th className={dt.thRight}>{es.cst.colCosto}</th>
                 <th className={dt.thRight}>{es.cst.colMargen}</th>
@@ -265,6 +285,8 @@ const handleUpdateProduct = async (e) => {
                 <tr key={product.id} className={dt.tr}>
                   <td className={dt.td}>{product.name}</td>
                   <td className={dt.td}>{product.description || '-'}</td>
+
+                  {medidas_enabled && <td className={dt.td}>{product.unit_of_measure || '-'}</td>}
 
                   <td className={dt.tdRight}>
                     {money((product.unit_price ?? 0))}

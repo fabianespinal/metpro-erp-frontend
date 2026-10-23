@@ -11,6 +11,7 @@ export interface CatalogProduct {
   id: number;
   name: string;
   unit_price: number;
+  unit_of_measure?: string | null;
 }
 
 /** Search the catalog, add a product line, or add a manual service or custom line. */
