@@ -1,5 +1,6 @@
 import { es } from "@/lib/i18n/es";
 import { money } from "@/lib/money"
+import { dynamicChargeRows } from "./quoteUtils"
 export default function QuoteTotalsDisplay({ totals, charges }) {
   if (!totals) return null
 
@@ -57,13 +58,11 @@ export default function QuoteTotalsDisplay({ totals, charges }) {
         </div>
       )}
 
-      {(charges.dynamic_charges ?? []).map((dc) => (
-        parseFloat(totals[`dynamic_${dc.id}`] || 0) > 0 && (
-          <div key={dc.id} className='flex justify-between text-sm text-accent'>
-            <span>{dc.name} ({dc.percentage}%):</span>
-            <span>{money((parseFloat(totals.items_after_discount || 0) * (dc.percentage / 100)))}</span>
-          </div>
-        )
+      {dynamicChargeRows(charges.dynamic_charges, totals.items_after_discount).map((row) => (
+        <div key={row.id} className='flex justify-between text-sm text-accent'>
+          <span>{row.name} ({row.percentage}%):</span>
+          <span>{money(row.amount)}</span>
+        </div>
       ))}
 
       <div className='flex justify-between text-sm border-t pt-2'>

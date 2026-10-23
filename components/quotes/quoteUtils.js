@@ -149,6 +149,27 @@ export function calculateQuoteTotals(quoteItems, charges, dynamicCharges) {
 }
 
 /**
+ * Rows for the enabled custom/pack charges that have a value, for the totals display.
+ * calculateQuoteTotals only returns their combined amount, so the display builds the rows here.
+ * Same math as the backend: percentage of items after discount.
+ *
+ * @param {Array} [dynamicCharges] - {id, name, enabled, percentage}
+ * @param {string|number} itemsAfterDiscount
+ * @returns {Array<{id: string, name: string, percentage: number, amount: string}>}
+ */
+export function dynamicChargeRows(dynamicCharges, itemsAfterDiscount) {
+  const base = Number(itemsAfterDiscount ?? 0) || 0
+  return (dynamicCharges ?? [])
+    .filter((dc) => dc && dc.enabled && Number(dc.percentage ?? 0) > 0)
+    .map((dc, i) => ({
+      id: dc.id ?? `dc_${i}`,
+      name: dc.name,
+      percentage: Number(dc.percentage),
+      amount: (base * (Number(dc.percentage) / 100)).toFixed(2),
+    }))
+}
+
+/**
  * Filter quotes by status
  */
 export function filterQuotesByStatus(quotes, statusFilter) {

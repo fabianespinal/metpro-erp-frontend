@@ -94,6 +94,27 @@ export function lineProblem(line: TakeOffLine): string | null {
   return null;
 }
 
+/**
+ * Validation for a quote form row (product_name field, as the quote form uses).
+ * Same rules as lineProblem. Returns the first problem, or null.
+ */
+export function itemProblem(item: {
+  product_name?: string | null;
+  quantity?: number | null;
+  unit_price?: number | null;
+  discount_type?: string | null;
+  discount_value?: number | null;
+}): string | null {
+  const asLine = {
+    name: item.product_name ?? "",
+    quantity: Number(item.quantity ?? 0),
+    unit_price: Number(item.unit_price ?? 0),
+    discount_type: (item.discount_type ?? "none") as DiscountType,
+    discount_value: Number(item.discount_value ?? 0),
+  };
+  return lineProblem(asLine as TakeOffLine);
+}
+
 /** Included lines only. Shape the backend expects for preview and save. */
 export function toQuoteItems(lines: TakeOffLine[]): QuoteLineInput[] {
   return lines

@@ -13,7 +13,7 @@ import {
   type IncludedCharges,
   type TemplatePack,
 } from "@/lib/quotingApi";
-import { dynamicChargesFromPack, linesFromPack } from "@/lib/takeOffLines";
+import { dynamicChargesFromPack, itemProblem, linesFromPack } from "@/lib/takeOffLines";
 import { applyItemChange } from "@/lib/quoteItemEdit";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
@@ -74,6 +74,7 @@ function TakeOffScreen() {
   const [paymentTerms, setPaymentTerms] = useState("");
   const [validUntil, setValidUntil] = useState("");
   const [productModalOpen, setProductModalOpen] = useState(false);
+  const [modalIndex, setModalIndex] = useState<number | null>(null);
 
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -186,6 +187,15 @@ function TakeOffScreen() {
 
   async function handleSave() {
     if (!saveAllowed) return;
+    // Same rules as the draft editor: a blank name or zero quantity would save a draft
+    // that the editor then refuses to save again.
+    for (let i = 0; i < quoteItems.length; i++) {
+      const problem = itemProblem(quoteItems[i]);
+      if (problem) {
+        setSaveError(`${es.cot.articuloN} ${i + 1}: ${problem}`);
+        return;
+      }
+    }
     setSaving(true);
     setSaveError(null);
     try {
@@ -279,7 +289,11 @@ function TakeOffScreen() {
         setValidUntil={setValidUntil}
         onSubmit={handleSave}
         loading={saving}
-        onOpenProductModal={() => setProductModalOpen(true)}
+        onOpenProductModal={(index?: number) => {
+          // Remember which row asked, so the chosen product fills that row.
+          setModalIndex(typeof index === "number" ? index : null);
+          setProductModalOpen(true);
+        }}
       />
 
       <QuoteCostEstimate
@@ -313,14 +327,20 @@ function TakeOffScreen() {
         products={products}
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         onSelect={(product: any) => {
-          handleAddItem();
-          const newIndex = quoteItems.length;
-          handleItemChange(newIndex, {
+          const patch = {
             product_id: product.id ?? null,
             product_name: product.name ?? product.product_name ?? "",
-            unit_price: product.unit_price || 0,
-          });
+            unit_price: Number(product.unit_price) || 0,
+          };
+          if (modalIndex !== null && modalIndex >= 0 && modalIndex < quoteItems.length) {
+            // Fill the row the user clicked. Quantity and discount stay as typed.
+            handleItemChange(modalIndex, patch);
+          } else {
+            handleAddItem();
+            handleItemChange(quoteItems.length, patch);
+          }
           setProductModalOpen(false);
+          setModalIndex(null);
         }}
       />
     </div>
