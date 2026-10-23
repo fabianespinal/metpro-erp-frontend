@@ -12,6 +12,7 @@ import { useCurrentRole } from '@/lib/currentRole'
 import { PageHeader } from '@/components/ui/page-header'
 import { Button } from '@/components/ui/button'
 import ErrorBanner from '@/components/ui/ErrorBanner'
+import SuppliersPanel from '@/components/suppliers/SuppliersPanel'
 
 export default function ClientsPage() {
   const { isAdmin } = useCurrentRole()
@@ -29,9 +30,13 @@ export default function ClientsPage() {
   const [loading, setLoading] = useState(false)
   const [importModalOpen, setImportModalOpen] = useState(false)
   const [loadError, setLoadError] = useState(null) // E-07: visible load failure with retry
+  // Clientes / Suplidores dropdown. Shown only when the backend switch SUPPLIERS_ENABLED is on.
+  const [suppliersEnabled, setSuppliersEnabled] = useState(false)
+  const [view, setView] = useState('clientes')
 
   useEffect(() => {
     fetchClients()
+    api.get('/suppliers/options').then((o) => setSuppliersEnabled(o?.suppliers_enabled === true)).catch(() => {})
   }, [])
 
   const fetchClients = async () => {
@@ -120,13 +125,33 @@ export default function ClientsPage() {
   return (
     <div className="w-full px-4 lg:px-8 py-8">
       <PageHeader
-        title="Clientes"
+        title={view === 'suplidores' ? es.sup.verSuplidores : 'Clientes'}
         actions={
-          <Button variant="outline" onClick={() => setImportModalOpen(true)}>
-            Importar CSV
-          </Button>
+          <div className="flex items-center gap-2">
+            {suppliersEnabled && (
+              <select
+                aria-label={es.sup.ver}
+                value={view}
+                onChange={(e) => setView(e.target.value)}
+                className="rounded border p-2 text-sm"
+              >
+                <option value="clientes">{es.sup.verClientes}</option>
+                <option value="suplidores">{es.sup.verSuplidores}</option>
+              </select>
+            )}
+            {view === 'clientes' && (
+              <Button variant="outline" onClick={() => setImportModalOpen(true)}>
+                Importar CSV
+              </Button>
+            )}
+          </div>
         }
       />
+
+      {suppliersEnabled && view === 'suplidores' ? (
+        <SuppliersPanel />
+      ) : (
+      <>
 
       <ErrorBanner message={loadError} onRetry={fetchClients} />
 
@@ -306,6 +331,9 @@ export default function ClientsPage() {
           </table>
         )}
       </div>
+
+      </>
+      )}
 
       <CSVImportModal
         isOpen={importModalOpen}
