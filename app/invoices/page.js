@@ -10,6 +10,7 @@ import ErrorBanner from "@/components/ui/ErrorBanner";
 import { dt } from "@/components/ui/data-table";
 
 import { useState, useEffect } from "react";
+import { fetchPaymentOptions } from "@/lib/invoiceApi";
 import { api } from "@/lib/api";
 import StatusPill from "@/components/ui/StatusPill";
 import RecordPaymentModal from "@/components/invoices/RecordPaymentModal";
@@ -38,6 +39,10 @@ export default function InvoicesPage() {
   // { kind: "factura" | "conduce", id, number } while a preview is open
   const [preview, setPreview] = useState(null);
   const { isAdmin } = useCurrentRole();
+  const [recordAdminOnly, setRecordAdminOnly] = useState(false);
+  useEffect(() => {
+    fetchPaymentOptions().then((o) => setRecordAdminOnly(o.record_admin_only));
+  }, []);
 
   const [paymentOpen, setPaymentOpen] = useState(false);
   const [selectedInvoiceId, setSelectedInvoiceId] = useState(null);
@@ -170,9 +175,9 @@ export default function InvoicesPage() {
                       Vista previa Conduce
                     </Button>
 
-                    <Button onClick={() => openPaymentModal(inv.id)}>
+                    {!(recordAdminOnly && !isAdmin) && <Button onClick={() => openPaymentModal(inv.id)}>
                       Pago
-                    </Button>
+                    </Button>}
 
                     {isAdmin && (MANUAL_NEXT[inv.status] || []).length > 0 && (
                       <select

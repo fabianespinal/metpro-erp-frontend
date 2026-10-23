@@ -51,15 +51,21 @@ export async function voidPayment(invoiceId: number, paymentId: number, reason: 
 export interface PaymentOptions {
   void_enabled: boolean;
   correction_enabled: boolean;
+  /** true = only admin and superadmin may record a payment (backend PAYMENT_RECORD_ADMIN_ONLY). */
+  record_admin_only: boolean;
 }
 
 /** Feature switches for payment actions. Falls back to "correction off" if the backend predates A2. */
 export async function fetchPaymentOptions(): Promise<PaymentOptions> {
   try {
     const d = (await api.get("/invoices/payment-options")) as Partial<PaymentOptions>;
-    return { void_enabled: d?.void_enabled !== false, correction_enabled: d?.correction_enabled === true };
+    return {
+      void_enabled: d?.void_enabled !== false,
+      correction_enabled: d?.correction_enabled === true,
+      record_admin_only: d?.record_admin_only === true,
+    };
   } catch {
-    return { void_enabled: true, correction_enabled: false };
+    return { void_enabled: true, correction_enabled: false, record_admin_only: false };
   }
 }
 

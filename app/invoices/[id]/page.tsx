@@ -74,12 +74,16 @@ export default function InvoiceDetailPage() {
 
   // A2: void-and-correct. The action only shows when the backend switch is on.
   const [correctionEnabled, setCorrectionEnabled] = useState(false);
+  const [recordAdminOnly, setRecordAdminOnly] = useState(false);
   const [correcting, setCorrecting] = useState<Payment | null>(null);
   const [corr, setCorr] = useState({ amount: "", method: "", notes: "", payment_date: "", reason: "" });
   const [corrBusy, setCorrBusy] = useState(false);
 
   useEffect(() => {
-    fetchPaymentOptions().then((o) => setCorrectionEnabled(o.correction_enabled));
+    fetchPaymentOptions().then((o) => {
+      setCorrectionEnabled(o.correction_enabled);
+      setRecordAdminOnly(o.record_admin_only);
+    });
   }, []);
 
   const openCorrection = (p: Payment) => {
@@ -278,7 +282,7 @@ export default function InvoiceDetailPage() {
             {invoice.status !== "Cancelled" && <SendToClientButton id={invoiceId} type="invoice" />}
             <Button onClick={() => setPreview("factura")}>Vista previa Factura</Button>
             <Button onClick={() => setPreview("conduce")}>Vista previa Conduce</Button>
-            <Button onClick={() => setPaymentOpen(true)}>Pago</Button>
+            {recordAdminOnly && !isAdmin ? null : <Button onClick={() => setPaymentOpen(true)}>Pago</Button>}
           </div>
         </div>
 
