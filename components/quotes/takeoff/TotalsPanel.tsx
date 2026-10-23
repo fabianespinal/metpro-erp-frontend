@@ -23,6 +23,7 @@ export function TotalsPanel({
   totals,
   totalsError,
   includedCount,
+  taxLabel,
 }: {
   charges: IncludedCharges;
   onToggleCharge: (key: keyof IncludedCharges) => void;
@@ -31,6 +32,8 @@ export function TotalsPanel({
   totals: TotalsPreview | null;
   totalsError: string | null;
   includedCount: number;
+  /** Estimate quotes show the real tax label (1.8%). Others keep the fixed ITBIS text. */
+  taxLabel?: string;
 }) {
   return (
     <>
@@ -89,7 +92,7 @@ export function TotalsPanel({
           <TotalRow label={es.cot.panelArticulos} value={totals?.items_total} />
           <TotalRow label={es.cot.menosDescuentos} value={totals?.total_discounts} />
           <TotalRow label={es.cot.panelSubtotal} value={totals?.subtotal} />
-          <TotalRow label={es.cot.itbis} value={totals?.tax_amount} />
+          <TotalRow label={taxLabel ?? es.cot.itbis} value={totals?.tax_amount} />
           <div className="my-2 border-t border-line" />
           <TotalRow label={es.cot.panelTotal} value={totals?.grand_total} strong />
         </dl>

@@ -16,6 +16,8 @@ import Link from 'next/link'
 import { mergeQuotesWithInvoices, filterQuotesByStatus } from '@/components/quotes/quoteUtils'
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
+import { useCurrentRole } from "@/lib/currentRole";
+import { getEstimatorEnabled } from "@/lib/estimatorApi";
 import { fb } from "@/components/ui/filter-bar";
 import {
   previewPDF,
@@ -29,6 +31,15 @@ import {
 export default function QuotesPage() {
   const token = useToken()
   const router = useRouter()
+  const { isAdmin } = useCurrentRole()
+  const [estimatorOn, setEstimatorOn] = useState(false)
+  useEffect(() => {
+    // Admin-only entry. Hidden unless the backend switch is on. Fails closed.
+    if (!isAdmin) return
+    let active = true
+    getEstimatorEnabled().then((on) => { if (active) setEstimatorOn(on) })
+    return () => { active = false }
+  }, [isAdmin])
 
   const [clients, setClients] = useState([])
 
@@ -249,9 +260,16 @@ export default function QuotesPage() {
       title="Cotizar"
       actions={
         // Shared primary button (components/ui/button): same as Nuevo proyecto, Crear paquete.
-        <Button asChild>
-          <Link href="/quotes/new">{es.cot.nueva}</Link>
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          {isAdmin && estimatorOn ? (
+            <Button asChild variant="outline">
+              <Link href="/quotes/estimate">{es.est.boton}</Link>
+            </Button>
+          ) : null}
+          <Button asChild>
+            <Link href="/quotes/new">{es.cot.nueva}</Link>
+          </Button>
+        </div>
       }
     />
     <ErrorBanner message={loadError} />

@@ -140,6 +140,11 @@ export interface QuoteOut {
   contact_id: number | null;
   project_name: string | null;
   notes: string | null;
+  /** null or "standard" = normal quote. "engineering_estimate" = locked money (I4). */
+  quote_type?: string | null;
+  tax_type_code?: string | null;
+  tax_label?: string | null;
+  tax_rate?: number | null;
   status: "Draft" | "Final" | "Sent" | "Approved" | "Rejected" | "Invoiced";
   included_charges: unknown;
   total_amount: number | null;
@@ -212,6 +217,8 @@ export interface DraftUpdateInput {
   payment_terms?: string | null;
   items: QuoteLineInput[];
   included_charges: IncludedCharges;
+  /** Estimate quotes, admin, when money changes. Audited. */
+  edit_reason?: string;
 }
 
 /** PUT /quotes/{id}. Draft only. The backend returns 400 QUOTE_FINALIZED or QUOTE_NOT_DRAFT otherwise. */
@@ -249,6 +256,8 @@ export interface TotalsPreview {
   contingency: number;
   subtotal: number;
   tax_rate: number;
+  tax_type_code?: string;
+  tax_label?: string;
   tax_amount: number;
   grand_total: number;
 }
@@ -256,6 +265,8 @@ export interface TotalsPreview {
 export interface TotalsPreviewInput {
   items: QuoteLineInput[];
   included_charges: IncludedCharges;
+  /** Estimate quotes only. Other callers omit it and get the default tax. */
+  tax_type_code?: string;
 }
 
 export async function previewQuoteTotals(input: TotalsPreviewInput): Promise<TotalsPreview> {

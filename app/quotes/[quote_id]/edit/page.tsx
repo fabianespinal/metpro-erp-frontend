@@ -41,6 +41,11 @@ import SurchargeControls from "@/components/quotes/SurchargeControls";
 import QuoteTotalsDisplay from "@/components/quotes/QuoteTotalsDisplay";
 import QuoteCostEstimate from "@/components/quotes/QuoteCostEstimate";
 import { calculateQuoteTotals } from "@/components/quotes/quoteUtils";
+import { useCurrentRole } from "@/lib/currentRole";
+import { isEstimateQuote, moneyChanged, moneyLocked, needsEditReason } from "@/lib/estimatorCalc";
+import { useTotalsPreview } from "@/components/quotes/takeoff/useTotalsPreview";
+import { LockedLines } from "@/components/quotes/estimate/LockedLines";
+import { TotalRow } from "@/components/quotes/takeoff/LineCard";
 
 /**
  * Quoting v1, module 7. Draft editor. Edits Draft quotes only.
@@ -58,6 +63,8 @@ const ERROR_MESSAGES: Record<string, string> = {
   QUOTE_NOT_DRAFT: es.cot.codigos.QUOTE_NOT_DRAFT,
   QUOTE_FINALIZED: es.cot.codigos.QUOTE_FINALIZED,
   PRODUCT_NOT_FOUND: es.cot.codigos.PRODUCT_NOT_FOUND,
+  ESTIMATE_LOCKED: es.est.errBloqueado,
+  ESTIMATE_EDIT_REASON_REQUIRED: es.est.errMotivo,
 };
 
 function messageFor(err: unknown, fallback: string): string {
@@ -82,6 +89,8 @@ function DraftEditor() {
   const [bannerOpen, setBannerOpen] = useState(true);
   const params = useParams<{ quote_id: string }>();
   const quoteId = params.quote_id;
+  const { isAdmin } = useCurrentRole();
+  const [editReason, setEditReason] = useState("");
 
   const [quote, setQuote] = useState<QuoteOut | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -110,6 +119,16 @@ function DraftEditor() {
   const calculatedTotals = useMemo(
     () => (charges ? calculateQuoteTotals(toQuoteItems(lines), charges, charges.dynamic_charges ?? []) : null),
     [lines, charges],
+  );
+
+  const isEst = isEstimateQuote(quote);
+  const locked = moneyLocked(quote, isAdmin);
+  // Estimate quotes: totals come from the backend with the quote's own tax (1.8%), never the 18% client math.
+  const { totals: backendTotals } = useTotalsPreview(
+    lines,
+    charges ?? DEFAULT_INCLUDED_CHARGES,
+    quote?.tax_type_code ?? undefined,
+    isEst && charges !== null
   );
 
   function applyQuote(q: QuoteOut) {
@@ -200,6 +219,8 @@ function DraftEditor() {
   const dirty = savedSnapshot !== "" && snapshotOf(payload) !== savedSnapshot;
   const includedCount = lines.filter((l) => l.include).length;
   const isDraft = quote?.status === "Draft";
+  const moneyDirty = isEst && savedSnapshot !== "" && moneyChanged(savedSnapshot, snapshotOf(payload));
+  const reasonNeeded = needsEditReason(quote, isAdmin) && moneyDirty;
   const canWrite = isDraft && charges !== null && !saving && !finalizing;
 
   function updateLine(key: string, patch: Partial<TakeOffLine>) {
@@ -229,6 +250,10 @@ function DraftEditor() {
       setActionError(es.cot.lineaInvalida);
       return false;
     }
+    if (reasonNeeded && !editReason.trim()) {
+      setActionError(es.est.errMotivo);
+      return false;
+    }
     setSaving(true);
     setActionError(null);
     try {
@@ -238,8 +263,10 @@ function DraftEditor() {
         payment_terms: paymentTerms.trim() || null,
         items: toQuoteItems(lines),
         included_charges: charges,
+        ...(reasonNeeded ? { edit_reason: editReason.trim() } : {}),
       });
       applyQuote(updated);
+      setEditReason("");
       setSaveMessage(es.cot.borradorGuardado);
       return true;
     } catch (err) {
@@ -335,6 +362,12 @@ function DraftEditor() {
         </Alert>
       ) : null}
 
+      {isEst ? (
+        <Alert className="mb-4" data-testid="estimate-banner">
+          <AlertDescription>{locked ? es.est.bannerEstimado : es.est.bannerAdmin}</AlertDescription>
+        </Alert>
+      ) : null}
+
       {actionError ? (
         <Alert variant="destructive" className="mb-4">
           <AlertDescription>{actionError}</AlertDescription>
@@ -343,10 +376,12 @@ function DraftEditor() {
 
       <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
         <div className="min-w-0 space-y-6">
-          <AddItemBar products={products} onAdd={addLine} />
+          {locked ? null : <AddItemBar products={products} onAdd={addLine} />}
 
           {lines.length === 0 ? (
             <p className="text-sm text-muted">{es.cot.sinArticulos}</p>
+          ) : locked ? (
+            <LockedLines lines={lines} />
           ) : (
             <ul className="space-y-3">
               {lines.map((line) => (
@@ -366,9 +401,23 @@ function DraftEditor() {
 
           {charges && (
             <>
-              <SurchargeControls charges={charges} setCharges={handleChargesChange} />
-              <QuoteTotalsDisplay totals={calculatedTotals} charges={charges} />
-              <QuoteCostEstimate items={toQuoteItems(lines)} charges={charges} />
+              {locked ? null : <SurchargeControls charges={charges} setCharges={handleChargesChange} />}
+              {isEst ? (
+                <section className="rounded-lg border border-line bg-surface p-4 shadow-card" data-testid="estimate-totals">
+                  <h2 className="mb-3 text-sm font-semibold text-ink">{es.cot.totales}</h2>
+                  <dl className="space-y-1.5 text-sm">
+                    <TotalRow label={es.cot.panelArticulos} value={backendTotals?.items_total} />
+                    <TotalRow label={es.cot.menosDescuentos} value={backendTotals?.total_discounts} />
+                    <TotalRow label={es.cot.panelSubtotal} value={backendTotals?.subtotal} />
+                    <TotalRow label={quote.tax_label ?? es.est.impuesto} value={backendTotals?.tax_amount} />
+                    <div className="my-2 border-t border-line" />
+                    <TotalRow label={es.cot.panelTotal} value={backendTotals?.grand_total} strong />
+                  </dl>
+                </section>
+              ) : (
+                <QuoteTotalsDisplay totals={calculatedTotals} charges={charges} />
+              )}
+              {isEst ? null : <QuoteCostEstimate items={toQuoteItems(lines)} charges={charges} />}
             </>
           )}
 
@@ -399,6 +448,17 @@ function DraftEditor() {
               aria-label={es.cot.terminosPago}
             />
           </section>
+
+          {reasonNeeded ? (
+            <input
+              type="text"
+              value={editReason}
+              onChange={(e) => setEditReason(e.target.value)}
+              placeholder={es.est.motivoCambio}
+              className={takeOffInputClass}
+              aria-label={es.est.motivoCambio}
+            />
+          ) : null}
 
           {saveMessage ? <p className="text-sm text-muted">{saveMessage}</p> : null}
           {dirty ? <p className="text-sm text-muted">{es.cot.cambiosSinGuardar}</p> : null}
@@ -435,15 +495,15 @@ function DraftEditor() {
             </div>
             <div className="flex justify-between">
               <dt className="text-muted">{es.cot.subtotalGeneral}</dt>
-              <dd className="text-ink">{calculatedTotals ? formatMoney(parseFloat(calculatedTotals.subtotal_general)) : "—"}</dd>
+              <dd className="text-ink">{isEst ? (backendTotals ? formatMoney(backendTotals.subtotal) : "—") : calculatedTotals ? formatMoney(parseFloat(calculatedTotals.subtotal_general)) : "—"}</dd>
             </div>
             <div className="flex justify-between">
-              <dt className="text-muted">ITBIS (18%)</dt>
-              <dd className="text-ink">{calculatedTotals ? formatMoney(parseFloat(calculatedTotals.itbis)) : "—"}</dd>
+              <dt className="text-muted">{isEst ? (quote.tax_label ?? es.est.impuesto) : "ITBIS (18%)"}</dt>
+              <dd className="text-ink">{isEst ? (backendTotals ? formatMoney(backendTotals.tax_amount) : "—") : calculatedTotals ? formatMoney(parseFloat(calculatedTotals.itbis)) : "—"}</dd>
             </div>
             <div className="flex justify-between font-semibold">
               <dt className="text-ink">{es.cot.totalGeneral}</dt>
-              <dd className="text-ink">{calculatedTotals ? formatMoney(parseFloat(calculatedTotals.grand_total)) : "—"}</dd>
+              <dd className="text-ink">{isEst ? (backendTotals ? formatMoney(backendTotals.grand_total) : "—") : calculatedTotals ? formatMoney(parseFloat(calculatedTotals.grand_total)) : "—"}</dd>
             </div>
           </dl>
           <DialogFooter>

@@ -134,9 +134,12 @@ export function toQuoteItems(lines: TakeOffLine[]): QuoteLineInput[] {
 
 export function toPreviewInput(
   lines: TakeOffLine[],
-  charges: IncludedCharges
+  charges: IncludedCharges,
+  taxTypeCode?: string
 ): TotalsPreviewInput {
-  return { items: toQuoteItems(lines), included_charges: charges };
+  return taxTypeCode
+    ? { items: toQuoteItems(lines), included_charges: charges, tax_type_code: taxTypeCode }
+    : { items: toQuoteItems(lines), included_charges: charges };
 }
 
 /** True when every included line passes validation and at least one is included. */
