@@ -9,6 +9,8 @@ import { es } from "@/lib/i18n/es";
 import { businessToday } from "@/lib/dates";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
+import { useCurrentRole } from "@/lib/currentRole";
+import { convertRfqToPo, getPoEnabled } from "@/lib/poApi";
 import ErrorBanner from "@/components/ui/ErrorBanner";
 import {
   createRfq, downloadRfqPdf, getRfq, getRfqOptions, setRfqStatus, updateRfq,
@@ -39,6 +41,8 @@ export default function RfqForm({ id }: { id?: number }) {
   const [items, setItems] = useState<RfqItem[]>([]);
   const [query, setQuery] = useState("");
   const [printSeal, setPrintSeal] = useState(false);
+  const { isAdmin } = useCurrentRole();
+  const [poOn, setPoOn] = useState(false);
 
   const locked = status !== "Draft";
 
@@ -46,6 +50,7 @@ export default function RfqForm({ id }: { id?: number }) {
     let cancelled = false;
     (async () => {
       try {
+        if (isAdmin) getPoEnabled().then((v) => !cancelled && setPoOn(v));
         const [opts, sup, prod] = await Promise.all([
           getRfqOptions(),
           api.get("/suppliers").catch(() => []),
@@ -77,7 +82,7 @@ export default function RfqForm({ id }: { id?: number }) {
     return () => {
       cancelled = true;
     };
-  }, [id]);
+  }, [id, isAdmin]);
 
   const matches = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -139,6 +144,17 @@ export default function RfqForm({ id }: { id?: number }) {
     }
   };
 
+  const convert = async () => {
+    if (!id) return;
+    try {
+      const p = await convertRfqToPo(id);
+      toast.success(es.po.convertida);
+      router.push(`/compras/po/${p.id}` as Route);
+    } catch (e) {
+      toast.error(t.errorGenerico + errMsg(e));
+    }
+  };
+
   const pdf = async () => {
     if (!id) return;
     try {
@@ -164,6 +180,7 @@ export default function RfqForm({ id }: { id?: number }) {
             {id && <Button variant="outline" onClick={pdf}>{t.descargarPdf}</Button>}
             {id && status === "Draft" && <Button variant="outline" onClick={() => changeStatus("Sent")}>{t.marcarEnviada}</Button>}
             {id && status === "Sent" && <Button variant="outline" onClick={() => changeStatus("Draft")}>{t.volverBorrador}</Button>}
+            {id && isAdmin && poOn && status !== "Converted" && <Button variant="outline" onClick={convert}>{es.po.convertir}</Button>}
             <Button variant="outline" onClick={() => router.push("/compras" as Route)}>{t.volver}</Button>
           </>
         }
