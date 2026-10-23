@@ -14,6 +14,7 @@ import StatusHistoryLink from "@/components/StatusHistoryLink";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import SendToClientButton from "@/components/SendToClientButton";
+import FullCopyButton from "@/components/FullCopyButton";
 import InvoiceDocPreviewModal from "@/components/invoices/InvoiceDocPreviewModal";
 import { type InvoiceDocKind } from "@/lib/invoiceDocs";
 
@@ -282,6 +283,7 @@ export default function InvoiceDetailPage() {
             {invoice.status !== "Cancelled" && <SendToClientButton id={invoiceId} type="invoice" />}
             <Button onClick={() => setPreview("factura")}>Vista previa Factura</Button>
             <Button onClick={() => setPreview("conduce")}>Vista previa Conduce</Button>
+            <FullCopyButton kind="invoice" id={invoiceId} />
             {recordAdminOnly && !isAdmin ? null : <Button onClick={() => setPaymentOpen(true)}>Pago</Button>}
           </div>
         </div>

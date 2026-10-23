@@ -11,6 +11,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { fb } from "@/components/ui/filter-bar";
 import { useCurrentRole } from "@/lib/currentRole";
+import FullCopyButton from "@/components/FullCopyButton";
 import ProjectExpensesTab from "@/components/projects/ProjectExpensesTab";
 import ProjectCostTab from "@/components/projects/ProjectCostTab";
 
@@ -179,9 +180,12 @@ export default function ProyectoDetallePage() {
             <dt className="text-muted">{t.cotizacion}</dt>
             <dd className="font-medium">
               {proyecto.quote_id ? (
-                <Link href={`/quotes/${proyecto.quote_id}/view`} className="text-accent underline">
-                  {proyecto.quote_label ?? proyecto.quote_id}
-                </Link>
+                <span className="inline-flex flex-wrap items-center gap-3">
+                  <Link href={`/quotes/${proyecto.quote_id}/view`} className="text-accent underline">
+                    {proyecto.quote_label ?? proyecto.quote_id}
+                  </Link>
+                  <FullCopyButton kind="quote" id={proyecto.quote_id} />
+                </span>
               ) : (
                 t.sinCotizacion
               )}
@@ -191,9 +195,12 @@ export default function ProyectoDetallePage() {
             <dt className="text-muted">{t.factura}</dt>
             <dd className="font-medium">
               {proyecto.invoice_id ? (
-                <Link href={`/invoices/${proyecto.invoice_id}`} className="text-accent underline">
-                  {proyecto.invoice_number ?? proyecto.invoice_id}
-                </Link>
+                <span className="inline-flex flex-wrap items-center gap-3">
+                  <Link href={`/invoices/${proyecto.invoice_id}`} className="text-accent underline">
+                    {proyecto.invoice_number ?? proyecto.invoice_id}
+                  </Link>
+                  <FullCopyButton kind="invoice" id={proyecto.invoice_id} />
+                </span>
               ) : (
                 t.sinFactura
               )}

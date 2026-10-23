@@ -56,6 +56,6 @@ describe("Medidas is not money", () => {
 
 describe("PDF options fail closed", () => {
   it("everything is off by default", () => {
-    expect(NO_PDF_OPTIONS).toEqual({ medidas_enabled: false, print_items_enabled: false, project_desc_enabled: false });
+    expect(NO_PDF_OPTIONS).toEqual({ medidas_enabled: false, print_items_enabled: false, project_desc_enabled: false, full_copy_enabled: false });
   });
 });

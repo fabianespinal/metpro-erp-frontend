@@ -11,6 +11,7 @@ import QuoteCostEstimate from "@/components/quotes/QuoteCostEstimate";
 import { fmtDay, fmtTimestamp } from "@/lib/dates";
 import StatusHistoryLink from "@/components/StatusHistoryLink";
 import { money as libMoney, qty } from "@/lib/money";
+import FullCopyButton from "@/components/FullCopyButton";
 
 
 interface QuoteItem {
@@ -155,6 +156,10 @@ export default function QuotePublicView() {
         <h1 className="sr-only">Cotización {quote.quote_number != null ? `Q-${quote.quote_number}` : ""}</h1>
 
         <ErrorBanner message={warning} />
+
+        <div className="mb-4 flex justify-end print:hidden">
+          <FullCopyButton kind="quote" id={quote.quote_id} />
+        </div>
 
         {/* Header */}
         <div className="flex flex-col gap-6 border-b border-line pb-6 sm:flex-row sm:items-start sm:justify-between">

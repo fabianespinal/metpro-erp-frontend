@@ -12,12 +12,14 @@ export interface PdfOptions {
   medidas_enabled: boolean;
   print_items_enabled: boolean;
   project_desc_enabled: boolean;
+  full_copy_enabled: boolean;
 }
 
 export const NO_PDF_OPTIONS: PdfOptions = {
   medidas_enabled: false,
   print_items_enabled: false,
   project_desc_enabled: false,
+  full_copy_enabled: false,
 };
 
 /** Suggestions only. The field is free text; there is no fixed list in code or in the database. */
@@ -36,6 +38,7 @@ export function getPdfOptions(): Promise<PdfOptions> {
           medidas_enabled: r?.medidas_enabled === true,
           print_items_enabled: r?.print_items_enabled === true,
           project_desc_enabled: r?.project_desc_enabled === true,
+          full_copy_enabled: r?.full_copy_enabled === true,
         };
       } catch {
         cached = null; // try again on the next screen
