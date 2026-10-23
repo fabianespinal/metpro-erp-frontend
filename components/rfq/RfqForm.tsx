@@ -6,6 +6,7 @@ import type { Route } from "next";
 import toast from "react-hot-toast";
 import { api } from "@/lib/api";
 import { es } from "@/lib/i18n/es";
+import { businessToday } from "@/lib/dates";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
 import ErrorBanner from "@/components/ui/ErrorBanner";
@@ -19,7 +20,6 @@ interface Product { id: number; name: string; description: string | null; unit_o
 
 const t = es.rfq;
 const errMsg = (e: unknown) => (e instanceof Error ? e.message : "");
-const today = () => new Date().toISOString().slice(0, 10);
 
 /** Create / edit an RFQ. Lines start from a product and every field stays editable. No prices anywhere. */
 export default function RfqForm({ id }: { id?: number }) {
@@ -32,7 +32,7 @@ export default function RfqForm({ id }: { id?: number }) {
   const [label, setLabel] = useState("");
   const [supplierId, setSupplierId] = useState<number | "">("");
   const [title, setTitle] = useState("");
-  const [date, setDate] = useState(today());
+  const [date, setDate] = useState(businessToday());
   const [billTo, setBillTo] = useState("");
   const [payment, setPayment] = useState("");
   const [notes, setNotes] = useState("");
