@@ -449,6 +449,7 @@ export const es = {
     menosDescuentos: "Menos descuentos",
     itbis: "ITBIS",
     tipoImpuesto: "Tipo de impuesto",
+    impuestoAutomatico: "Se aplica automáticamente según los cargos de la cotización.",
     errorImpuestos: "No se pudieron cargar los tipos de impuesto.",
     incluidosNota: (n: number) => `${n} ${n === 1 ? "artículo incluido" : "artículos incluidos"}. El servidor calcula los totales.`,
     tiposLinea: { product: "Producto", service: "Servicio", custom: "Personalizado" } as Record<string, string>,

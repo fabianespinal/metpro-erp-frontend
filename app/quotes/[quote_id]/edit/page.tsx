@@ -50,6 +50,8 @@ import { PrintItemsToggle } from "@/components/quotes/PrintItemsToggle";
 import { usePdfOptions } from "@/lib/pdfOptions";
 import { TotalRow } from "@/components/quotes/takeoff/LineCard";
 import TaxTypeSelect from "@/components/quotes/TaxTypeSelect";
+import TaxTypeInfo from "@/components/quotes/TaxTypeInfo";
+import { useAutoTax } from "@/components/quotes/useAutoTax";
 import { useTaxTypes } from "@/components/quotes/useTaxTypes";
 
 /**
@@ -142,7 +144,8 @@ function DraftEditor() {
   // Derived, not stored: recomputed when lines or charges change.
   // The rate comes from the chosen type; for a type not in the active list (e.g. a quote made earlier with a
   // type that was later switched off) it falls back to the quote's own stored snapshot.
-  const chosen = taxTypes.find((t) => t.code === taxTypeCode) ?? null;
+  const autoTax = useAutoTax(charges, taxTypes);
+  const chosen = autoTax.auto && !isEstimateQuote(quote) ? autoTax.type : taxTypes.find((t) => t.code === taxTypeCode) ?? null;
   const taxRate = chosen ? chosen.rate : quote?.tax_rate != null ? Number(quote.tax_rate) : undefined;
   const taxLabel = chosen ? chosen.label : quote?.tax_label ?? undefined;
   const calculatedTotals = useMemo(
@@ -303,7 +306,7 @@ function DraftEditor() {
         print_items: printItems,
         ...(reasonNeeded ? { edit_reason: editReason.trim() } : {}),
         // Sent only when the stored type differs from the one chosen here.
-        ...(taxTypeCode && taxTypeCode !== quote?.tax_type_code ? { tax_type_code: taxTypeCode } : {}),
+        ...(!autoTax.auto && taxTypeCode && taxTypeCode !== quote?.tax_type_code ? { tax_type_code: taxTypeCode } : {}),
       });
       applyQuote(updated);
       setEditReason("");
@@ -443,7 +446,9 @@ function DraftEditor() {
           {charges && (
             <>
               {locked ? null : <SurchargeControls charges={charges} setCharges={handleChargesChange} />}
-              {isEst ? null : (
+              {isEst ? null : autoTax.auto ? (
+                <TaxTypeInfo label={chosen ? chosen.label : undefined} />
+              ) : (
                 <TaxTypeSelect
                   taxTypes={taxTypes}
                   value={taxTypeCode}
