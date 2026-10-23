@@ -82,7 +82,16 @@ export default function EstimatePage() {
   const [genError, setGenError] = useState<string | null>(null);
   const [generating, setGenerating] = useState(false);
 
-  const request = useMemo(() => buildRequest(form, drafts), [form, drafts]);
+  // Incomplete overrides (no reason yet) are ignored by the calculation so the result does not vanish
+  // while typing. Generate stays blocked until every draft is complete (badRow).
+  const completeDrafts = useMemo(() => {
+    const out: OverrideDrafts = {};
+    for (const [row, d] of Object.entries(drafts)) {
+      if (overrideProblemRow({ [Number(row)]: d }) === null) out[Number(row)] = d;
+    }
+    return out;
+  }, [drafts]);
+  const request = useMemo(() => buildRequest(form, completeDrafts), [form, completeDrafts]);
   const calculating = Boolean(request) && doneKey !== (request ? JSON.stringify(request) : "");
   const preview = request ? previewRaw : null; // invalid form shows no result
   const requestKey = request ? JSON.stringify(request) : "";
@@ -130,7 +139,7 @@ export default function EstimatePage() {
 
   const problem = formProblem(form);
   const badRow = overrideProblemRow(drafts);
-  const canGenerate = Boolean(request && preview && clientId && contactId && !generating);
+  const canGenerate = Boolean(request && preview && clientId && contactId && !generating && badRow === null);
 
   function setNum(f: NumberField, v: string) { setForm((p) => ({ ...p, [f]: v })); }
   function setProfile(r: ProfileRole, v: string) { setForm((p) => ({ ...p, perfiles: { ...p.perfiles, [r]: v } })); }
