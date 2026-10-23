@@ -175,10 +175,6 @@ export interface QuoteOut {
   subtotal?: number | null;
   discount_total?: number | null;
   tax_amount?: number | null;
-  /** Snapshot taken when the quote was created or its type was last chosen (Draft). */
-  tax_type_code?: string | null;
-  tax_rate?: number | null;
-  tax_label?: string | null;
   grand_total?: number | null;
   payment_terms: string | null;
   valid_until: string | null;
@@ -294,11 +290,10 @@ export interface TotalsPreview {
 }
 
 export interface TotalsPreviewInput {
-  tax_type_code?: string | null;
   items: QuoteLineInput[];
   included_charges: IncludedCharges;
-  /** Estimate quotes only. Other callers omit it and get the default tax. */
-  tax_type_code?: string;
+  /** Tax type to use. Estimate quotes and Draft quotes with a chosen type send it; others omit it (default tax). */
+  tax_type_code?: string | null;
 }
 
 export async function previewQuoteTotals(input: TotalsPreviewInput): Promise<TotalsPreview> {
