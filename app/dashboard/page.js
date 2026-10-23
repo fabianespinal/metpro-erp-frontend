@@ -8,6 +8,7 @@ import Link from 'next/link'
 import { PageHeader } from '@/components/ui/page-header'
 import { useCurrentRole } from '@/lib/currentRole'
 import { es } from '@/lib/i18n/es'
+import { getRfqOptions } from '@/lib/rfqApi'
 
 // Counts follow the quote and invoice status matrices.
 const PENDING_QUOTE_STATUSES = ['Draft', 'Final', 'Sent']
@@ -19,6 +20,11 @@ export default function DashboardPage() {
   const [loadErrors, setLoadErrors] = useState([])
   const [loading, setLoading] = useState(true) // E-09: no 0 / $0.00 flash before data arrives
   const { isAdmin } = useCurrentRole()
+  // RFQ / P.O card: shown only when the backend switch RFQ_ENABLED is on.
+  const [rfqEnabled, setRfqEnabled] = useState(false)
+  useEffect(() => {
+    getRfqOptions().then((o) => setRfqEnabled(o.rfq_enabled))
+  }, [])
   const [stats, setStats] = useState({
     clients: 0,
     pendingQuotes: 0,
@@ -196,6 +202,22 @@ export default function DashboardPage() {
     }
   ]
 
+  // RFQ / P.O: all users. Hidden while the switch is off.
+  const purchasingModules = rfqEnabled ? [
+    {
+      name: 'RFQ / P.O',
+      description: 'Solicitudes de cotización y órdenes de compra a suplidores',
+      href: '/compras',
+      icon: (
+        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+            d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+          />
+        </svg>
+      )
+    }
+  ] : []
+
   // Admin-only module: one "Ajustes" card that opens /ajustes (Usuarios, Encabezados PDF, Plantillas, Sello, Términos).
   const adminModules = [
     {
@@ -233,7 +255,7 @@ export default function DashboardPage() {
 
       {/* MODULE GRID */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {[...modules, ...(isAdmin ? adminModules : [])].map((module) => (
+        {[...modules, ...purchasingModules, ...(isAdmin ? adminModules : [])].map((module) => (
           <Link
             key={module.name}
             href={module.href}
