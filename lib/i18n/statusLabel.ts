@@ -28,6 +28,7 @@ const FORMS: Record<string, [string, string]> = {
   planning: ["Planificación", "Planificación"],
   in_progress: ["En progreso", "En progreso"],
   on_hold: ["En pausa", "En pausa"],
+  deleted: ["Eliminado", "Eliminada"],
 };
 
 export function getStatusLabel(status: string | null | undefined, gender: StatusGender = "m"): string {

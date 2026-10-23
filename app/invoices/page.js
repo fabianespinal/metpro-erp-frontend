@@ -4,6 +4,7 @@ import toast from "react-hot-toast"
 import { fmtDay } from "@/lib/dates"
 import { money } from "@/lib/money"
 import { getStatusLabel } from "@/lib/i18n/statusLabel";
+import StatusActor from "@/components/StatusActor";
 import ErrorBanner from "@/components/ui/ErrorBanner";
 import { dt } from "@/components/ui/data-table";
 
@@ -142,9 +143,8 @@ export default function InvoicesPage() {
 
                   <td className={dt.td}>
                     <StatusPill status={inv.status} gender="f" />
-                    <div className="text-xs text-muted mt-1">
-                      Creado por {inv.created_by_name || "—"}
-                    </div>
+                    <StatusActor kind="invoice" id={inv.id} createdBy={inv.created_by_name}
+                      lastBy={inv.last_status_by} lastAt={inv.last_status_at} />
                   </td>
 
                   <td className={dt.tdRight}>

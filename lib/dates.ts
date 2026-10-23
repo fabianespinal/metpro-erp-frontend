@@ -63,3 +63,18 @@ export function fmtDay(value: string | null | undefined): string {
 export function fmtTimestamp(value: string | null | undefined): string {
   return fmtDay(localDate(value));
 }
+
+const hm = new Intl.DateTimeFormat("en-GB", {
+  timeZone: BUSINESS_TZ,
+  hour: "2-digit",
+  minute: "2-digit",
+  hourCycle: "h23",
+});
+
+/** Timestamp as "dd/mm/aaaa HH:mm" on the Santo Domingo clock (status history). */
+export function fmtDateTime(value: string | null | undefined): string {
+  if (!value) return "";
+  const d = parseBackendTimestamp(String(value));
+  if (Number.isNaN(d.getTime())) return "";
+  return `${fmtDay(localDate(String(value)))} ${hm.format(d)}`;
+}

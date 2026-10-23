@@ -10,6 +10,7 @@ import { useCurrentRole } from "@/lib/currentRole";
 import toast from "react-hot-toast";
 import RecordPaymentModal from "@/components/invoices/RecordPaymentModal";
 import StatusPill from "@/components/ui/StatusPill";
+import StatusHistoryLink from "@/components/StatusHistoryLink";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import SendToClientButton from "@/components/SendToClientButton";
@@ -147,6 +148,7 @@ export default function InvoiceDetailPage() {
           <div>
             <p className="text-muted">Estado</p>
             <StatusPill status={invoice.status} gender="f" />
+            <StatusHistoryLink kind="invoice" id={invoiceId} refreshKey={invoice.status} />
           </div>
 
           <div>

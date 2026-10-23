@@ -209,6 +209,21 @@ export const es = {
     medidas: "Medidas",
     medidasPlaceholder: "Unidad, Ft, M2…",
   },
+  historial: {
+    titulo: "Historial de estados",
+    verHistorial: "Ver historial",
+    ultimoCambio: "Último cambio:",
+    por: "por",
+    colFecha: "Fecha y hora",
+    colCambio: "Cambio",
+    colUsuario: "Usuario",
+    creada: "Creada",
+    cargando: "Cargando…",
+    vacio: "Sin cambios registrados todavía.",
+    error: "No se pudo cargar el historial.",
+    cerrar: "Cerrar",
+    sistema: "—",
+  },
   cot: {
     // Lista
     existentes: "Cotizaciones existentes",

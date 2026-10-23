@@ -3,6 +3,7 @@ import { money } from "@/lib/money"
 import { dt } from "@/components/ui/data-table";
 import StatusPill from '@/components/ui/StatusPill'
 import { fmtTimestamp } from '@/lib/dates'
+import StatusActor from '@/components/StatusActor'
 import PrimaryActionButton from './PrimaryActionButton'
 import OverflowMenu from './OverflowMenu'
 import SentBadge from '@/components/SentBadge'
@@ -65,9 +66,8 @@ export default function QuoteTable({
 
             <td className={dt.td}>
               <StatusPill status={quote.status} gender="f" />
-              <div className='text-xs text-muted mt-1'>
-                {es.cot.creadoPor} {quote.created_by_name || '—'}
-              </div>
+              <StatusActor kind='quote' id={quote.quote_id} createdBy={quote.created_by_name}
+                lastBy={quote.last_status_by} lastAt={quote.last_status_at} />
               {quote.has_invoice && (
                 <div className='text-xs text-accent mt-1'>
                   {es.cot.facturaLabel} {quote.invoice_number}

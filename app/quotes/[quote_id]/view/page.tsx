@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import QuoteCostEstimate from "@/components/quotes/QuoteCostEstimate";
 import { fmtDay, fmtTimestamp } from "@/lib/dates";
+import StatusHistoryLink from "@/components/StatusHistoryLink";
 import { money as libMoney, qty } from "@/lib/money";
 
 
@@ -192,6 +193,7 @@ export default function QuotePublicView() {
             <div>
               <span className="font-semibold">Creado por:</span> {quote.created_by_name || "—"}
             </div>
+            <StatusHistoryLink kind="quote" id={quote.quote_id} refreshKey={quote.status} label={es.historial.ultimoCambio} />
             {quote.project_name && (
               <div className="sm:col-span-2">
                 <span className="font-semibold">Proyecto:</span> {quote.project_name}
