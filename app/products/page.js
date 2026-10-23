@@ -15,11 +15,21 @@ import { fb } from '@/components/ui/filter-bar'
 import { money } from '@/lib/money'
 
 // B3 dimensions: '' means empty (sent as null). Sent only when the backend switch is on.
-const DIM_FIELDS = ['length', 'width', 'height', 'thickness', 'area', 'volume']
+// Area and volume are calculated by the backend. They are sent only when the user turns on the manual override.
+const INPUT_DIMS = ['length', 'width', 'height', 'thickness']
+const DERIVED_DIMS = [
+  ['area', 'area_manual'],
+  ['volume', 'volume_manual'],
+]
+const numOut = (v) => (v === '' || v === null || v === undefined ? null : Number(v))
 const dimsOut = (p, enabled) => {
   if (!enabled) return {}
-  const out = { unit_of_measure: (p.unit_of_measure || '').trim() || null }
-  for (const f of DIM_FIELDS) out[f] = p[f] === '' || p[f] === null || p[f] === undefined ? null : Number(p[f])
+  const out = {}  // the unit is the Medidas field (own input and switch), never part of the dimensions
+  for (const f of INPUT_DIMS) out[f] = numOut(p[f])
+  for (const [f, flag] of DERIVED_DIMS) {
+    out[flag] = p[flag] === true
+    out[f] = p[flag] === true ? numOut(p[f]) : null
+  }
   return out
 }
 
@@ -27,7 +37,7 @@ const dimsOut = (p, enabled) => {
 const costOut = (v) => (v === '' || v === null || v === undefined ? null : Number(v))
 
 const stripDims = (p) => {
-  const { length, width, height, thickness, area, volume, unit_of_measure, ...rest } = p
+  const { length, width, height, thickness, area, volume, area_manual, volume_manual, ...rest } = p
   return rest
 }
 
@@ -265,7 +275,7 @@ const handleUpdateProduct = async (e) => {
           {dimsEnabled && (
             <fieldset className='md:col-span-3 grid grid-cols-2 gap-3 rounded border border-line p-3 md:grid-cols-4'>
               <legend className='px-1 text-sm text-muted'>{es.prod.dimensiones}</legend>
-              {[...DIM_FIELDS].map((f) => (
+              {INPUT_DIMS.map((f) => (
                 <label key={f} className='flex flex-col gap-1 text-sm text-muted'>
                   {es.prod.dim[f]}
                   <input
@@ -282,20 +292,32 @@ const handleUpdateProduct = async (e) => {
                   />
                 </label>
               ))}
-              <label className='flex flex-col gap-1 text-sm text-muted'>
-                {es.prod.dim.unit_of_measure}
-                <input
-                  type='text'
-                  maxLength={20}
-                  value={(editingProduct ? editingProduct.unit_of_measure : newProduct.unit_of_measure) ?? ''}
-                  onChange={(e) =>
-                    editingProduct
-                      ? setEditingProduct({ ...editingProduct, unit_of_measure: e.target.value })
-                      : setNewProduct({ ...newProduct, unit_of_measure: e.target.value })
-                  }
-                  className='border p-2 rounded text-ink'
-                />
-              </label>
+              {DERIVED_DIMS.map(([f, flag]) => {
+                const cur = editingProduct || newProduct
+                const manual = cur[flag] === true
+                const setCur = (patch) =>
+                  editingProduct ? setEditingProduct({ ...editingProduct, ...patch }) : setNewProduct({ ...newProduct, ...patch })
+                return (
+                  <div key={f} className='flex flex-col gap-1 text-sm text-muted'>
+                    <label className='flex flex-col gap-1'>
+                      {es.prod.dim[f]} {!manual && <span className='text-xs'>({es.prod.dim.calculado})</span>}
+                      <input
+                        type='number'
+                        step='any'
+                        min='0'
+                        value={cur[f] ?? ''}
+                        readOnly={!manual}
+                        onChange={(e) => setCur({ [f]: e.target.value })}
+                        className={`border p-2 rounded text-ink ${manual ? '' : 'bg-canvas'}`}
+                      />
+                    </label>
+                    <label className='flex items-center gap-2 text-xs'>
+                      <input type='checkbox' checked={manual} onChange={(e) => setCur({ [flag]: e.target.checked })} />
+                      {es.prod.dim.manual}
+                    </label>
+                  </div>
+                )
+              })}
             </fieldset>
           )}
 
