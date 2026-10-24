@@ -325,6 +325,8 @@ export interface TotalsPreviewInput {
   included_charges: IncludedCharges;
   /** Tax type to use. Estimate quotes and Draft quotes with a chosen type send it; others omit it (default tax). */
   tax_type_code?: string | null;
+  /** engineering_estimate keeps the sent tax type even when the automatic tax is on. */
+  quote_type?: string | null;
 }
 
 export async function previewQuoteTotals(input: TotalsPreviewInput): Promise<TotalsPreview> {

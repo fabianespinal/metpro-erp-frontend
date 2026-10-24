@@ -160,7 +160,8 @@ function DraftEditor() {
     lines,
     charges ?? DEFAULT_INCLUDED_CHARGES,
     quote?.tax_type_code ?? undefined,
-    isEst && charges !== null
+    isEst && charges !== null,
+    isEst ? "engineering_estimate" : undefined
   );
 
   function applyQuote(q: QuoteOut) {

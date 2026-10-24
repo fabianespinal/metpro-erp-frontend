@@ -8,8 +8,12 @@ describe("taxCodeForCharges", () => {
     expect(taxCodeForCharges({ ...base, admin: true })).toBe("construction_17_2017"));
   it("a 0% charge does not trigger", () => expect(taxCodeForCharges({ ...base, admin: true, admin_percentage: 0 })).toBe(""));
   it("missing percentage counts as 0", () => expect(taxCodeForCharges({ admin: true })).toBe(""));
-  it("dynamic charge triggers when enabled", () =>
-    expect(taxCodeForCharges({ ...base, dynamic_charges: [{ enabled: true, percentage: 2 }] })).toBe("construction_17_2017"));
+  it("a custom charge alone never triggers (five-charge rule)", () =>
+    expect(taxCodeForCharges({ ...base, dynamic_charges: [{ name: "Limpieza", enabled: true, percentage: 10 }] })).toBe(""));
+  it("each of the five construction charges triggers", () => {
+    for (const k of ["supervision", "admin", "insurance", "transport", "contingency"])
+      expect(taxCodeForCharges({ [k]: true, [`${k}_percentage`]: 1 })).toBe("construction_17_2017");
+  });
   it("disabled dynamic charge does not", () =>
     expect(taxCodeForCharges({ ...base, dynamic_charges: [{ enabled: false, percentage: 2 }] })).toBe(""));
   it("only first 3 dynamic charges count", () =>

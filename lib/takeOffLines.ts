@@ -143,11 +143,15 @@ export function toQuoteItems(lines: TakeOffLine[]): QuoteLineInput[] {
 export function toPreviewInput(
   lines: TakeOffLine[],
   charges: IncludedCharges,
-  taxTypeCode?: string | null
+  taxTypeCode?: string | null,
+  quoteType?: string | null
 ): TotalsPreviewInput {
-  return taxTypeCode
+  const input: TotalsPreviewInput = taxTypeCode
     ? { items: toQuoteItems(lines), included_charges: charges, tax_type_code: taxTypeCode }
     : { items: toQuoteItems(lines), included_charges: charges };
+  // Estimate quotes keep their own 1.8%: the backend skips the automatic tax only when told the type.
+  if (quoteType) input.quote_type = quoteType;
+  return input;
 }
 
 /** True when every included line passes validation and at least one is included. */

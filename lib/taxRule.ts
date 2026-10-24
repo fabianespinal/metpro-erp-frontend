@@ -1,7 +1,9 @@
 /**
  * Mirror of the backend automatic tax rule (tax/service.py). DISPLAY ONLY: the backend decides the
- * stored tax on every save. A quote uses the construction tax when at least one charge is switched on
- * and has a percentage above 0. A missing or invalid percentage counts as 0.
+ * stored tax on every save. A quote uses the construction tax when at least one of the five construction
+ * charges (supervision, admin, insurance, transport, contingency) is switched on and above 0. Custom
+ * charges never trigger it (decision 2026-10-22, confirmed 2026-10-24). A missing or invalid percentage
+ * counts as 0. Engineering estimate quotes always keep their own 1.8%.
  */
 export const CONSTRUCTION_TAX_CODE = "construction_17_2017";
 const STATIC_CHARGE_KEYS = ["supervision", "admin", "insurance", "transport", "contingency"] as const;
@@ -17,14 +19,6 @@ export function chargesTriggerConstructionTax(charges: Charges): boolean {
   if (!charges) return false;
   for (const key of STATIC_CHARGE_KEYS) {
     if (charges[key] && positive(charges[`${key}_percentage`])) return true;
-  }
-  const raw = charges["dynamic_charges"];
-  if (Array.isArray(raw)) {
-    for (const dc of raw.slice(0, 3)) {
-      if (dc && typeof dc === "object" && (dc as Record<string, unknown>).enabled && positive((dc as Record<string, unknown>).percentage)) {
-        return true;
-      }
-    }
   }
   return false;
 }

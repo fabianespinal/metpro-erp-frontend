@@ -12,7 +12,8 @@ export function useTotalsPreview(
   lines: TakeOffLine[],
   charges: IncludedCharges,
   taxTypeCode?: string | null,
-  enabled: boolean = true
+  enabled: boolean = true,
+  quoteType?: string | null
 ) {
   const [totals, setTotals] = useState<TotalsPreview | null>(null);
   const [totalsError, setTotalsError] = useState<string | null>(null);
@@ -21,7 +22,7 @@ export function useTotalsPreview(
     if (!enabled) return;
     let cancelled = false;
     const timer = window.setTimeout(() => {
-      previewQuoteTotals(toPreviewInput(lines, charges, taxTypeCode))
+      previewQuoteTotals(toPreviewInput(lines, charges, taxTypeCode, quoteType))
         .then((t) => {
           if (!cancelled) {
             setTotals(t);
@@ -36,7 +37,7 @@ export function useTotalsPreview(
       cancelled = true;
       window.clearTimeout(timer);
     };
-  }, [lines, charges, taxTypeCode, enabled]);
+  }, [lines, charges, taxTypeCode, enabled, quoteType]);
 
   return { totals, totalsError };
 }
