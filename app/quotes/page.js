@@ -19,6 +19,7 @@ import { mergeQuotesWithInvoices, filterQuotesByStatus } from '@/components/quot
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { useCurrentRole } from "@/lib/currentRole";
+import { useCanManageQuotes } from "@/lib/rolePolicy";
 import { getEstimatorEnabled } from "@/lib/estimatorApi";
 import { fb } from "@/components/ui/filter-bar";
 import {
@@ -34,6 +35,7 @@ export default function QuotesPage() {
   const token = useToken()
   const router = useRouter()
   const { isAdmin } = useCurrentRole()
+  const canManage = useCanManageQuotes()
   const [estimatorOn, setEstimatorOn] = useState(false)
   useEffect(() => {
     // Admin-only entry. Hidden unless the backend switch is on. Fails closed.
@@ -333,6 +335,7 @@ export default function QuotesPage() {
           }}
           onConvertToInvoice={handleConvertToInvoice}
           onViewInvoice={handleViewInvoice}
+          canManage={canManage}
           sentMap={sentMap}
           setSentMap={setSentMap}
           onSent={() => fetchQuotes()}

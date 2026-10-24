@@ -24,6 +24,7 @@ export default function QuoteTable({
   onReject,
   onConvertToInvoice,
   onViewInvoice,
+  canManage = true,
   sentMap,
   setSentMap,
   onSent
@@ -94,6 +95,7 @@ export default function QuoteTable({
                   onApprove={() => onApprove(quote.quote_id)}
                   onConvert={() => onConvertToInvoice(quote.quote_id)}
                   onViewInvoice={() => onViewInvoice(quote)}
+                  canManage={canManage}
                 />
 
                 <OverflowMenu
@@ -107,6 +109,7 @@ export default function QuoteTable({
                   onApprove={() => onApprove(quote.quote_id)}
                   onReject={onReject ? () => onReject(quote.quote_id) : undefined}
                   onConvertToInvoice={() => onConvertToInvoice(quote.quote_id)}
+                  canManage={canManage}
                 />
               </div>
             </td>

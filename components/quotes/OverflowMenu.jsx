@@ -13,6 +13,7 @@ export default function OverflowMenu({
   onApprove,
   onReject,
   onConvertToInvoice,
+  canManage = true,
 }) {
   const [isOpen, setIsOpen] = useState(false)
   const menuRef = useRef(null)
@@ -70,7 +71,7 @@ export default function OverflowMenu({
             </button>
 
             {/* Mirrors the backend matrix: approve from Final or Sent; reject from Final, Sent or Approved (no invoice). */}
-            {(quote.status === 'Final' || quote.status === 'Sent') && (
+            {canManage && (quote.status === 'Final' || quote.status === 'Sent') && (
               <button
                 onClick={() => {
                   onApprove()
@@ -82,7 +83,7 @@ export default function OverflowMenu({
               </button>
             )}
 
-            {onReject && ['Final', 'Sent', 'Approved'].includes(quote.status) && !quote.has_invoice && (
+            {canManage && onReject && ['Final', 'Sent', 'Approved'].includes(quote.status) && !quote.has_invoice && (
               <button
                 onClick={() => {
                   onReject()
@@ -94,7 +95,7 @@ export default function OverflowMenu({
               </button>
             )}
 
-            {quote.status === 'Approved' && !quote.has_invoice && (
+            {canManage && quote.status === 'Approved' && !quote.has_invoice && (
               <button
                 onClick={() => {
                   onConvertToInvoice()
